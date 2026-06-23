@@ -1,0 +1,48 @@
+{
+  "name": "snscoder",
+  "version": "0.1.0",
+  "description": "Personal AI agent that configures itself through conversation",
+  "main": "dist/index.js",
+  "bin": {
+    "snscoder": "dist/index.js"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai-agent",
+    "terminal",
+    "cli",
+    "llm",
+    "self-configuring",
+    "token-budget",
+    "mcp",
+    "memory"
+  ],
+  "author": "Reihan <https://github.com/Reihantt6>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Reihantt6/sns-myagent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Reihantt6/sns-myagent/issues"
+  },
+  "homepage": "https://github.com/Reihantt6/sns-myagent#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist/",
+    "skills/",
+    "config.example.yaml",
+    "README.md",
+    "LICENSE"
+  ]
+}

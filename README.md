@@ -51,20 +51,22 @@ Forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nou
 - [Competitive Landscape](#-competitive-landscape)
 - [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
-- [Token Budget Manager (TBM)](#token-budget-manager-tbm)
+- [Token Budget Manager (TBM)](#token-budget-manager-tbm) → [Detailed docs](docs/tbm.md)
 - [Requirements](#-requirements)
-- [Installation](#-installation)
+- [Installation](#-installation) → [Detailed guide](docs/installation.md)
 - [Quick Start](#-quick-start)
-- [Configuration Reference](#-configuration-reference)
+- [Configuration Reference](#-configuration-reference) → [Detailed config](docs/configuration.md)
 - [CLI Reference](#-cli-reference)
 - [Tools](#-tools)
 - [Skills](#-skills)
-- [Memory System](#-memory-system)
+- [Memory System](#-memory-system) → [Detailed docs](docs/memory.md)
 - [MCP Integration](#-mcp-integration)
 - [Development](#-development)
-- [Troubleshooting](#-troubleshooting)
-- [FAQ](#-faq)
-- [Contributing](#-contributing)
+- [Troubleshooting](#-troubleshooting) → [Detailed troubleshooting](docs/troubleshooting.md)
+- [FAQ](#-faq) → [Detailed FAQ](docs/faq.md)
+- [Contributing](#-contributing) → [CONTRIBUTING.md](CONTRIBUTING.md)
+- [Security](#security) → [SECURITY.md](SECURITY.md)
+- [Changelog](#changelog) → [CHANGELOG.md](CHANGELOG.md)
 - [License](#-license)
 - [Credits](#-credits)
 
@@ -348,54 +350,85 @@ Cache Hit: 72%
 | Response Cache | 100% (hit) | Low |
 | **Combined** | **70-90%** | — |
 
+> **Detailed TBM docs:** [docs/tbm.md](docs/tbm.md)
+
 ---
 
 ## Requirements
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| Node.js | ≥ 20.0 | Runtime |
-| npm | ≥ 10.0 | Package manager |
-| git | ≥ 2.0 | Version control |
-| Python | ≥ 3.10 | Local model serving (optional) |
+| Dependency | Minimum | Recommended | Purpose |
+|------------|---------|-------------|---------|
+| **Node.js** | 20.0 | 22.x LTS | Runtime |
+| **npm** | 10.0 | Latest | Package manager |
+| **Git** | 2.0 | Latest | Version control |
+| **Python** | 3.10 | 3.12+ | Local model serving (optional) |
+| **RAM** | 2 GB free | 4 GB+ | Agent + memory |
+| **Disk** | 500 MB | 2 GB+ | Skills + memory DB |
 
 ---
 
 ## Installation
 
-### Linux / macOS
+### Option 1: One-liner (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
+```
+
+Installs Node.js (via nvm if needed) + `snscoder` globally. Works on Linux, macOS, WSL2.
+
+### Option 2: npm Global Install
+
+```bash
+npm install -g snscoder
+snscoder
+```
+
+### Option 3: npx (Run without installing)
+
+```bash
+npx snscoder
+```
+
+### Option 4: Clone (Development)
 
 ```bash
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 npm install
+npm run dev    # watch mode
+# or
+npm start      # production
 ```
 
-### Windows (PowerShell)
+### Option 5: Windows (PowerShell)
 
 ```powershell
-git clone https://github.com/Reihantt6/sns-myagent.git
-cd sns-myagent
-npm install
+# Install Node.js from https://nodejs.org, then:
+npm install -g snscoder
+snscoder
 ```
 
-### Verify installation
+---
+
+### Verify Installation
 
 ```bash
-node --version   # Should be >= 20.0
-npm --version    # Should be >= 10.0
-npm start -- --help
+node --version     # >= 20.0
+npm --version      # >= 10.0
+snscoder --version # 0.1.0
 ```
 
-### Local LLM (Optional)
+### Local LLM (Optional, no API key needed)
 
 ```bash
-# Ollama
 curl -fsSL https://ollama.ai/install.sh | sh
 ollama pull llama3
 ```
 
 Or let the agent do it: run `snscoder` and say *"setup ollama with llama3"*.
+
+> **Detailed installation guide:** [docs/installation.md](docs/installation.md)
 
 ---
 
@@ -783,6 +816,8 @@ memory:
 
 No data sent to external servers except LLM API calls to your configured provider.
 
+> **Detailed memory docs:** [docs/memory.md](docs/memory.md)
+
 ---
 
 ## MCP Integration
@@ -1020,6 +1055,22 @@ chore:  maintenance tasks
 - TypeScript with strict mode
 - ESLint + Prettier (run `npm run lint` before committing)
 - Tests required for new tools
+
+---
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for:
+- Vulnerability reporting process
+- Security model (local-first, no telemetry)
+- API key handling
+- Best practices
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ---
 
