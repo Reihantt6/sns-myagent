@@ -93,8 +93,8 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 
 | Feature | SNS MyAgent | [Pi](https://github.com/earendil-works/pi) | [omp](https://github.com/can1357/oh-my-pi) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw/openclaw) |
 |---------|:-----------:|:--:|:--:|:--:|:--:|
-| Conversational configuration | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Self-configuring agent | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Conversational configuration | ✅ core design | ❌ | ❌ | ✅ | ❌ |
+| Self-configuring agent | ✅ core design | ❌ | ❌ | ✅ | ❌ |
 | Memory system | ✅ Mnemosyne/Mem0/LCM | ⚠️ via extension | ✅ mnemopi (SQLite+vector) | ✅ Mnemosyne | ⚠️ via extension |
 | Multi-provider LLM | ✅ | ✅ | ✅ (40+ providers) | ✅ | ✅ |
 | Tool calling | ✅ | ✅ | ✅ (32 built-in) | ✅ | ✅ |
@@ -114,10 +114,10 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 **Notes:**
 - **Pi** — memory, MCP, subagent tersedia via [marketplace extension](https://pi.dev/packages) (4000+ packages), bukan built-in. Harus install manual.
 - **omp** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited dari config tool lain (Cursor, Claude Code, dll). 32 tools built-in, LSP integration.
-- **Hermes** — full-featured agent framework, multi-platform. Bukan CLI coding agent.
+- **Hermes** — full-featured agent framework, multi-platform. Bisa self-configuring lewat chat, tapi fokus utama multi-platform + multi-user. Bukan single-user terminal agent.
 - **OpenClaw** — personal AI assistant, multi-platform + desktop apps. Single-user local-first.
 
-**Bottom line:** SNS MyAgent is the only terminal agent where you configure it by talking to it. Plus, no other agent has Token Budget Manager. Everything else requires manual setup.
+**Bottom line:** SNS MyAgent dan Hermes sama-sama bisa conversational configuration. Bedanya: SNS MyAgent purpose-built untuk single-user terminal — lightweight, Token Budget Manager, zero multi-platform overhead. Hermes bisa hal serupa tapi dalam paket multi-platform, multi-user yang lebih besar.
 
 ---
 
@@ -950,7 +950,7 @@ Hermes Agent is a multi-platform, multi-user agent framework with 20+ messaging 
 
 **Q: How is this different from other agent CLIs?**
 
-Most agent CLIs (Pi, omp, OpenClaw) require manual configuration. SNS MyAgent configures itself through conversation. Say "add MCP filesystem" and it installs, configures, and tests. No other agent does this.
+Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as Hermes Agent (its upstream), but purpose-built for single-user terminal use. Say "add MCP filesystem" and it installs, configures, and tests. Hermes can do this too, but comes with multi-platform, multi-user overhead.
 
 **Q: Can I use it without API keys (fully local)?**
 
