@@ -11,36 +11,45 @@
   ║                                                              ║
   ║            A G E N T                                         ║
   ║                                                              ║
-  ║    Personal AI agent for the terminal                        ║
+  ║    Configure your agent by talking to it.                    ║
   ║                                                              ║
   ╚══════════════════════════════════════════════════════════════╝
   </pre>
 </p>
 
 <p align="center">
-  <strong>Terminal-based AI agent with tool calling, multi-provider LLM support, and extensible skill system.</strong>
+  <strong>The personal AI agent that configures itself through conversation.</strong>
 </p>
 
 <p align="center">
-  <a href="#-quick-start"><img src="https://img.shields.io/badge/getting_started-quick_start-2ea44f?style=flat-square" alt="Quick Start"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/version-0.1.0-yellow?style=flat-square" alt="Version 0.1.0">
   <img src="https://img.shields.io/badge/node-%3E%3D20-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js >= 20">
   <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/getting_started-quick_start-2ea44f?style=flat-square" alt="Quick Start"></a>
 </p>
 
 ---
 
-**SNS MyAgent** is a personal, single-user AI agent CLI forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com). Stripped down and restructured for focused, local-first usage — no server infrastructure, no multi-user overhead.
+**SNS MyAgent** is a personal, single-user AI agent that **configures itself through conversation**. Tell it what you need — it installs, configures, and wires everything for you.
 
-Use it to run shell commands, search the web, read/write files, automate browsers, and chain complex tasks — all from your terminal, driven by any LLM provider you configure.
+No YAML editing. No config file archaeology. No setup guides.
+
+> *"Add MCP filesystem"* → agent installs the MCP server, writes config, verifies it works.
+>
+> *"Setup memory pakai Mnemosyne"* → agent initializes the three-tier memory system, creates the database, confirms.
+>
+> *"Switch to Claude"* → agent reconfigures provider, validates API key, ready.
+
+Forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com), stripped to a focused, local-first, single-user terminal agent.
 
 ---
 
 ## Table of Contents
 
-- [Features](#-features)
-- [Feature Comparison with Upstream](#-feature-comparison-with-upstream)
+- [Why SNS MyAgent?](#-why-sns-myagent)
+- [Competitive Landscape](#-competitive-landscape)
+- [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
 - [Requirements](#-requirements)
 - [Installation](#-installation)
@@ -50,54 +59,107 @@ Use it to run shell commands, search the web, read/write files, automate browser
 - [Tools](#-tools)
 - [Skills](#-skills)
 - [Memory System](#-memory-system)
+- [MCP Integration](#-mcp-integration)
 - [Development](#-development)
 - [Troubleshooting](#-troubleshooting)
 - [FAQ](#-faq)
-- [Changelog](#-changelog)
 - [Contributing](#-contributing)
 - [License](#-license)
 - [Credits](#-credits)
 
 ---
 
-## Features
+## Why SNS MyAgent?
 
-| Category | Capability |
-|----------|-----------|
-| **Multi-provider LLM** | OpenAI, Anthropic, local models (llama.cpp, vLLM, Ollama). Swap providers via config — no code changes. |
-| **Tool calling** | Terminal execution, web search, file read/write, browser automation. Agent selects tools per task. |
-| **Skill system** | Markdown-based skill files. Load domain-specific workflows dynamically (`/load <skill>`). |
-| **Persistent memory** | Mnemosyne memory layer with working/episodic/semantic tiers. Facts, preferences, and context persist across sessions. Full-text search (FTS5). |
-| **Terminal UI** | Colored output, markdown rendering, code block syntax highlighting, streaming responses. |
-| **Extensible** | Add custom tools, skills, and providers. Plugin architecture via config. |
-| **MCP integration** | Connect Model Context Protocol servers for additional tool sources. |
-| **Subagent delegation** | Spawn focused subagents for parallel task execution. |
-| **Cron scheduling** | Schedule recurring tasks with natural language time expressions. |
+Most AI agent CLIs expect you to configure them before they work. You read docs, edit YAML, set env vars, debug connection errors, repeat.
+
+SNS MyAgent inverts this. **The agent is the configuration interface.** You describe what you want in plain language; the agent does the plumbing.
+
+### What makes it different
+
+| Differentiator | Description |
+|----------------|-------------|
+| **Conversational Configuration** | Add MCP servers, switch memory backends, change providers — all through chat. No manual config editing. |
+| **Adaptive Memory** | Choose between Mnemosyne (three-tier), Mem0, or LCM — switchable through conversation. |
+| **Self-Configuring** | Agent manages its own setup. Install dependencies, write config files, verify connections. |
+| **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
+| **Lightweight** | Stripped from Hermes Agent. Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
 
 ---
 
-## Feature Comparison with Upstream
+## Competitive Landscape
 
-SNS MyAgent is derived from [Hermes Agent](https://github.com/NousResearch/hermes-agent) but focuses on single-user, local-first operation.
+| Feature | SNS MyAgent | [Pi](https://github.com/pi-ai/pi) | [omp](https://github.com/omp) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw) |
+|---------|:-----------:|:--:|:--:|:--:|:--:|
+| Conversational configuration | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Self-configuring agent | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Adaptive memory (Mnemosyne/Mem0/LCM) | ✅ | ❌ | ❌ | Mnemosyne only | ❌ |
+| Multi-provider LLM | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tool calling | ✅ | ✅ | ✅ | ✅ | ✅ |
+| MCP integration | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Skill system (markdown) | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Subagent delegation | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Cron scheduling | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Single-user focus | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ❌ |
+| Desktop app | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Multi-user / server deploy | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Open source | ✅ MIT | ✅ | ✅ | ✅ | ✅ |
 
-| Feature | Hermes Agent (Upstream) | SNS MyAgent |
-|---------|------------------------|-------------|
-| Multi-provider LLM (300+ models) | ✅ Via Nous Portal + OpenRouter | ✅ Direct provider config |
-| Multi-platform messaging (20+ platforms) | ✅ Telegram, Discord, Slack, WhatsApp, Signal, etc. | ❌ Removed — terminal only |
-| Desktop app (Windows, macOS) | ✅ | ❌ Not included |
-| 60+ built-in tools | ✅ | ✅ Core tools retained |
-| Skill system (agentskills.io compatible) | ✅ | ✅ |
-| Memory (Mnemosyne: working/episodic/semantic) | ✅ | ✅ |
-| Voice mode (CLI, Telegram, Discord) | ✅ | ❌ Removed |
-| MCP integration | ✅ | ✅ |
-| Cron scheduling | ✅ | ✅ |
-| Subagent delegation | ✅ | ✅ |
-| 6 deployment backends (Docker, SSH, Singularity, Modal, Daytona) | ✅ | ❌ Local only |
-| TUI with multiline, autocomplete, history | ✅ | ✅ |
-| Security (command approval, container isolation) | ✅ | ✅ Configurable approval |
-| Research (batch processing, trajectory export) | ✅ | ⚠️ Basic |
-| Context files (AGENTS.md, SOUL.md) | ✅ | ✅ |
-| Multi-user / server deployment | ✅ | ❌ Single-user focus |
+**Bottom line:** SNS MyAgent is the only terminal agent where you configure it by talking to it. Everything else requires manual setup.
+
+---
+
+## Conversational Configuration
+
+This is the core feature. Examples:
+
+### Add an MCP server
+
+```
+You: add MCP filesystem for /home/user/projects
+
+Agent: Installing @modelcontextprotocol/server-filesystem...
+       Writing config to config.yaml...
+       Testing connection... OK.
+       MCP filesystem server ready for /home/user/projects.
+```
+
+### Switch memory backend
+
+```
+You: switch memory to Mem0
+
+Agent: Configuring Mem0 as memory backend...
+       Updating config.yaml memory section...
+       Migrating existing memories... 12 entries transferred.
+       Memory backend switched to Mem0.
+```
+
+### Configure a new LLM provider
+
+```
+You: add anthropic with claude-sonnet
+
+Agent: Checking for ANTHROPIC_API_KEY... found.
+       Adding Anthropic provider to config...
+       Testing connection... OK.
+       Anthropic Claude Sonnet available. Use /provider anthropic to switch.
+```
+
+### Setup local model
+
+```
+You: setup ollama with llama3
+
+Agent: Checking Ollama installation... not found.
+       Installing Ollama...
+       Pulling llama3 model... done.
+       Writing custom provider config...
+       Local model ready. Use /provider custom to switch.
+```
+
+The agent understands context. "Setup memory" means initialize memory. "Add MCP" means install and configure. "Switch to Claude" means change provider. Natural language, not syntax.
 
 ---
 
@@ -122,11 +184,10 @@ graph TD
     C --> H[Skill Loader]
     H --> I[skills/*.md]
 
-    C --> J[Mnemosyne Memory]
-    J --> K1[Working Memory — session]
-    J --> K2[Episodic Memory — persistent]
-    J --> K3[Semantic Memory — persistent]
-    J --> K4[FTS5 Search Index]
+    C --> J[Memory System]
+    J --> J1[Mnemosyne — three-tier]
+    J --> J2[Mem0 — semantic]
+    J --> J3[LCM — latent context]
 
     C --> L[Subagent Pool]
     L --> M[Parallel Task Execution]
@@ -136,6 +197,13 @@ graph TD
 
     subgraph "MCP Layer"
         P[MCP Servers] --> F
+    end
+
+    subgraph "Self-Configuration"
+        C --> Q[Config Manager]
+        Q --> R[config.yaml]
+        Q --> S[Dependency Installer]
+        Q --> T[Connection Validator]
     end
 ```
 
@@ -180,31 +248,19 @@ npm start -- --help
 
 ### Local LLM (Optional)
 
-For local model inference without API keys:
-
 ```bash
-# Option A: Ollama
+# Ollama
 curl -fsSL https://ollama.ai/install.sh | sh
 ollama pull llama3
-
-# Option B: llama.cpp
-# See https://github.com/ggerganov/llama.cpp for build instructions
 ```
 
-Then configure a custom provider pointing to your local endpoint (see [Configuration Reference](#-configuration-reference)).
+Or let the agent do it: run `snscoder` and say *"setup ollama with llama3"*.
 
 ---
 
 ## Quick Start
 
-### 1. Configure an LLM provider
-
-```bash
-cp config.example.yaml config.yaml
-# Edit config.yaml — add at least one provider
-```
-
-### 2. Set API keys
+### 1. Set an API key
 
 ```bash
 export OPENAI_API_KEY="sk-..."
@@ -212,41 +268,44 @@ export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-Or create a `.env` file in the project root (git-ignored by default):
+Or create `.env` in project root:
 
 ```
 OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-### 3. Run
+### 2. Run
 
 ```bash
-# Interactive mode
 npm start
-
-# Single command mode
-npm start -- "list all TypeScript files in src/"
-
-# With specific provider
-npm start --provider anthropic "explain this codebase"
 ```
 
-### 4. Try it
+### 3. Let the agent configure itself
+
+```
+> add MCP filesystem for /home/user/projects
+> setup memory with Mnemosyne
+> switch to anthropic with claude-sonnet
+> load coding skill
+```
+
+### 4. Then use it
 
 ```
 > what files are in the current directory?
 > search the web for "node.js best practices 2025"
 > create a Python script that parses CSV files
-> /load coding
 > refactor the function in src/utils.ts to use async/await
+> /recall what was that database connection string?
 ```
+
+No `config.yaml` editing needed. The agent handles it.
 
 ---
 
 ## Configuration Reference
 
-### `config.yaml`
+Manual configuration still works. Config lives at `./config.yaml`.
 
 ```yaml
 # ── LLM Providers ─────────────────────────────────────────────
@@ -281,7 +340,7 @@ tools:
     blocked_commands:
       - rm -rf /
       - shutdown
-    require_approval: true   # Prompt before executing commands
+    require_approval: true
 
   browser:
     headless: true
@@ -292,6 +351,7 @@ tools:
 # ── Memory ────────────────────────────────────────────────────
 memory:
   enabled: true
+  backend: mnemosyne         # mnemosyne | mem0 | lcm
   db_path: ~/.sns-myagent/memory.db
   max_working_entries: 50
   auto_summarize: true
@@ -299,7 +359,7 @@ memory:
 # ── Skills ────────────────────────────────────────────────────
 skills:
   directory: ./skills
-  auto_load: []              # Skills to load on startup
+  auto_load: []
 
 # ── MCP ───────────────────────────────────────────────────────
 mcp:
@@ -378,7 +438,7 @@ npm start --version             # Show version
 
 ### Custom Tools
 
-Add a tool by creating a file in `src/tools/`:
+Create a file in `src/tools/`:
 
 ```typescript
 // src/tools/my-tool.ts
@@ -400,12 +460,11 @@ export const definition: ToolDefinition = {
 };
 
 export async function execute(args: { input: string }): Promise<string> {
-  // Implementation
   return `Result for: ${args.input}`;
 }
 ```
 
-Register it in `src/tools/index.ts`:
+Register in `src/tools/index.ts`:
 
 ```typescript
 import * as myTool from "./my-tool";
@@ -416,39 +475,26 @@ export const tools = [
 ];
 ```
 
-### MCP Tool Servers
-
-Connect external tool servers via Model Context Protocol:
-
-```yaml
-mcp:
-  servers:
-    - name: postgres
-      command: npx
-      args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
-    - name: github
-      command: npx
-      args: ["-y", "@modelcontextprotocol/server-github"]
-```
-
 ---
 
 ## Skills
 
-Skills are markdown files that inject context and instructions into the agent for specific task domains.
+Markdown files that inject domain context into the agent.
 
 ### Using Skills
 
 ```
-/load coding           # Load skills/coding.md or skills/coding/
+/load coding           # Load skills/coding.md
 /load web-scraper      # Load skills/web-scraper.md
-/skills                # List all available skills
-/unload coding         # Remove skill from context
+/skills                # List available
+/unload coding         # Remove from context
 ```
+
+Or through conversation: *"load the coding skill"*.
 
 ### Writing Skills
 
-Create a `.md` file in the `skills/` directory:
+Create `.md` file in `skills/`:
 
 ```markdown
 ---
@@ -486,15 +532,17 @@ skills/
 │   └── templates/      # Optional template files
 ```
 
-Skills are compatible with [agentskills.io](https://agentskills.io) format.
+Compatible with [agentskills.io](https://agentskills.io) format.
 
 ---
 
 ## Memory System
 
-SNS MyAgent uses **Mnemosyne** — a three-tier memory system backed by SQLite with FTS5 full-text search.
+Three memory backends, switchable through conversation or config.
 
-### Memory Tiers
+### Option 1: Mnemosyne (Default)
+
+Three-tier memory backed by SQLite + FTS5 full-text search.
 
 | Tier | Scope | Lifetime | Use Case |
 |------|-------|----------|----------|
@@ -502,47 +550,94 @@ SNS MyAgent uses **Mnemosyne** — a three-tier memory system backed by SQLite w
 | **Episodic** | Cross-session | Persistent | Conversation history, past events |
 | **Semantic** | Cross-session | Persistent | Facts, user preferences, learned patterns |
 
-### Commands
+### Option 2: Mem0
+
+Semantic memory layer. Good for extracting and recalling user preferences and facts.
+
+### Option 3: LCM (Latent Context Memory)
+
+Compressed context representation. Efficient for long-running sessions with large context.
+
+### Switching backends
+
+Through conversation:
+
+```
+> switch memory to Mem0
+```
+
+Or through config:
+
+```yaml
+memory:
+  backend: mem0  # mnemosyne | mem0 | lcm
+```
+
+### Memory Commands
 
 ```
 /recall <query>              # Full-text search across all memory tiers
 /memory add <fact>           # Store a new semantic memory
-/memory list                 # List recent memories (all tiers)
-/memory list --tier episodic # List only episodic memories
-/memory clear                # Clear working memory for this session
-/memory forget <id>          # Remove specific memory by ID
+/memory list                 # List recent memories
+/memory list --tier episodic # Filter by tier
+/memory clear                # Clear working memory
+/memory forget <id>          # Remove specific memory
 ```
 
-### How It Works
+### Data Location
 
-1. **Working memory** holds conversation context within a session. Automatically summarized when it grows too large.
-2. **Episodic memory** stores conversation snippets and events. Indexed for retrieval by recency and relevance.
-3. **Semantic memory** stores extracted facts and preferences. The agent learns your patterns over time.
+- Config: `./config.yaml`
+- Memory DB: `~/.sns-myagent/memory.db` (override with `SNS_MEMORY_DB`)
+- Logs: `~/.sns-myagent/logs/`
 
-Memory is stored at `~/.sns-myagent/memory.db` by default. Override with `SNS_MEMORY_DB` environment variable or `memory.db_path` in config.
+No data sent to external servers except LLM API calls to your configured provider.
+
+---
+
+## MCP Integration
+
+Connect Model Context Protocol servers for additional tools.
+
+### Through conversation
+
+```
+> add MCP postgres for postgresql://localhost/mydb
+> add MCP github
+```
+
+Agent installs the server package, writes config, verifies connection.
+
+### Manual config
+
+```yaml
+mcp:
+  servers:
+    - name: postgres
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+    - name: github
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-github"]
+```
+
+| Server | Package | Description |
+|--------|---------|-------------|
+| Filesystem | `@modelcontextprotocol/server-filesystem` | File operations on local directories |
+| PostgreSQL | `@modelcontextprotocol/server-postgres` | Database queries |
+| GitHub | `@modelcontextprotocol/server-github` | GitHub API (repos, issues, PRs) |
+| Slack | `@modelcontextprotocol/server-slack` | Slack workspace operations |
 
 ---
 
 ## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Build TypeScript
-npm run build
-
-# Watch mode (rebuild on change)
-npm run dev
-
-# Run tests
-npm test
-
-# Lint
-npm run lint
-
-# Type check
-npm run typecheck
+npm install          # Install dependencies
+npm run build        # Build TypeScript
+npm run dev          # Watch mode
+npm test             # Run tests
+npm run lint         # Lint
+npm run typecheck    # Type check
 ```
 
 ### Project Structure
@@ -561,13 +656,19 @@ sns-myagent/
 │   │   ├── file.ts           # File read/write
 │   │   ├── web-search.ts     # Web search
 │   │   └── browser.ts        # Browser automation
-│   ├── memory/               # Mnemosyne memory system
+│   ├── memory/               # Memory system
 │   │   ├── store.ts          # SQLite + FTS5 backend
 │   │   ├── working.ts        # Working memory
 │   │   ├── episodic.ts       # Episodic memory
-│   │   └── semantic.ts       # Semantic memory
+│   │   ├── semantic.ts       # Semantic memory
+│   │   ├── mem0.ts           # Mem0 adapter
+│   │   └── lcm.ts            # LCM adapter
 │   ├── skills/               # Skill loader
 │   │   └── loader.ts         # Markdown skill parser
+│   ├── config/               # Self-configuration engine
+│   │   ├── manager.ts        # Config read/write
+│   │   ├── installer.ts      # Dependency installer
+│   │   └── validator.ts      # Connection validator
 │   ├── cli/                  # Terminal UI
 │   │   ├── repl.ts           # Interactive REPL
 │   │   ├── renderer.ts       # Markdown/code rendering
@@ -594,14 +695,13 @@ sns-myagent/
 Error: Invalid API key for provider 'openai'
 ```
 
-**Fix:** Verify environment variable is set and not expired:
+Fix: verify env var is set:
 
 ```bash
 echo $OPENAI_API_KEY
-# Should print sk-... (not empty)
 ```
 
-If using `.env` file, ensure it's in the project root and properly formatted (no spaces around `=`, no quotes needed).
+Or tell the agent: *"reconfigure openai, my API key is sk-..."*
 
 ### Model Not Found
 
@@ -609,12 +709,9 @@ If using `.env` file, ensure it's in the project root and properly formatted (no
 Error: Model 'gpt-4' not available for provider 'openai'
 ```
 
-**Fix:** Model names are provider-specific. Verify exact model name:
+Fix: check exact model name in `config.yaml`. OpenAI uses `gpt-4o`, `gpt-4-turbo`. Anthropic uses `claude-sonnet-4-20250514`.
 
-- OpenAI: `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`
-- Anthropic: `claude-sonnet-4-20250514`, `claude-3-5-haiku-20241022`
-
-Check `config.yaml` for typos.
+Or: *"switch to gpt-4o"*
 
 ### Permission Denied (Terminal Tool)
 
@@ -622,19 +719,7 @@ Check `config.yaml` for typos.
 Error: Command 'rm' not permitted
 ```
 
-**Fix:** Add to `tools.terminal.allowed_commands` in `config.yaml`:
-
-```yaml
-tools:
-  terminal:
-    allowed_commands:
-      - ls
-      - cat
-      - git
-      - rm      # Added
-```
-
-Or set `require_approval: false` to approve commands interactively.
+Fix: add to `tools.terminal.allowed_commands` in config, or tell agent: *"allow rm command"*
 
 ### Connection Refused (Local Model)
 
@@ -642,15 +727,14 @@ Or set `require_approval: false` to approve commands interactively.
 Error: connect ECONNREFUSED 127.0.0.1:11434
 ```
 
-**Fix:** Ensure your local model server is running:
+Fix: ensure local model server running:
 
 ```bash
-# For Ollama
 ollama serve
-
-# Verify
 curl http://localhost:11434/api/tags
 ```
+
+Or: *"restart ollama"*
 
 ### Memory Database Locked
 
@@ -658,15 +742,10 @@ curl http://localhost:11434/api/tags
 Error: SQLITE_BUSY: database is locked
 ```
 
-**Fix:** Another instance may be running. Kill it:
+Fix: another instance running. Kill it:
 
 ```bash
 pkill -f sns-myagent
-```
-
-Or delete the lock file:
-
-```bash
 rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 ```
 
@@ -676,11 +755,15 @@ rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 
 **Q: How is this different from Hermes Agent?**
 
-SNS MyAgent removes multi-platform messaging, voice mode, desktop app, and multi-deployment backends. It keeps the core agent loop, tools, skills, and memory — optimized for single-user terminal usage.
+Hermes Agent is a multi-platform, multi-user agent framework with 20+ messaging integrations, desktop app, voice mode, and 6 deployment backends. SNS MyAgent strips all that. Single user, terminal only, with conversational configuration — the agent manages its own setup.
+
+**Q: How is this different from other agent CLIs?**
+
+Most agent CLIs (Pi, omp, OpenClaw) require manual configuration. SNS MyAgent configures itself through conversation. Say "add MCP filesystem" and it installs, configures, and tests. No other agent does this.
 
 **Q: Can I use it without API keys (fully local)?**
 
-Yes. Configure Ollama or llama.cpp as a custom provider with `api_key: none`. Set `base_url` to your local endpoint.
+Yes. Tell the agent: *"setup ollama with llama3"*. It installs Ollama, pulls the model, configures the provider. Or manually set `custom` provider with `api_key: none`.
 
 **Q: Where is my data stored?**
 
@@ -688,44 +771,37 @@ Yes. Configure Ollama or llama.cpp as a custom provider with `api_key: none`. Se
 - Memory: `~/.sns-myagent/memory.db`
 - Logs: `~/.sns-myagent/logs/`
 
-No data is sent to external servers except LLM API calls to your configured provider.
+No data sent to external servers except LLM API calls.
 
 **Q: Can I add my own skills?**
 
-Yes. Create `.md` files in `skills/`. See [Skills](#-skills) section for format.
+Yes. Create `.md` files in `skills/`. See [Skills](#-skills).
 
 **Q: How do I switch providers mid-session?**
 
-Use `/provider <name>` in interactive mode. Example: `/provider anthropic`.
-
-**Q: Does it support streaming responses?**
-
-Yes. Enabled by default (`ui.streaming: true` in config). Responses render incrementally as the LLM generates them.
+`/provider <name>` or say *"switch to anthropic"*.
 
 **Q: Can I use multiple providers simultaneously?**
 
-You set a default provider but can switch per-command (`--provider`) or mid-session (`/provider`). Only one provider is active at a time.
+One active at a time. Switch per-command (`--provider`) or mid-session.
 
----
+**Q: Does it support streaming responses?**
 
-## Changelog
+Yes. Enabled by default (`ui.streaming: true`).
 
-### v0.1.0 (2025-06-23)
+**Q: Which memory backend should I use?**
 
-- Initial fork from [Hermes Agent](https://github.com/NousResearch/hermes-agent)
-- Removed multi-platform messaging integrations
-- Removed voice mode
-- Removed desktop app
-- Removed multi-deployment backends (Docker, SSH, Singularity, Modal, Daytona)
-- Restructured for single-user CLI focus
-- Simplified configuration
-- Retained core tools, skills, memory, MCP, cron, and subagent systems
+- **Mnemosyne** (default): best general-purpose. Three tiers, full-text search.
+- **Mem0**: better for preference/fact extraction from conversations.
+- **LCM**: better for long sessions where context window is a constraint.
+
+Switch any time: *"switch memory to Mem0"*.
 
 ---
 
 ## Contributing
 
-This is a personal project. Contributions are welcome but may be selectively reviewed.
+This is a personal project. Contributions welcome, selectively reviewed.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-change`)
@@ -754,7 +830,7 @@ chore:  maintenance tasks
 
 ## License
 
-[MIT License](./LICENSE) — see [LICENSE](./LICENSE) for full text.
+[MIT License](./LICENSE).
 
 Based on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com).
 
