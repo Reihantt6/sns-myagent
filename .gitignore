@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Config (local)
+.env
+.env.local
+.sns-myagent/config.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Internal dev tracking (not for GitHub)
+KANBAN.md
+ROADMAP-INTERNAL.md
+TODO-INTERNAL.md
+HANDOFF*.md
+_HANDOFF_*.md
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Binary
+*.tgz
