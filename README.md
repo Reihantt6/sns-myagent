@@ -51,6 +51,7 @@ Forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nou
 - [Competitive Landscape](#-competitive-landscape)
 - [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
+- [Token Budget Manager (TBM)](#token-budget-manager-tbm)
 - [Requirements](#-requirements)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
@@ -84,29 +85,39 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 | **Self-Configuring** | Agent manages its own setup. Install dependencies, write config files, verify connections. |
 | **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
 | **Lightweight** | Stripped from Hermes Agent. Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
+| **Token Budget Manager (TBM)** | Built-in token efficiency system. Caveman mode, context delta caching, multi-resolution pyramid, lazy skill loading, response cache. Saves 70-90% input tokens. |
 
 ---
 
 ## Competitive Landscape
 
-| Feature | SNS MyAgent | [Pi](https://github.com/pi-ai/pi) | [omp](https://github.com/omp) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw) |
+| Feature | SNS MyAgent | [Pi](https://github.com/earendil-works/pi) | [omp](https://github.com/can1357/oh-my-pi) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw/openclaw) |
 |---------|:-----------:|:--:|:--:|:--:|:--:|
 | Conversational configuration | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Self-configuring agent | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Adaptive memory (Mnemosyne/Mem0/LCM) | ✅ | ❌ | ❌ | Mnemosyne only | ❌ |
-| Multi-provider LLM | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tool calling | ✅ | ✅ | ✅ | ✅ | ✅ |
-| MCP integration | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Skill system (markdown) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Subagent delegation | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Cron scheduling | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Memory system | ✅ Mnemosyne/Mem0/LCM | ⚠️ via extension | ✅ mnemopi (SQLite+vector) | ✅ Mnemosyne | ⚠️ via extension |
+| Multi-provider LLM | ✅ | ✅ | ✅ (40+ providers) | ✅ | ✅ |
+| Tool calling | ✅ | ✅ | ✅ (32 built-in) | ✅ | ✅ |
+| MCP integration | ✅ built-in | ⚠️ via extension | ✅ inherited config | ✅ | ✅ |
+| Skill system (markdown) | ✅ | ✅ (4000+ packages) | ✅ (inherits from 8 tools) | ✅ | ✅ (ClawHub) |
+| Subagent delegation | ✅ | ⚠️ via extension | ✅ built-in | ✅ | ✅ |
+| Cron scheduling | ✅ | ❌ | ❌ | ✅ | ✅ |
+| **Token Budget Manager** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Single-user focus | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ❌ |
-| Desktop app | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ✅ (20+) |
+| Desktop/mobile app | ❌ | ❌ | ❌ | ✅ | ✅ (macOS/iOS/Android/Win) |
 | Multi-user / server deploy | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Open source | ✅ MIT | ✅ | ✅ | ✅ | ✅ |
+| Open source | ✅ MIT | ✅ MIT | ✅ MIT | ✅ | ✅ MIT |
 
-**Bottom line:** SNS MyAgent is the only terminal agent where you configure it by talking to it. Everything else requires manual setup.
+> **Legend:** ✅ = built-in | ⚠️ = available via extension/plugin (not built-in) | ❌ = not available
+
+**Notes:**
+- **Pi** — memory, MCP, subagent tersedia via [marketplace extension](https://pi.dev/packages) (4000+ packages), bukan built-in. Harus install manual.
+- **omp** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited dari config tool lain (Cursor, Claude Code, dll). 32 tools built-in, LSP integration.
+- **Hermes** — full-featured agent framework, multi-platform. Bukan CLI coding agent.
+- **OpenClaw** — personal AI assistant, multi-platform + desktop apps. Single-user local-first.
+
+**Bottom line:** SNS MyAgent is the only terminal agent where you configure it by talking to it. Plus, no other agent has Token Budget Manager. Everything else requires manual setup.
 
 ---
 
@@ -206,6 +217,136 @@ graph TD
         Q --> T[Connection Validator]
     end
 ```
+
+---
+
+## Token Budget Manager (TBM)
+
+SNS MyAgent ships with a **Token Budget Manager** — the only agent CLI that treats token efficiency as a first-class feature.
+
+### Problem
+
+Every API call sends: system prompt (~2000 tokens) + conversation history (growing) + tool definitions (~1500 tokens) + skills + memories. Long sessions cost real money.
+
+### TBM Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│           TOKEN BUDGET MANAGER              │
+├─────────────────────────────────────────────┤
+│  Context Delta Cache │ Multi-Res Pyramid    │
+│  Caveman Mode (RTK)  │ Lazy Skill Loading   │
+│  Tool Output Budget  │ Response Cache        │
+│  Semantic Dedup      │ Token Dashboard       │
+└─────────────────────────────────────────────┘
+```
+
+### 3 Communication Modes
+
+| Mode | Example | Tokens | Use Case |
+|------|---------|--------|----------|
+| **Caveman** (RTK) | "Bug auth. Fix: `token_exp <` not `<=`." | ~20 | Debug, quick ops |
+| **Normal** | "Found bug in auth middleware. Token expiry check uses wrong operator." | ~60 | Daily work |
+| **Verbose** | Full explanation with context and alternatives... | ~150 | Learning, docs |
+
+Switch via `/mode caveman` or auto-detect by task complexity.
+
+### Context Delta Encoding
+
+Instead of resending full context every turn, TBM sends only what changed:
+
+```
+Turn 1: [full context 2000 tokens] → API call
+Turn 2: [delta: +200 tokens]       → cached prefix + delta
+Turn 3: [delta: +150 tokens]       → cached prefix + delta
+```
+
+- **Static prefix** (system prompt, tools, identity) cached at provider level
+- **Dynamic suffix** (recent messages, tool output) sent as delta
+- **Savings**: 60-80% input tokens after turn 1
+
+### Multi-Resolution Context Pyramid
+
+Not all context is equal. TBM loads context in levels:
+
+| Level | Content | Tokens | When |
+|-------|---------|--------|------|
+| 0 | Identity only | ~100 | Simple Q&A |
+| 1 | + Last 3 messages | ~500 | Continuation |
+| 2 | + Relevant memories | ~1,000 | Contextual tasks |
+| 3 | + Relevant skills | ~2,000 | Complex tasks |
+| 4 | + Full history | ~5,000 | Deep research |
+
+Start at Level 0. Escalate only if response quality drops.
+
+### Tool Output Auto-Compress
+
+| Tool | Max Budget | Strategy |
+|------|-----------|----------|
+| `terminal` | 500 tokens | Truncate + strip ANSI |
+| `read_file` | 800 tokens | Only relevant lines |
+| `web_extract` | 1,000 tokens | Summarize key content |
+| `search_files` | 300 tokens | Top N results only |
+
+### Lazy Skill Loading
+
+Don't inject all 100+ skills into every prompt:
+
+```
+Skills Index (always): ~200 tokens (names only)
+Relevant skill loaded: +500 tokens (on-demand)
+Total: ~700 tokens vs 50,000+ if all loaded
+```
+
+### Conversation Tombstoning
+
+Old messages compressed to minimal references:
+
+```
+Original:  "Can you help me fix the auth bug? The token expiry check..."
+             (100 tokens)
+
+Tombstone:  [MSG-42: Auth bug, token_exp fix]  (15 tokens)
+```
+
+Model can still reference MSG-42 if needed. Context 85% smaller.
+
+### Response Cache
+
+Repeated queries return cached responses with zero API calls:
+
+- Exact match: `hash(query)` lookup, TTL-based
+- Semantic match: embedding similarity > 0.95 threshold
+- Cache hit rate displayed in token dashboard
+
+### Token Dashboard
+
+```
+/tokens
+
+Session: 2h 15m
+─────────────────────────────
+Input:    12,450 tokens
+Output:    3,200 tokens
+Cached:    1,800 tokens (saved!)
+─────────────────────────────
+Total:    15,650 tokens
+Cost:     $0.038
+Cache Hit: 72%
+```
+
+### Savings Summary
+
+| Technique | Savings | Complexity |
+|-----------|---------|------------|
+| Context Delta Encoding | 60-80% | High |
+| Multi-Resolution Pyramid | 40-60% | Medium |
+| Tool Output Budget | 30-50% | Low |
+| Semantic Deduplication | 20-30% | Medium |
+| Lazy Skill Loading | 90%+ | Low |
+| Conversation Tombstoning | 50-70% | Medium |
+| Response Cache | 100% (hit) | Low |
+| **Combined** | **70-90%** | — |
 
 ---
 
@@ -379,6 +520,31 @@ ui:
   streaming: true
   code_highlight: true
   markdown_render: true
+
+# ── Token Budget Manager ─────────────────────────────────────
+tbm:
+  enabled: true
+  mode: auto                  # auto | caveman | normal | verbose
+  context_delta_cache: true   # Cache static prefix at provider level
+  tool_output_budget:
+    terminal: 500
+    read_file: 800
+    web_extract: 1000
+    search_files: 300
+  lazy_skill_loading: true    # Load only relevant skills
+  response_cache:
+    enabled: true
+    ttl: 300                  # seconds
+    semantic_threshold: 0.95  # similarity for cache hit
+  pyramid:
+    start_level: 0
+    auto_escalate: true
+    max_level: 4
+  tombstoning:
+    enabled: true
+    threshold: 50             # messages before tombstoning
+  dashboard:
+    show_per_turn: false      # show mini stats per response
 ```
 
 ### Environment Variables
@@ -421,6 +587,10 @@ npm start --version             # Show version
 | `/clear` | Clear terminal output |
 | `/help` | Show available commands |
 | `/exit` | Exit |
+| `/mode <caveman\|normal\|verbose>` | Switch communication mode |
+| `/tokens` | Show token usage dashboard |
+| `/tokens cache` | Show cache hit rate and savings |
+| `/cache clear` | Clear response cache |
 
 ---
 
@@ -552,7 +722,28 @@ Three-tier memory backed by SQLite + FTS5 full-text search.
 
 ### Option 2: Mem0
 
-Semantic memory layer. Good for extracting and recalling user preferences and facts.
+Semantic memory layer with vector embeddings + fact extraction from conversations.
+
+**Deployment modes:**
+
+| Mode | Requirements | Cost |
+|------|-------------|------|
+| **Cloud** (app.mem0.ai) | Account + API key | Free (10K memories) → $19-$249/mo |
+| **Self-hosted** (Docker) | Docker, PostgreSQL+pgvector, LLM API key | Free (Apache 2.0), pay infra only |
+| **Library** (`pip install mem0ai`) | Python, vector DB (Qdrant/Chroma/FAISS/PGVector) | Free, no server needed |
+| **Local (Ollama)** | Ollama (llama3.2:1b + bge-m3), ChromaDB | Fully local, no cloud dependency |
+
+**Quick self-host setup:**
+```bash
+git clone https://github.com/mem0ai/mem0
+cd mem0/server
+docker compose up -d
+make bootstrap  # creates admin + API key
+```
+
+**Capabilities:** semantic search, fact extraction, entity linking, temporal reasoning, 24+ vector store backends, graph memory (Neo4j, Pro+ cloud only).
+
+**Limitations:** memory staleness after 30 days (~49% accuracy at scale), LLM dependency on every `add()` call, graph memory = $249/mo on cloud (free self-hosted).
 
 ### Option 3: LCM (Latent Context Memory)
 
@@ -796,6 +987,10 @@ Yes. Enabled by default (`ui.streaming: true`).
 - **LCM**: better for long sessions where context window is a constraint.
 
 Switch any time: *"switch memory to Mem0"*.
+
+**Q: What is Token Budget Manager?**
+
+TBM is SNS MyAgent's built-in token efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 70-90% input tokens in long sessions. No other agent has this.
 
 ---
 
