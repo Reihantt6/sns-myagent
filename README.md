@@ -52,6 +52,7 @@ Forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nou
 - [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
 - [Token Budget Manager (TBM)](#token-budget-manager-tbm) → [Detailed docs](docs/tbm.md)
+- [Project Timeline](#project-timeline)
 - [Requirements](#-requirements)
 - [Installation](#-installation) → [Detailed guide](docs/installation.md)
 - [Quick Start](#-quick-start)
@@ -351,6 +352,38 @@ Cache Hit: 72%
 | **Combined** | **70-90%** | — |
 
 > **Detailed TBM docs:** [docs/tbm.md](docs/tbm.md)
+
+---
+
+## Project Timeline
+
+> **Start:** 2026-06-23 | **Target MVP:** ~2026-07-21 | **Status:** Phase 0 ✅ Complete
+
+| Phase | Description | Duration | Target Date | Status |
+|-------|------------|----------|-------------|--------|
+| **0** | Planning & Docs | 1 day | 2026-06-23 | ✅ Done |
+| **1** | Fork + Scaffold | 3-5 days | 2026-06-28 | ⏳ Pending |
+| **2** | Core Agent + Telegram | 1 week | 2026-07-05 | ⏳ Pending |
+| **3** | Memory + Skills | 1 week | 2026-07-12 | ⏳ Pending |
+| **4** | Multi-Agent + Advanced | 1 week | 2026-07-19 | ⏳ Pending |
+| **5** | Polish + Publish | 3-5 days | 2026-07-21 | ⏳ Pending |
+
+### June 2026
+- [x] **2026-06-23**: PRD v2.0, README, all docs, package.json, install.sh, CI/CD template
+
+### July 2026 (planned)
+- [ ] Week 1 (Jun 24-28): Fork Pi Agent, rebrand, basic CLI, config system
+- [ ] Week 2 (Jun 29-Jul 5): Provider integration, chat loop, Telegram bot
+- [ ] Week 3 (Jul 6-12): SQLite memory, skill loader, context DSL, TBM
+- [ ] Week 4 (Jul 13-19): Multi-agent, ensemble, session DAG
+- [ ] Week 5 (Jul 20-21): npm publish, binaries, Docker, final docs
+
+### Post-MVP
+- Agent-as-a-Service (HTTP/gRPC)
+- Visual Regression (Playwright)
+- Policy-as-Code (OPA)
+- Observability (OpenTelemetry)
+- Skills marketplace
 
 ---
 
