@@ -31,17 +31,17 @@
 
 ---
 
-**SNS MyAgent** is a personal, single-user AI agent that **configures itself through conversation**. Tell it what you need — it installs, configures, and wires everything for you.
+**SNS MyAgent** is a personal, single-user AI agent that **configures itself through conversation**. Describe what you need; the agent installs, configures, and wires everything for you.
 
-No YAML editing. No config file archaeology. No setup guides.
+No YAML editing. No config archaeology. No setup guides.
 
-> *"Add MCP filesystem"* → agent installs the MCP server, writes config, verifies it works.
+> *"Add MCP filesystem"* — the agent installs the server, writes config, verifies the connection.
 >
-> *"Setup memory pakai Mnemosyne"* → agent initializes the three-tier memory system, creates the database, confirms.
+> *"Set up memory with Mnemosyne"* — the agent initializes the three-tier memory system, creates the database, and confirms.
 >
-> *"Switch to Claude"* → agent reconfigures provider, validates API key, ready.
+> *"Switch to Claude"* — the agent reconfigures the provider, validates the API key, and is ready.
 
-Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem), stripped to a focused, local-first, single-user terminal agent.
+Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem) and stripped to a focused, local-first, single-user terminal agent.
 
 ---
 
@@ -75,30 +75,30 @@ Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem)
 
 ## Why SNS MyAgent?
 
-Most AI agent CLIs expect you to configure them before they work. You read docs, edit YAML, set env vars, debug connection errors, repeat.
+Most AI agent CLIs expect the user to configure them before they work. Read the docs, edit YAML, set environment variables, debug connection errors, and repeat.
 
-SNS MyAgent inverts this. **The agent is the configuration interface.** You describe what you want in plain language; the agent does the plumbing.
+SNS MyAgent inverts that flow. **The agent is the configuration interface.** Describe what you want in plain language; the agent handles the plumbing.
 
-### What makes it different
+### What Makes It Different
 
 | Differentiator | Description |
 |----------------|-------------|
 | **Conversational Configuration** | Add MCP servers, switch memory backends, change providers — all through chat. No manual config editing. |
-| **Adaptive Memory** | Choose between Mnemosyne (three-tier), Mem0, or LCM — switchable through conversation. |
-| **Self-Configuring** | Agent manages its own setup. Install dependencies, write config files, verify connections. |
+| **Adaptive Memory** | Choose between Mnemosyne (three-tier), Mem0, or mnemopi (SQLite + vector) — switchable through conversation. |
+| **Self-Configuring** | The agent manages its own setup: installs dependencies, writes config files, and verifies connections. |
 | **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
 | **Lightweight** | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
-| **Token Budget Manager (TBM)** | Built-in token efficiency system. Caveman mode, context delta caching, multi-resolution pyramid, lazy skill loading, response cache. Saves 70-90% input tokens. |
+| **Token Budget Manager (TBM)** | Built-in token-efficiency system. Context delta caching, multi-resolution pyramid, lazy skill loading, response cache. Saves 60-80% input tokens on long sessions. |
 
 ---
 
 ## Competitive Landscape
 
-| Feature | SNS MyAgent | [Pi](https://github.com/earendil-works/pi) | [omp](https://github.com/can1357/oh-my-pi) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw/openclaw) |
+| Feature | SNS MyAgent | [Pi](https://github.com/earendil-works/pi) | [oh-my-pi](https://github.com/can1357/oh-my-pi) | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | [OpenClaw](https://github.com/openclaw/openclaw) |
 |---------|:-----------:|:--:|:--:|:--:|:--:|
-| Conversational configuration | ✅ core design | ❌ | ❌ | ✅ | ❌ |
-| Self-configuring agent | ✅ core design | ❌ | ❌ | ✅ | ❌ |
-| Memory system | ✅ Mnemosyne/Mem0/LCM | ⚠️ via extension | ✅ mnemopi (SQLite+vector) | ✅ Mnemosyne | ⚠️ via extension |
+| Conversational configuration | ✅ core design | ❌ | ✅ | ✅ | ❌ |
+| Self-configuring agent | ✅ core design | ❌ | ✅ | ✅ | ❌ |
+| Memory system | ✅ Mnemosyne / Mem0 / mnemopi | ⚠️ via extension | ✅ mnemopi (SQLite + vector) | ✅ Mnemosyne | ⚠️ via extension |
 | Multi-provider LLM | ✅ | ✅ | ✅ (40+ providers) | ✅ | ✅ |
 | Tool calling | ✅ | ✅ | ✅ (32 built-in) | ✅ | ✅ |
 | MCP integration | ✅ built-in | ⚠️ via extension | ✅ inherited config | ✅ | ✅ |
@@ -108,19 +108,20 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 | **Token Budget Manager** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Single-user focus | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ✅ (20+) |
-| Desktop/mobile app | ❌ | ❌ | ❌ | ✅ | ✅ (macOS/iOS/Android/Win) |
+| Desktop / mobile app | ❌ | ❌ | ❌ | ✅ | ✅ (macOS/iOS/Android/Win) |
 | Multi-user / server deploy | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Open source | ✅ MIT | ✅ MIT | ✅ MIT | ✅ | ✅ MIT |
 
-> **Legend:** ✅ = built-in | ⚠️ = available via extension/plugin (not built-in) | ❌ = not available
+> **Legend:** ✅ = built-in · ⚠️ = available via extension/plugin (not built-in) · ❌ = not available
 
-**Notes:**
-- **Pi** — memory, MCP, subagent tersedia via [marketplace extension](https://pi.dev/packages) (4000+ packages), bukan built-in. Harus install manual.
-- **omp** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited dari config tool lain (Cursor, Claude Code, dll). 32 tools built-in, LSP integration.
-- **oh-my-pi / Pi Agent** — TypeScript-based agent framework, lightweight. Bisa self-configuring lewat chat, tapi fokus utama multi-platform + multi-user. Bukan single-user terminal agent.
-- **OpenClaw** — personal AI assistant, multi-platform + desktop apps. Single-user local-first.
+### Notes
 
-**Bottom line:** SNS MyAgent dan oh-my-pi/Pi Agent sama-sama bisa conversational configuration. Bedanya: SNS MyAgent purpose-built untuk single-user terminal — lightweight, Token Budget Manager, zero multi-platform overhead. oh-my-pi/Pi Agent bisa hal serupa tapi dalam paket multi-platform, multi-user yang lebih besar.
+- **Pi** — memory, MCP, and subagent are available through the [marketplace extension](https://pi.dev/packages) (4000+ packages), not built-in. Manual installation required.
+- **oh-my-pi** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited from other config tools (Cursor, Claude Code, etc.). 32 built-in tools, LSP integration.
+- **Hermes Agent** — TypeScript-based agent framework with multi-platform and multi-user focus. Not a single-user terminal agent.
+- **OpenClaw** — Personal AI assistant with multi-platform and desktop apps. Single-user and local-first.
+
+**Bottom line:** SNS MyAgent and oh-my-pi share the conversational-configuration model. SNS MyAgent is purpose-built for single-user terminal use — lightweight, with Token Budget Manager, and zero multi-platform overhead. oh-my-pi delivers similar capabilities inside a larger multi-platform, multi-user package.
 
 ---
 
@@ -161,7 +162,7 @@ Agent: Checking for ANTHROPIC_API_KEY... found.
        Anthropic Claude Sonnet available. Use /provider anthropic to switch.
 ```
 
-### Setup local model
+### Set up local model
 
 ```
 You: setup ollama with llama3
@@ -201,7 +202,7 @@ graph TD
     C --> J[Memory System]
     J --> J1[Mnemosyne — three-tier]
     J --> J2[Mem0 — semantic]
-    J --> J3[LCM — latent context]
+    J --> J3[mnemopi — SQLite + vector]
 
     C --> L[Subagent Pool]
     L --> M[Parallel Task Execution]
@@ -248,8 +249,8 @@ Every API call sends: system prompt (~2000 tokens) + conversation history (growi
 
 | Mode | Example | Tokens | Use Case |
 |------|---------|--------|----------|
-| **Caveman** (RTK) | "Bug auth. Fix: `token_exp <` not `<=`." | ~20 | Debug, quick ops |
-| **Normal** | "Found bug in auth middleware. Token expiry check uses wrong operator." | ~60 | Daily work |
+| **Caveman** (RTK) | `Bug auth. Fix: token_exp < not <=.` | ~20 | Debug, quick ops |
+| **Normal** | `Found bug in auth middleware. Token expiry check uses wrong operator.` | ~60 | Daily work |
 | **Verbose** | Full explanation with context and alternatives... | ~150 | Learning, docs |
 
 Switch via `/mode caveman` or auto-detect by task complexity.
@@ -293,7 +294,7 @@ Start at Level 0. Escalate only if response quality drops.
 
 ### Lazy Skill Loading
 
-Don't inject all 100+ skills into every prompt:
+Do not inject all 100+ skills into every prompt:
 
 ```
 Skills Index (always): ~200 tokens (names only)
@@ -303,16 +304,15 @@ Total: ~700 tokens vs 50,000+ if all loaded
 
 ### Conversation Tombstoning
 
-Old messages compressed to minimal references:
+Old messages are compressed to minimal references:
 
 ```
-Original:  "Can you help me fix the auth bug? The token expiry check..."
-             (100 tokens)
+Original:  "Can you help me fix the auth bug? The token expiry check..." (100 tokens)
 
-Tombstone:  [MSG-42: Auth bug, token_exp fix]  (15 tokens)
+Tombstone: [MSG-42: Auth bug, token_exp fix] (15 tokens)
 ```
 
-Model can still reference MSG-42 if needed. Context 85% smaller.
+The model can still reference MSG-42 if needed. Context is 85% smaller.
 
 ### Response Cache
 
@@ -320,7 +320,7 @@ Repeated queries return cached responses with zero API calls:
 
 - Exact match: `hash(query)` lookup, TTL-based
 - Semantic match: embedding similarity > 0.95 threshold
-- Cache hit rate displayed in token dashboard
+- Cache hit rate displayed in the token dashboard
 
 ### Token Dashboard
 
@@ -349,7 +349,7 @@ Cache Hit: 72%
 | Lazy Skill Loading | 90%+ | Low |
 | Conversation Tombstoning | 50-70% | Medium |
 | Response Cache | 100% (hit) | Low |
-| **Combined** | **70-90%** | — |
+| **Combined** | **60-80%** | — |
 
 > **Detailed TBM docs:** [docs/tbm.md](docs/tbm.md)
 
@@ -357,28 +357,31 @@ Cache Hit: 72%
 
 ## Project Timeline
 
-> **Start:** 2026-06-23 | **Target MVP:** ~2026-07-21 | **Status:** Phase 0 ✅ Complete
+> **Start:** 2026-06-23 · **Target MVP:** ~2026-07-21 · **Status:** Phase 1 ✅ Complete
 
 | Phase | Description | Duration | Target Date | Status |
 |-------|------------|----------|-------------|--------|
 | **0** | Planning & Docs | 1 day | 2026-06-23 | ✅ Done |
-| **1** | Fork + Scaffold | 3-5 days | 2026-06-28 | ⏳ Pending |
+| **1** | Fork + Scaffold + CLI + Terminal UI | 3-5 days | 2026-06-28 | ✅ Done |
 | **2** | Core Agent + Telegram | 1 week | 2026-07-05 | ⏳ Pending |
 | **3** | Memory + Skills | 1 week | 2026-07-12 | ⏳ Pending |
 | **4** | Multi-Agent + Advanced | 1 week | 2026-07-19 | ⏳ Pending |
 | **5** | Polish + Publish | 3-5 days | 2026-07-21 | ⏳ Pending |
 
 ### June 2026
+
 - [x] **2026-06-23**: PRD v2.0, README, all docs, package.json, install.sh, CI/CD template
+- [x] **2026-06-24**: Forked Pi Agent source, rebranded to `snscoder`, config system + terminal UI scaffolded
 
 ### July 2026 (planned)
-- [ ] Week 1 (Jun 24-28): Fork Pi Agent, rebrand, basic CLI, config system
-- [ ] Week 2 (Jun 29-Jul 5): Provider integration, chat loop, Telegram bot
-- [ ] Week 3 (Jul 6-12): SQLite memory, skill loader, context DSL, TBM
-- [ ] Week 4 (Jul 13-19): Multi-agent, ensemble, session DAG
-- [ ] Week 5 (Jul 20-21): bun/npm publish, binaries, Docker, final docs
+
+- [ ] Week 2 (Jun 29 – Jul 5): Provider integration, chat loop, Telegram bot
+- [ ] Week 3 (Jul 6 – 12): SQLite memory, skill loader, context DSL, TBM
+- [ ] Week 4 (Jul 13 – 19): Multi-agent, ensemble, session DAG
+- [ ] Week 5 (Jul 20 – 21): bun/npm publish, binaries, Docker, final docs
 
 ### Post-MVP
+
 - Agent-as-a-Service (HTTP/gRPC)
 - Visual Regression (Playwright)
 - Policy-as-Code (OPA)
@@ -408,7 +411,7 @@ Cache Hit: 72%
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-Installs Bun (via install script if needed) + `snscoder` globally. Works on Linux, macOS, WSL2.
+Installs Bun (via the install script if needed) plus `snscoder` globally. Works on Linux, macOS, and WSL2.
 
 ### Option 2: Bun Global Install
 
@@ -442,8 +445,6 @@ bun install -g snscoder
 snscoder
 ```
 
----
-
 ### Verify Installation
 
 ```bash
@@ -451,7 +452,7 @@ bun --version      # >= 1.3.14
 snscoder --version # 0.1.0
 ```
 
-### Local LLM (Optional, no API key needed)
+### Local LLM (Optional, No API Key Needed)
 
 ```bash
 curl -fsSL https://ollama.ai/install.sh | sh
@@ -474,7 +475,7 @@ export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-Or create `.env` in project root:
+Or create `.env` in the project root:
 
 ```
 OPENAI_API_KEY=sk-...
@@ -483,7 +484,7 @@ OPENAI_API_KEY=sk-...
 ### 2. Run
 
 ```bash
-bun start
+snscoder
 ```
 
 ### 3. Let the agent configure itself
@@ -505,13 +506,13 @@ bun start
 > /recall what was that database connection string?
 ```
 
-No `config.yaml` editing needed. The agent handles it.
+No `config.yaml` editing required. The agent handles it.
 
 ---
 
 ## Configuration Reference
 
-Manual configuration still works. Config lives at `./config.yaml`.
+Manual configuration is still supported. Config lives at `./config.yaml`.
 
 ```yaml
 # ── LLM Providers ─────────────────────────────────────────────
@@ -557,7 +558,7 @@ tools:
 # ── Memory ────────────────────────────────────────────────────
 memory:
   enabled: true
-  backend: mnemosyne         # mnemosyne | mem0 | lcm
+  backend: mnemosyne         # mnemosyne | mem0 | mnemopi
   db_path: ~/.sns-myagent/memory.db
   max_working_entries: 50
   auto_summarize: true
@@ -628,12 +629,12 @@ tbm:
 ## CLI Reference
 
 ```
-bun start                       # Interactive mode
-bun start -- "<prompt>"         # Single command mode
-bun start --provider <name>     # Use specific provider
-bun start --model <name>        # Use specific model
-bun start --help                # Show help
-bun start --version             # Show version
+snscoder                          # Interactive mode
+snscoder "<prompt>"               # Single command mode
+snscoder --provider <name>        # Use specific provider
+snscoder --model <name>           # Use specific model
+snscoder --help                   # Show help
+snscoder --version                # Show version
 ```
 
 ### Interactive Commands
@@ -729,7 +730,7 @@ Or through conversation: *"load the coding skill"*.
 
 ### Writing Skills
 
-Create `.md` file in `skills/`:
+Create an `.md` file in `skills/`:
 
 ```markdown
 ---
@@ -794,11 +795,12 @@ Semantic memory layer with vector embeddings + fact extraction from conversation
 | Mode | Requirements | Cost |
 |------|-------------|------|
 | **Cloud** (app.mem0.ai) | Account + API key | Free (10K memories) → $19-$249/mo |
-| **Self-hosted** (Docker) | Docker, PostgreSQL+pgvector, LLM API key | Free (Apache 2.0), pay infra only |
-| **Library** (`pip install mem0ai`) | Python, vector DB (Qdrant/Chroma/FAISS/PGVector) | Free, no server needed |
+| **Self-hosted** (Docker) | Docker, PostgreSQL + pgvector, LLM API key | Free (Apache 2.0), pay infra only |
+| **Library** (`pip install mem0ai`) | Python, vector DB (Qdrant / Chroma / FAISS / PGVector) | Free, no server needed |
 | **Local (Ollama)** | Ollama (llama3.2:1b + bge-m3), ChromaDB | Fully local, no cloud dependency |
 
 **Quick self-host setup:**
+
 ```bash
 git clone https://github.com/mem0ai/mem0
 cd mem0/server
@@ -806,15 +808,19 @@ docker compose up -d
 make bootstrap  # creates admin + API key
 ```
 
-**Capabilities:** semantic search, fact extraction, entity linking, temporal reasoning, 24+ vector store backends, graph memory (Neo4j, Pro+ cloud only).
+**Capabilities:** semantic search, fact extraction, entity linking, temporal reasoning, 24+ vector-store backends, graph memory (Neo4j, Pro+ cloud only).
 
-**Limitations:** memory staleness after 30 days (~49% accuracy at scale), LLM dependency on every `add()` call, graph memory = $249/mo on cloud (free self-hosted).
+**Limitations:** memory staleness after 30 days (~49% accuracy at scale), LLM dependency on every `add()` call, graph memory costs $249/mo on cloud (free when self-hosted).
 
-### Option 3: LCM (Latent Context Memory)
+### Option 3: mnemopi
 
-Compressed context representation. Efficient for long-running sessions with large context.
+Default fork from oh-my-pi. SQLite + vector embeddings + graph. Built-in to the agent with zero setup. Best general-purpose option.
 
-### Switching backends
+### Option 4: LCM (Latent Context Memory)
+
+Compressed context representation. Efficient for long-running sessions with large context windows.
+
+### Switching Backends
 
 Through conversation:
 
@@ -826,7 +832,7 @@ Or through config:
 
 ```yaml
 memory:
-  backend: mem0  # mnemosyne | mem0 | lcm
+  backend: mem0  # mnemosyne | mem0 | mnemopi | lcm
 ```
 
 ### Memory Commands
@@ -837,7 +843,7 @@ memory:
 /memory list                 # List recent memories
 /memory list --tier episodic # Filter by tier
 /memory clear                # Clear working memory
-/memory forget <id>          # Remove specific memory
+/memory forget <id>          # Remove a specific memory
 ```
 
 ### Data Location
@@ -846,7 +852,7 @@ memory:
 - Memory DB: `~/.sns-myagent/memory.db` (override with `SNS_MEMORY_DB`)
 - Logs: `~/.sns-myagent/logs/`
 
-No data sent to external servers except LLM API calls to your configured provider.
+No data is sent to external servers except for LLM API calls to the configured provider.
 
 > **Detailed memory docs:** [docs/memory.md](docs/memory.md)
 
@@ -856,16 +862,16 @@ No data sent to external servers except LLM API calls to your configured provide
 
 Connect Model Context Protocol servers for additional tools.
 
-### Through conversation
+### Through Conversation
 
 ```
 > add MCP postgres for postgresql://localhost/mydb
 > add MCP github
 ```
 
-Agent installs the server package, writes config, verifies connection.
+The agent installs the server package, writes config, and verifies the connection.
 
-### Manual config
+### Manual Config
 
 ```yaml
 mcp:
@@ -877,6 +883,8 @@ mcp:
       command: npx
       args: ["-y", "@modelcontextprotocol/server-github"]
 ```
+
+### Popular Servers
 
 | Server | Package | Description |
 |--------|---------|-------------|
@@ -903,43 +911,53 @@ bun run typecheck    # Type check
 ```
 sns-myagent/
 ├── src/
-│   ├── index.ts              # Entry point
-│   ├── brain/                # LLM orchestration, prompt management
-│   │   ├── orchestrator.ts   # Core agent loop
-│   │   ├── provider.ts       # Provider abstraction
-│   │   └── prompt.ts         # Prompt templates
-│   ├── tools/                # Tool implementations
-│   │   ├── index.ts          # Tool registry
-│   │   ├── terminal.ts       # Shell execution
-│   │   ├── file.ts           # File read/write
-│   │   ├── web-search.ts     # Web search
-│   │   └── browser.ts        # Browser automation
-│   ├── memory/               # Memory system
-│   │   ├── store.ts          # SQLite + FTS5 backend
-│   │   ├── working.ts        # Working memory
-│   │   ├── episodic.ts       # Episodic memory
-│   │   ├── semantic.ts       # Semantic memory
-│   │   ├── mem0.ts           # Mem0 adapter
-│   │   └── lcm.ts            # LCM adapter
-│   ├── skills/               # Skill loader
-│   │   └── loader.ts         # Markdown skill parser
-│   ├── config/               # Self-configuration engine
-│   │   ├── manager.ts        # Config read/write
-│   │   ├── installer.ts      # Dependency installer
-│   │   └── validator.ts      # Connection validator
-│   ├── cli/                  # Terminal UI
-│   │   ├── repl.ts           # Interactive REPL
-│   │   ├── renderer.ts       # Markdown/code rendering
-│   │   └── input.ts          # Input handling
-│   └── types/                # TypeScript type definitions
-├── skills/                   # Skill files (markdown)
-│   ├── coding.md
-│   ├── web.md
-│   └── research.md
-├── config.example.yaml       # Config template
-├── tsconfig.json
+│   ├── index.ts                  # Entry point
+│   ├── main.ts                   # Bootstrap
+│   ├── cli.ts                    # CLI runner
+│   ├── cli-commands.ts           # Slash-command registry
+│   ├── system-prompt.ts          # System prompt assembly
+│   ├── commands/                 # Subcommands (chat, setup, models, ...)
+│   │   ├── chat.ts
+│   │   ├── setup.ts
+│   │   ├── models.ts
+│   │   └── ...
+│   ├── config/                   # Config system (YAML, defaults, resolver)
+│   │   ├── sns-config.ts         # Main config loader
+│   │   ├── settings.ts           # Settings schema + accessors
+│   │   ├── defaults.ts           # Default provider / model / paths
+│   │   └── model-registry.ts     # Provider + model catalog
+│   ├── ui/                       # Branded terminal UI
+│   │   ├── banner.ts             # ASCII logo
+│   │   ├── colors.ts             # Brand palette (picocolors)
+│   │   ├── spinner.ts            # ora spinner
+│   │   ├── chat-prompt.ts        # Styled input prompt
+│   │   └── status-bar.ts         # Bottom status bar
+│   ├── mcp/                      # MCP client + servers
+│   ├── tools/                    # Built-in tools
+│   ├── mnemopi/                  # Built-in SQLite + vector memory
+│   ├── memory-backend/           # Memory backend adapters
+│   ├── skills/                   # Skill loader
+│   ├── sessions/                 # Session DAG + history
+│   ├── prompts/                  # Prompt templates
+│   ├── tui/                      # Textual-style TUI runtime
+│   └── ...
+├── scripts/                      # Build + dev scripts
+├── examples/                     # Example configs and snippets
+├── docs/                         # Detailed documentation
+│   ├── installation.md
+│   ├── configuration.md
+│   ├── memory.md
+│   ├── tbm.md
+│   ├── troubleshooting.md
+│   ├── faq.md
+│   └── terminal-ui.md
 ├── package.json
+├── tsconfig.json
+├── install.sh
 ├── LICENSE
+├── SECURITY.md
+├── CONTRIBUTING.md
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -953,13 +971,13 @@ sns-myagent/
 Error: Invalid API key for provider 'openai'
 ```
 
-Fix: verify env var is set:
+Fix: verify the environment variable is set:
 
 ```bash
 echo $OPENAI_API_KEY
 ```
 
-Or tell the agent: *"reconfigure openai, my API key is sk-..."*
+Or tell the agent: *"reconfigure openai, my API key is sk-..."*.
 
 ### Model Not Found
 
@@ -967,9 +985,9 @@ Or tell the agent: *"reconfigure openai, my API key is sk-..."*
 Error: Model 'gpt-4' not available for provider 'openai'
 ```
 
-Fix: check exact model name in `config.yaml`. OpenAI uses `gpt-4o`, `gpt-4-turbo`. Anthropic uses `claude-sonnet-4-20250514`.
+Fix: check the exact model name in `config.yaml`. OpenAI uses `gpt-4o`, `gpt-4-turbo`. Anthropic uses `claude-sonnet-4-20250514`.
 
-Or: *"switch to gpt-4o"*
+Or: *"switch to gpt-4o"*.
 
 ### Permission Denied (Terminal Tool)
 
@@ -977,7 +995,7 @@ Or: *"switch to gpt-4o"*
 Error: Command 'rm' not permitted
 ```
 
-Fix: add to `tools.terminal.allowed_commands` in config, or tell agent: *"allow rm command"*
+Fix: add the command to `tools.terminal.allowed_commands` in config, or tell the agent: *"allow rm command"*.
 
 ### Connection Refused (Local Model)
 
@@ -985,14 +1003,14 @@ Fix: add to `tools.terminal.allowed_commands` in config, or tell agent: *"allow 
 Error: connect ECONNREFUSED 127.0.0.1:11434
 ```
 
-Fix: ensure local model server running:
+Fix: ensure the local model server is running:
 
 ```bash
 ollama serve
 curl http://localhost:11434/api/tags
 ```
 
-Or: *"restart ollama"*
+Or: *"restart ollama"*.
 
 ### Memory Database Locked
 
@@ -1000,7 +1018,7 @@ Or: *"restart ollama"*
 Error: SQLITE_BUSY: database is locked
 ```
 
-Fix: another instance running. Kill it:
+Fix: another instance is running. Kill it:
 
 ```bash
 pkill -f sns-myagent
@@ -1013,15 +1031,15 @@ rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 
 **Q: How is this different from oh-my-pi / Pi Agent?**
 
-oh-my-pi / Pi Agent is a TypeScript-based agent framework. SNS MyAgent strips it down to a focused, local-first, single-user terminal agent. Single user, terminal only, with conversational configuration — the agent manages its own setup.
+oh-my-pi / Pi Agent is a TypeScript-based agent framework with multi-platform and multi-user features. SNS MyAgent strips it down to a focused, local-first, single-user terminal agent. Conversational configuration, single user, terminal only, with a built-in Token Budget Manager.
 
 **Q: How is this different from other agent CLIs?**
 
-Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as oh-my-pi/Pi Agent (its upstream), but purpose-built for single-user terminal use. Say "add MCP filesystem" and it installs, configures, and tests. oh-my-pi/Pi Agent can do this too, but comes with multi-platform, multi-user overhead.
+Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same model as oh-my-pi (its upstream), but purpose-built for single-user terminal use. Say "add MCP filesystem" and it installs, configures, and tests. oh-my-pi offers the same flow inside a larger multi-platform, multi-user package.
 
 **Q: Can I use it without API keys (fully local)?**
 
-Yes. Tell the agent: *"setup ollama with llama3"*. It installs Ollama, pulls the model, configures the provider. Or manually set `custom` provider with `api_key: none`.
+Yes. Tell the agent: *"setup ollama with llama3"*. It installs Ollama, pulls the model, and configures the provider. Or manually set `custom` provider with `api_key: none`.
 
 **Q: Where is my data stored?**
 
@@ -1029,7 +1047,7 @@ Yes. Tell the agent: *"setup ollama with llama3"*. It installs Ollama, pulls the
 - Memory: `~/.sns-myagent/memory.db`
 - Logs: `~/.sns-myagent/logs/`
 
-No data sent to external servers except LLM API calls.
+No data is sent to external servers except LLM API calls.
 
 **Q: Can I add my own skills?**
 
@@ -1051,19 +1069,20 @@ Yes. Enabled by default (`ui.streaming: true`).
 
 - **Mnemosyne** (default): best general-purpose. Three tiers, full-text search.
 - **Mem0**: better for preference/fact extraction from conversations.
+- **mnemopi**: built-in, zero setup. SQLite + vector + graph.
 - **LCM**: better for long sessions where context window is a constraint.
 
 Switch any time: *"switch memory to Mem0"*.
 
 **Q: What is Token Budget Manager?**
 
-TBM is SNS MyAgent's built-in token efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 70-90% input tokens in long sessions. No other agent has this.
+TBM is SNS MyAgent's built-in token-efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 60-80% input tokens on long sessions. No other agent offers this.
 
 ---
 
 ## Contributing
 
-This is a personal project. Contributions welcome, selectively reviewed.
+Contributions are welcome and selectively reviewed.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-change`)
@@ -1074,12 +1093,12 @@ This is a personal project. Contributions welcome, selectively reviewed.
 ### Commit Convention
 
 ```
-add:    new feature or file
-fix:    bug fix
+add:      new feature or file
+fix:      bug fix
 refactor: code restructuring without behavior change
-docs:   documentation changes
-test:   test additions or changes
-chore:  maintenance tasks
+docs:     documentation changes
+test:     test additions or changes
+chore:    maintenance tasks
 ```
 
 ### Code Style
@@ -1093,6 +1112,7 @@ chore:  maintenance tasks
 ## Security
 
 See [SECURITY.md](SECURITY.md) for:
+
 - Vulnerability reporting process
 - Security model (local-first, no telemetry)
 - API key handling
@@ -1116,5 +1136,5 @@ Based on [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem).
 
 ## Credits
 
-- **oh-my-pi / Pi Agent** — [can1357](https://github.com/can1357/oh-my-pi) (upstream project)
+- **oh-my-pi / Pi Agent** — [can1357](https://github.com/can1357/oh-my-pi) — upstream project
 - **Reihan** ([@Reihantt6](https://github.com/Reihantt6)) — fork author, maintainer
