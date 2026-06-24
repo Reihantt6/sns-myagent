@@ -11,7 +11,7 @@ Fix:
 echo $OPENAI_API_KEY
 ```
 
-Or tell the agent: *"reconfigure openai, my API key is sk-..."*
+Or tell the agent: *"reconfigure openai, my API key is <your-openai-key>"*
 
 ---
 
@@ -69,13 +69,13 @@ rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 
 ---
 
-## npm install fails
+## bun install fails
 
 ```bash
 # Clear cache
-npm cache clean --force
-rm -rf node_modules package-lock.json
-npm install
+bun pm cache rm
+rm -rf node_modules bun.lockb
+bun install
 ```
 
 ---
@@ -83,13 +83,12 @@ npm install
 ## Permission errors on global install
 
 ```bash
-# Option 1: use nvm (recommended)
-nvm install 22
+# Option 1: fix Bun permissions (recommended)
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
-# Option 2: fix npm permissions
-mkdir -p ~/.npm-global
-npm config set prefix '~/.npm-global'
-export PATH=~/.npm-global/bin:$PATH
+# Option 2: install to a writable prefix
+bun add -g --trust snscoder
 ```
 
 ---
@@ -108,4 +107,4 @@ kill -9 <PID>
 ## Still stuck?
 
 1. Check GitHub Issues: https://github.com/Reihantt6/sns-myagent/issues
-2. Open new issue with: error message, OS, Node.js version, steps to reproduce
+2. Open new issue with: error message, OS, Bun version, steps to reproduce

@@ -27,7 +27,7 @@ Yes. Tell the agent: *"setup ollama with llama3"*. It installs Ollama, pulls the
 
 ### Do I need to install Node.js?
 
-If using `curl | bash` install script, it installs Node.js via nvm automatically. Otherwise, yes — Node.js >= 20.0 required.
+No. Bun is the required runtime. The install script installs Bun automatically if missing (>= 1.3.14).
 
 ### Can I run it on Windows?
 
@@ -65,15 +65,16 @@ Yes. Enabled by default (`ui.streaming: true`).
 
 ### Which memory backend should I use?
 
-- **Mnemosyne** (default): best general-purpose. Three tiers, full-text search.
-- **Mem0**: better for preference/fact extraction from conversations.
-- **LCM**: better for long sessions where context window is a constraint.
+- **mnemopi** (default): built-in, zero-setup, SQLite + vector embeddings + graph.
+- **mnemosyne** (legacy alias): same lineage, kept for compatibility.
+- **Mem0**: better for preference/fact extraction from conversations, requires external service.
+- **LCM**: better for long sessions where context window is the constraint.
 
 Switch any time: *"switch memory to Mem0"*.
 
 ### What is Token Budget Manager?
 
-TBM is SNS MyAgent's built-in token efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 70-90% input tokens in long sessions. No other agent has this. See [TBM docs](tbm.md).
+TBM is SNS MyAgent's built-in token efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 60-80% input tokens in long sessions. No other agent has this. See [TBM docs](tbm.md).
 
 ---
 

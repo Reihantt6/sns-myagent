@@ -7,25 +7,24 @@ Thanks for your interest. This is a personal project, but contributions are welc
 ```bash
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ## Development Setup
 
 ### Prerequisites
-- Node.js >= 20.0
-- npm >= 10.0
+- Bun >= 1.3.14
 - Git >= 2.0
 - TypeScript 5.x
 
 ### Commands
 ```bash
-npm run dev          # Watch mode (hot reload)
-npm run build        # Build TypeScript → dist/
-npm test             # Run tests
-npm run lint         # ESLint check
-npm run typecheck    # TypeScript type check
+bun run dev          # Watch mode (hot reload)
+bun run build        # Build TypeScript → dist/
+bun test             # Run tests
+bun run lint         # Biome lint check
+bun run typecheck    # TypeScript type check
 ```
 
 ## How to Contribute
@@ -42,9 +41,9 @@ git checkout -b feature/my-change
 
 ### 3. Test
 ```bash
-npm test
-npm run lint
-npm run typecheck
+bun test
+bun run lint
+bun run typecheck
 ```
 
 ### 4. Commit
@@ -73,7 +72,7 @@ Open a Pull Request on GitHub.
 ## Code Style
 
 - TypeScript with strict mode
-- ESLint + Prettier
+- Biome (lint + format)
 - No `any` types (use proper typing)
 - Tests required for new tools
 

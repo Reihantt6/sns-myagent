@@ -57,13 +57,13 @@ Response timeline:
 3. **Use self-hosted Mem0** instead of cloud for sensitive memories
 4. **Review MCP server packages** before installing
 5. **Run as non-root user** in production
-6. **Keep Node.js updated** (>= 20.0)
+6. **Keep Bun updated** (>= 1.3.14)
 
 ## Dependencies
 
-- Runtime dependencies audited via `npm audit`
+- Runtime dependencies audited via `bun audit`
 - No known vulnerabilities in direct dependencies at time of release
-- Run `npm audit` to check current state
+- Run `bun audit` to check current state
 
 ## License
 

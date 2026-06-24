@@ -378,7 +378,7 @@ Cache Hit: 72%
 - [ ] Week 2 (Jun 29 – Jul 5): Provider integration, chat loop, Telegram bot
 - [ ] Week 3 (Jul 6 – 12): SQLite memory, skill loader, context DSL, TBM
 - [ ] Week 4 (Jul 13 – 19): Multi-agent, ensemble, session DAG
-- [ ] Week 5 (Jul 20 – 21): bun/npm publish, binaries, Docker, final docs
+- [ ] Week 5 (Jul 20 – 21): bun publish, binaries, Docker, final docs
 
 ### Post-MVP
 
@@ -394,18 +394,22 @@ Cache Hit: 72%
 
 | Dependency | Minimum | Recommended | Purpose |
 |------------|---------|-------------|---------|
-| **Bun** | 1.3.14 | Latest | Runtime |
-| **bun** | (bundled) | Latest | Package manager |
+| **Bun** *(for building from source)* | 1.3.14 | Latest | Compile-time toolchain + `bun add -g` path |
+| **Node.js** *(for npm path)* | 18.0 | 22.x LTS | Runs `postinstall` to fetch the prebuilt binary |
 | **Git** | 2.0 | Latest | Version control |
 | **Python** | 3.10 | 3.12+ | Local model serving (optional) |
 | **RAM** | 2 GB free | 4 GB+ | Agent + memory |
 | **Disk** | 500 MB | 2 GB+ | Skills + memory DB |
 
+At runtime you need **either** Bun (>= 1.3.14) **or** Node.js (>= 18) — not both. The Bun path uses `bun add -g @sns-myagent/cli`; the Node path uses `npm install -g @sns-myagent/cli`. Both end with the same `snscoder` binary on your `$PATH`.
+
 ---
 
 ## Installation
 
-### Option 1: One-liner (Recommended)
+> **Dual-runtime supported.** `snscoder` runs as a Bun-built binary (recommended) **or** as a prebuilt platform binary downloaded on `npm install` (Node.js 18+). Pick the path that fits your environment:
+
+### Option 1: One-liner (Recommended — Linux / macOS / WSL / RDP)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
@@ -434,16 +438,35 @@ cd sns-myagent
 bun install
 bun run dev    # watch mode
 # or
-bun start      # production
+bun run build && bun dist/cli.js   # production
 ```
 
-### Option 5: Windows (PowerShell)
+### Option 5: Windows PowerShell
 
 ```powershell
-# Install Bun from https://bun.sh, then:
-bun install -g snscoder
-snscoder
+irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex
 ```
+
+Uses npm under the hood (the postinstall hook downloads the Windows prebuilt binary). A `-UseBun` switch is available for contributors who already have Bun installed.
+
+### Option 6: Universal (npm, all platforms)
+
+```bash
+npm install -g @sns-myagent/cli
+```
+
+Works on Linux, macOS, Windows, and WSL without any runtime prerequisite beyond Node.js 18+. The `postinstall` step downloads the matching prebuilt binary into the package's `bin/` directory. If a release hasn't been published yet, the script prints a friendly warning and exits cleanly — your install will still succeed; you can re-run `npm rebuild` after the maintainer publishes v0.1.0.
+
+### Option 7: From source (contributors)
+
+```bash
+git clone https://github.com/Reihantt6/sns-myagent
+cd sns-myagent
+bun install          # requires Bun >= 1.3.14
+bun run build        # produces dist/omp (the snscoder binary)
+```
+
+Then either run `bun dist/omp` directly, or `bun add -g .` to link the build as your global `snscoder`.
 
 ### Verify Installation
 
@@ -540,8 +563,7 @@ tools:
       - ls
       - cat
       - git
-      - npm
-      - node
+      - bun
       - python3
       - curl
     blocked_commands:
@@ -743,17 +765,17 @@ tags: [devops, deployment]
 
 Before deploying, verify:
 
-1. All tests pass: `npm test`
-2. No lint errors: `npm run lint`
-3. Build succeeds: `npm run build`
+1. All tests pass: `bun test`
+2. No lint errors: `bun run lint`
+3. Build succeeds: `bun run build`
 4. Environment variables are set in production
 5. Database migrations are applied
 
 ## Commands
 
-- Run full check: `npm run predeploy`
-- Deploy: `npm run deploy`
-- Rollback: `npm run rollback`
+- Run full check: `bun run predeploy`
+- Deploy: `bun run deploy`
+- Rollback: `bun run rollback`
 ```
 
 ### Skill Structure
