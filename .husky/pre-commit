@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# .husky/pre-commit — delegates to scripts/pre-commit.sh
+# Husky sets GIT_DIR; resolve repo root from there.
+# Bypass: SNS_SKIP_HOOKS=1 git commit ...
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+exec "$SCRIPT_DIR/scripts/pre-commit.sh"
