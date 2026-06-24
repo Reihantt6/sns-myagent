@@ -86,30 +86,8 @@ ui:
   code_highlight: true
   markdown_render: true
 
-# ── Token Budget Manager ─────────────────────────────────────
-tbm:
-  enabled: true
-  mode: auto                  # auto | caveman | normal | verbose
-  context_delta_cache: true
-  tool_output_budget:
-    terminal: 500
-    read_file: 800
-    web_extract: 1000
-    search_files: 300
-  lazy_skill_loading: true
-  response_cache:
-    enabled: true
-    ttl: 300
-    semantic_threshold: 0.95
-  pyramid:
-    start_level: 0
-    auto_escalate: true
-    max_level: 4
-  tombstoning:
-    enabled: true
-    threshold: 50
-  dashboard:
-    show_per_turn: false
+# ── Token Budget Manager (Planned — Phase 3) ─────────────────
+# tbm config not yet implemented; see docs/tbm.md for design target
 ```
 
 ---
@@ -135,7 +113,7 @@ You don't need to edit config manually. Tell the agent:
 - *"switch memory to Mem0"*
 - *"setup ollama with llama3"*
 - *"add anthropic with claude-sonnet"*
-- *"enable caveman mode"*
+
 - *"switch to gpt-4o"*
 
 The agent handles: dependency install → config update → connection test → confirmation.

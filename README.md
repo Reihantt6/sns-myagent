@@ -51,7 +51,7 @@ Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem)
 - [Competitive Landscape](#-competitive-landscape)
 - [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
-- [Token Budget Manager (TBM)](#token-budget-manager-tbm) → [Detailed docs](docs/tbm.md)
+- Token Budget Manager (TBM) — *Planned (Phase 3)*
 - [Project Timeline](#project-timeline)
 - [Requirements](#-requirements)
 - [Installation](#-installation) → [Detailed guide](docs/installation.md)
@@ -88,7 +88,7 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 | **Self-Configuring** | The agent manages its own setup: installs dependencies, writes config files, and verifies connections. |
 | **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
 | **Lightweight** | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
-| **Token Budget Manager (TBM)** | Built-in token-efficiency system. Context delta caching, multi-resolution pyramid, lazy skill loading, response cache. Saves 60-80% input tokens on long sessions. |
+| **Token Budget Manager (TBM)** | *Planned (Phase 3).* Goal-level token budgets exist in code today; full TBM system (context caching, pyramid, lazy skills) not yet implemented. |
 
 ---
 
@@ -105,7 +105,7 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 | Skill system (markdown) | ✅ | ✅ (4000+ packages) | ✅ (inherits from 8 tools) | ✅ | ✅ (ClawHub) |
 | Subagent delegation | ✅ | ⚠️ via extension | ✅ built-in | ✅ | ✅ |
 | Cron scheduling | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **Token Budget Manager** | ✅ | ❌ | ❌ | ❌ | ❌ |
+|| **Token Budget Manager** | ⏳ Planned | ❌ | ❌ | ❌ | ❌ |
 | Single-user focus | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ✅ (20+) |
 | Desktop / mobile app | ❌ | ❌ | ❌ | ✅ | ✅ (macOS/iOS/Android/Win) |
@@ -121,7 +121,7 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 - **Hermes Agent** — TypeScript-based agent framework with multi-platform and multi-user focus. Not a single-user terminal agent.
 - **OpenClaw** — Personal AI assistant with multi-platform and desktop apps. Single-user and local-first.
 
-**Bottom line:** SNS MyAgent and oh-my-pi share the conversational-configuration model. SNS MyAgent is purpose-built for single-user terminal use — lightweight, with Token Budget Manager, and zero multi-platform overhead. oh-my-pi delivers similar capabilities inside a larger multi-platform, multi-user package.
+**Bottom line:** SNS MyAgent and oh-my-pi share the conversational-configuration model. SNS MyAgent is purpose-built for single-user terminal use — lightweight, local-first, and zero multi-platform overhead. oh-my-pi delivers similar capabilities inside a larger multi-platform, multi-user package.
 
 ---
 
@@ -224,134 +224,28 @@ graph TD
 
 ---
 
-## Token Budget Manager (TBM)
+## Token Budget Manager (TBM) — *Planned (Phase 3)*
 
-SNS MyAgent ships with a **Token Budget Manager** — the only agent CLI that treats token efficiency as a first-class feature.
+> **Status:** Not yet implemented. Goal-level `token_budget` fields exist in the source code (see `src/goals/runtime.ts`) and subagent request budgets are enforced (`src/task/executor.ts`). The full TBM vision below is a design target for Phase 3.
 
-### Problem
+### What Exists Today
 
-Every API call sends: system prompt (~2000 tokens) + conversation history (growing) + tool definitions (~1500 tokens) + skills + memories. Long sessions cost real money.
+- **Goal token budgets:** Each goal can specify a `token_budget` integer. When exceeded, the goal transitions to `budget-limited` status and the agent reports usage.
+- **Subagent request budgets:** Soft per-subagent request limits. Crossing the budget triggers a steering notice; at 1.5x the run is aborted gracefully.
 
-### TBM Architecture
+### What Is Planned
 
-```
-┌─────────────────────────────────────────────┐
-│           TOKEN BUDGET MANAGER              │
-├─────────────────────────────────────────────┤
-│  Context Delta Cache │ Multi-Res Pyramid    │
-│  Caveman Mode (RTK)  │ Lazy Skill Loading   │
-│  Tool Output Budget  │ Response Cache        │
-│  Semantic Dedup      │ Token Dashboard       │
-└─────────────────────────────────────────────┘
-```
+The following TBM features are design targets — not implemented:
 
-### 3 Communication Modes
+- Context delta caching (provider-level prefix caching)
+- Multi-resolution context pyramid (lazy context escalation)
+- Lazy skill loading (inject only relevant skills)
+- Conversation tombstoning (compress old messages)
+- Response cache (exact + semantic matching)
+- Token dashboard (`/tokens` command)
+- Caveman / Normal / Verbose communication modes (`/mode` command)
 
-| Mode | Example | Tokens | Use Case |
-|------|---------|--------|----------|
-| **Caveman** (RTK) | `Bug auth. Fix: token_exp < not <=.` | ~20 | Debug, quick ops |
-| **Normal** | `Found bug in auth middleware. Token expiry check uses wrong operator.` | ~60 | Daily work |
-| **Verbose** | Full explanation with context and alternatives... | ~150 | Learning, docs |
-
-Switch via `/mode caveman` or auto-detect by task complexity.
-
-### Context Delta Encoding
-
-Instead of resending full context every turn, TBM sends only what changed:
-
-```
-Turn 1: [full context 2000 tokens] → API call
-Turn 2: [delta: +200 tokens]       → cached prefix + delta
-Turn 3: [delta: +150 tokens]       → cached prefix + delta
-```
-
-- **Static prefix** (system prompt, tools, identity) cached at provider level
-- **Dynamic suffix** (recent messages, tool output) sent as delta
-- **Savings**: 60-80% input tokens after turn 1
-
-### Multi-Resolution Context Pyramid
-
-Not all context is equal. TBM loads context in levels:
-
-| Level | Content | Tokens | When |
-|-------|---------|--------|------|
-| 0 | Identity only | ~100 | Simple Q&A |
-| 1 | + Last 3 messages | ~500 | Continuation |
-| 2 | + Relevant memories | ~1,000 | Contextual tasks |
-| 3 | + Relevant skills | ~2,000 | Complex tasks |
-| 4 | + Full history | ~5,000 | Deep research |
-
-Start at Level 0. Escalate only if response quality drops.
-
-### Tool Output Auto-Compress
-
-| Tool | Max Budget | Strategy |
-|------|-----------|----------|
-| `terminal` | 500 tokens | Truncate + strip ANSI |
-| `read_file` | 800 tokens | Only relevant lines |
-| `web_extract` | 1,000 tokens | Summarize key content |
-| `search_files` | 300 tokens | Top N results only |
-
-### Lazy Skill Loading
-
-Do not inject all 100+ skills into every prompt:
-
-```
-Skills Index (always): ~200 tokens (names only)
-Relevant skill loaded: +500 tokens (on-demand)
-Total: ~700 tokens vs 50,000+ if all loaded
-```
-
-### Conversation Tombstoning
-
-Old messages are compressed to minimal references:
-
-```
-Original:  "Can you help me fix the auth bug? The token expiry check..." (100 tokens)
-
-Tombstone: [MSG-42: Auth bug, token_exp fix] (15 tokens)
-```
-
-The model can still reference MSG-42 if needed. Context is 85% smaller.
-
-### Response Cache
-
-Repeated queries return cached responses with zero API calls:
-
-- Exact match: `hash(query)` lookup, TTL-based
-- Semantic match: embedding similarity > 0.95 threshold
-- Cache hit rate displayed in the token dashboard
-
-### Token Dashboard
-
-```
-/tokens
-
-Session: 2h 15m
-─────────────────────────────
-Input:    12,450 tokens
-Output:    3,200 tokens
-Cached:    1,800 tokens (saved!)
-─────────────────────────────
-Total:    15,650 tokens
-Cost:     $0.038
-Cache Hit: 72%
-```
-
-### Savings Summary
-
-| Technique | Savings | Complexity |
-|-----------|---------|------------|
-| Context Delta Encoding | 60-80% | High |
-| Multi-Resolution Pyramid | 40-60% | Medium |
-| Tool Output Budget | 30-50% | Low |
-| Semantic Deduplication | 20-30% | Medium |
-| Lazy Skill Loading | 90%+ | Low |
-| Conversation Tombstoning | 50-70% | Medium |
-| Response Cache | 100% (hit) | Low |
-| **Combined** | **60-80%** | — |
-
-> **Detailed TBM docs:** [docs/tbm.md](docs/tbm.md)
+> **Detailed design doc:** [docs/tbm.md](docs/tbm.md)
 
 ---
 
@@ -609,30 +503,10 @@ ui:
   code_highlight: true
   markdown_render: true
 
-# ── Token Budget Manager ─────────────────────────────────────
-tbm:
-  enabled: true
-  mode: auto                  # auto | caveman | normal | verbose
-  context_delta_cache: true   # Cache static prefix at provider level
-  tool_output_budget:
-    terminal: 500
-    read_file: 800
-    web_extract: 1000
-    search_files: 300
-  lazy_skill_loading: true    # Load only relevant skills
-  response_cache:
-    enabled: true
-    ttl: 300                  # seconds
-    semantic_threshold: 0.95  # similarity for cache hit
-  pyramid:
-    start_level: 0
-    auto_escalate: true
-    max_level: 4
-  tombstoning:
-    enabled: true
-    threshold: 50             # messages before tombstoning
-  dashboard:
-    show_per_turn: false      # show mini stats per response
+# ── Token Budget Manager (Planned — Phase 3) ─────────────────
+# tbm:
+#   enabled: true
+#   ... (not yet implemented; see docs/tbm.md for design target)
 ```
 
 ### Environment Variables
@@ -675,10 +549,8 @@ snscoder --version                # Show version
 | `/clear` | Clear terminal output |
 | `/help` | Show available commands |
 | `/exit` | Exit |
-| `/mode <caveman\|normal\|verbose>` | Switch communication mode |
-| `/tokens` | Show token usage dashboard |
-| `/tokens cache` | Show cache hit rate and savings |
-| `/cache clear` | Clear response cache |
+| `/mode <caveman\|normal\|verbose>` | *Planned (Phase 3)* — Switch communication mode |
+| `/tokens` | *Planned (Phase 3)* — Show token usage dashboard |
 
 ---
 
@@ -1098,7 +970,7 @@ Switch any time: *"switch memory to Mem0"*.
 
 **Q: What is Token Budget Manager?**
 
-TBM is SNS MyAgent's built-in token-efficiency system. It caches static context, compresses tool output, loads skills on-demand, and provides 3 communication modes. Saves 60-80% input tokens on long sessions. No other agent offers this.
+TBM is a planned (Phase 3) token-efficiency system. Today, goal-level `token_budget` and subagent request budgets exist in code. The full vision — context caching, lazy skill loading, communication modes — is not yet implemented. See [docs/tbm.md](docs/tbm.md) for the design target.
 
 ---
 
