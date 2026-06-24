@@ -2,13 +2,13 @@
 
 ## General
 
-### How is this different from Hermes Agent?
+### How is this different from Pi Agent?
 
-Hermes Agent is a multi-platform, multi-user agent framework with 20+ messaging integrations, desktop app, voice mode, and 6 deployment backends. SNS MyAgent strips all that. Single user, terminal only, with conversational configuration — the agent manages its own setup. Plus Token Budget Manager.
+oh-my-pi (Pi Agent ecosystem) is a multi-platform agent framework with 20+ messaging integrations, desktop app, voice mode, and 6 deployment backends. SNS MyAgent strips all that. Single user, terminal only, with conversational configuration — the agent manages its own setup. Plus Token Budget Manager.
 
 ### How is this different from other agent CLIs?
 
-Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as Hermes Agent (its upstream), but purpose-built for single-user terminal use.
+Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as oh-my-pi (its upstream), but purpose-built for single-user terminal use.
 
 ### Can I use it without API keys (fully local)?
 

@@ -25,7 +25,7 @@ snscoder terminal MUST feel premium, not generic. User opens terminal → immedi
 ### Typography
 
 ```
-snscoder v0.2.0                    ← Header (bold, primary color)
+snscoder v0.1.0                    ← Header (bold, primary color)
 ┌─ Provider: OpenRouter             ← Boxed status (boxen)
 │  Model: claude-sonnet-4
 │  Memory: SQLite (42 entries)
@@ -44,7 +44,7 @@ snscoder >                         ← User prompt (accent color)
  \__ \/ _ \/ _` | '_ \| |  / __|/ _ \/ _` | / __|
  |___/\___/\__,_|_.__/|_|  \___|\___/\__,_|_\___|
 
- v0.2.0 | OpenRouter | claude-sonnet-4 | Memory: 42 entries
+ v0.1.0 | OpenRouter | claude-sonnet-4 | Memory: 42 entries
  Type /help for commands, /quit to exit
 ```
 
@@ -156,7 +156,7 @@ snscoder > _
 snscoder > /status
 
 ┌─ snscoder status ────────────────────┐
-│ Version    │ 0.2.0                   │
+│ Version    │ 0.1.0                   │
 │ Provider   │ OpenRouter              │
 │ Model      │ claude-sonnet-4         │
 │ Memory     │ SQLite (42 entries)     │

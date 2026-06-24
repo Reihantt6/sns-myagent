@@ -24,7 +24,7 @@
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/version-0.1.0-yellow?style=flat-square" alt="Version 0.1.0">
-  <img src="https://img.shields.io/badge/node-%3E%3D20-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js >= 20">
+  <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
   <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
   <a href="#-quick-start"><img src="https://img.shields.io/badge/getting_started-quick_start-2ea44f?style=flat-square" alt="Quick Start"></a>
 </p>
@@ -41,7 +41,7 @@ No YAML editing. No config file archaeology. No setup guides.
 >
 > *"Switch to Claude"* → agent reconfigures provider, validates API key, ready.
 
-Forked from [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com), stripped to a focused, local-first, single-user terminal agent.
+Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem), stripped to a focused, local-first, single-user terminal agent.
 
 ---
 
@@ -87,7 +87,7 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 | **Adaptive Memory** | Choose between Mnemosyne (three-tier), Mem0, or LCM — switchable through conversation. |
 | **Self-Configuring** | Agent manages its own setup. Install dependencies, write config files, verify connections. |
 | **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
-| **Lightweight** | Stripped from Hermes Agent. Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
+| **Lightweight** | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
 | **Token Budget Manager (TBM)** | Built-in token efficiency system. Caveman mode, context delta caching, multi-resolution pyramid, lazy skill loading, response cache. Saves 70-90% input tokens. |
 
 ---
@@ -117,10 +117,10 @@ SNS MyAgent inverts this. **The agent is the configuration interface.** You desc
 **Notes:**
 - **Pi** — memory, MCP, subagent tersedia via [marketplace extension](https://pi.dev/packages) (4000+ packages), bukan built-in. Harus install manual.
 - **omp** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited dari config tool lain (Cursor, Claude Code, dll). 32 tools built-in, LSP integration.
-- **Hermes** — full-featured agent framework, multi-platform. Bisa self-configuring lewat chat, tapi fokus utama multi-platform + multi-user. Bukan single-user terminal agent.
+- **oh-my-pi / Pi Agent** — TypeScript-based agent framework, lightweight. Bisa self-configuring lewat chat, tapi fokus utama multi-platform + multi-user. Bukan single-user terminal agent.
 - **OpenClaw** — personal AI assistant, multi-platform + desktop apps. Single-user local-first.
 
-**Bottom line:** SNS MyAgent dan Hermes sama-sama bisa conversational configuration. Bedanya: SNS MyAgent purpose-built untuk single-user terminal — lightweight, Token Budget Manager, zero multi-platform overhead. Hermes bisa hal serupa tapi dalam paket multi-platform, multi-user yang lebih besar.
+**Bottom line:** SNS MyAgent dan oh-my-pi/Pi Agent sama-sama bisa conversational configuration. Bedanya: SNS MyAgent purpose-built untuk single-user terminal — lightweight, Token Budget Manager, zero multi-platform overhead. oh-my-pi/Pi Agent bisa hal serupa tapi dalam paket multi-platform, multi-user yang lebih besar.
 
 ---
 
@@ -376,7 +376,7 @@ Cache Hit: 72%
 - [ ] Week 2 (Jun 29-Jul 5): Provider integration, chat loop, Telegram bot
 - [ ] Week 3 (Jul 6-12): SQLite memory, skill loader, context DSL, TBM
 - [ ] Week 4 (Jul 13-19): Multi-agent, ensemble, session DAG
-- [ ] Week 5 (Jul 20-21): npm publish, binaries, Docker, final docs
+- [ ] Week 5 (Jul 20-21): bun/npm publish, binaries, Docker, final docs
 
 ### Post-MVP
 - Agent-as-a-Service (HTTP/gRPC)
@@ -391,8 +391,8 @@ Cache Hit: 72%
 
 | Dependency | Minimum | Recommended | Purpose |
 |------------|---------|-------------|---------|
-| **Node.js** | 20.0 | 22.x LTS | Runtime |
-| **npm** | 10.0 | Latest | Package manager |
+| **Bun** | 1.3.14 | Latest | Runtime |
+| **bun** | (bundled) | Latest | Package manager |
 | **Git** | 2.0 | Latest | Version control |
 | **Python** | 3.10 | 3.12+ | Local model serving (optional) |
 | **RAM** | 2 GB free | 4 GB+ | Agent + memory |
@@ -408,12 +408,12 @@ Cache Hit: 72%
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-Installs Node.js (via nvm if needed) + `snscoder` globally. Works on Linux, macOS, WSL2.
+Installs Bun (via install script if needed) + `snscoder` globally. Works on Linux, macOS, WSL2.
 
-### Option 2: npm Global Install
+### Option 2: Bun Global Install
 
 ```bash
-npm install -g snscoder
+bun install -g snscoder
 snscoder
 ```
 
@@ -428,17 +428,17 @@ npx snscoder
 ```bash
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
-npm install
-npm run dev    # watch mode
+bun install
+bun run dev    # watch mode
 # or
-npm start      # production
+bun start      # production
 ```
 
 ### Option 5: Windows (PowerShell)
 
 ```powershell
-# Install Node.js from https://nodejs.org, then:
-npm install -g snscoder
+# Install Bun from https://bun.sh, then:
+bun install -g snscoder
 snscoder
 ```
 
@@ -447,8 +447,7 @@ snscoder
 ### Verify Installation
 
 ```bash
-node --version     # >= 20.0
-npm --version      # >= 10.0
+bun --version      # >= 1.3.14
 snscoder --version # 0.1.0
 ```
 
@@ -484,7 +483,7 @@ OPENAI_API_KEY=sk-...
 ### 2. Run
 
 ```bash
-npm start
+bun start
 ```
 
 ### 3. Let the agent configure itself
@@ -629,12 +628,12 @@ tbm:
 ## CLI Reference
 
 ```
-npm start                       # Interactive mode
-npm start -- "<prompt>"         # Single command mode
-npm start --provider <name>     # Use specific provider
-npm start --model <name>        # Use specific model
-npm start --help                # Show help
-npm start --version             # Show version
+bun start                       # Interactive mode
+bun start -- "<prompt>"         # Single command mode
+bun start --provider <name>     # Use specific provider
+bun start --model <name>        # Use specific model
+bun start --help                # Show help
+bun start --version             # Show version
 ```
 
 ### Interactive Commands
@@ -891,12 +890,12 @@ mcp:
 ## Development
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Build TypeScript
-npm run dev          # Watch mode
-npm test             # Run tests
-npm run lint         # Lint
-npm run typecheck    # Type check
+bun install          # Install dependencies
+bun run build        # Build TypeScript
+bun run dev          # Watch mode
+bun test             # Run tests
+bun run lint         # Lint
+bun run typecheck    # Type check
 ```
 
 ### Project Structure
@@ -1012,13 +1011,13 @@ rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 
 ## FAQ
 
-**Q: How is this different from Hermes Agent?**
+**Q: How is this different from oh-my-pi / Pi Agent?**
 
-Hermes Agent is a multi-platform, multi-user agent framework with 20+ messaging integrations, desktop app, voice mode, and 6 deployment backends. SNS MyAgent strips all that. Single user, terminal only, with conversational configuration — the agent manages its own setup.
+oh-my-pi / Pi Agent is a TypeScript-based agent framework. SNS MyAgent strips it down to a focused, local-first, single-user terminal agent. Single user, terminal only, with conversational configuration — the agent manages its own setup.
 
 **Q: How is this different from other agent CLIs?**
 
-Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as Hermes Agent (its upstream), but purpose-built for single-user terminal use. Say "add MCP filesystem" and it installs, configures, and tests. Hermes can do this too, but comes with multi-platform, multi-user overhead.
+Most agent CLIs (Pi, omp) require manual configuration. SNS MyAgent configures itself through conversation — same as oh-my-pi/Pi Agent (its upstream), but purpose-built for single-user terminal use. Say "add MCP filesystem" and it installs, configures, and tests. oh-my-pi/Pi Agent can do this too, but comes with multi-platform, multi-user overhead.
 
 **Q: Can I use it without API keys (fully local)?**
 
@@ -1086,7 +1085,7 @@ chore:  maintenance tasks
 ### Code Style
 
 - TypeScript with strict mode
-- ESLint + Prettier (run `npm run lint` before committing)
+- ESLint + Prettier (run `bun run lint` before committing)
 - Tests required for new tools
 
 ---
@@ -1111,11 +1110,11 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 [MIT License](./LICENSE).
 
-Based on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com).
+Based on [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem).
 
 ---
 
 ## Credits
 
-- **Hermes Agent** — [Nous Research](https://nousresearch.com) (upstream project)
+- **oh-my-pi / Pi Agent** — [can1357](https://github.com/can1357/oh-my-pi) (upstream project)
 - **Reihan** ([@Reihantt6](https://github.com/Reihantt6)) — fork author, maintainer
