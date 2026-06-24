@@ -37,7 +37,13 @@ default_provider: openai
 tools:
   terminal:
     allowed_commands:
-      - ls, cat, git, npm, node, python3, curl
+      - ls
+      - cat
+      - git
+      - npm
+      - node
+      - python3
+      - curl
     blocked_commands:
       - rm -rf /
       - shutdown

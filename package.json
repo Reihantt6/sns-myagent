@@ -2,7 +2,7 @@
   "type": "module",
   "name": "@sns-myagent/cli",
   "version": "0.1.0",
-  "description": "SNS-MyAgent — Pi size, Hermes power. BYOK coding agent CLI.",
+  "description": "SNS-MyAgent — Pi Agent size, full features. BYOK coding agent CLI.",
   "homepage": "https://github.com/Reihantt6/sns-myagent",
   "author": "Reihantt6",
   "contributors": [],

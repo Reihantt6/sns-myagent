@@ -31,6 +31,7 @@ npx snscoder
 | Dependency | Minimum | Recommended | Check |
 |------------|---------|-------------|-------|
 | **Node.js** | 20.0 | 22.x LTS | `node --version` |
+| **Bun** | 1.3.14 | Latest | `bun --version` |
 | **npm** | 10.0 | Latest | `npm --version` |
 | **Git** | 2.0 | Latest | `git --version` |
 
@@ -43,6 +44,11 @@ source ~/.bashrc
 nvm install 22
 nvm use 22
 ```
+**Install Bun (recommended for building):**
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
 
 **macOS (Homebrew):**
 ```bash
