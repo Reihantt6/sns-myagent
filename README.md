@@ -51,8 +51,6 @@ Forked from [oh-my-pi](https://github.com/can1357/oh-my-pi) (Pi Agent ecosystem)
 - [Competitive Landscape](#-competitive-landscape)
 - [Conversational Configuration](#-conversational-configuration)
 - [Architecture](#-architecture)
-- Token Budget Manager (TBM) — *Planned (Phase 3)*
-- [Project Timeline](#project-timeline)
 - [Requirements](#-requirements)
 - [Installation](#-installation) → [Detailed guide](docs/installation.md)
 - [Quick Start](#-quick-start)
@@ -88,7 +86,6 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 | **Self-Configuring** | The agent manages its own setup: installs dependencies, writes config files, and verifies connections. |
 | **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
 | **Lightweight** | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
-| **Token Budget Manager (TBM)** | *Planned (Phase 3).* Goal-level token budgets exist in code today; full TBM system (context caching, pyramid, lazy skills) not yet implemented. |
 
 ---
 
@@ -105,7 +102,6 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 | Skill system (markdown) | ✅ | ✅ (4000+ packages) | ✅ (inherits from 8 tools) | ✅ | ✅ (ClawHub) |
 | Subagent delegation | ✅ | ⚠️ via extension | ✅ built-in | ✅ | ✅ |
 | Cron scheduling | ✅ | ❌ | ❌ | ✅ | ✅ |
-|| **Token Budget Manager** | ⏳ Planned | ❌ | ❌ | ❌ | ❌ |
 | Single-user focus | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Multi-platform messaging | ❌ | ❌ | ❌ | ✅ (20+) | ✅ (20+) |
 | Desktop / mobile app | ❌ | ❌ | ❌ | ✅ | ✅ (macOS/iOS/Android/Win) |
@@ -221,66 +217,6 @@ graph TD
         Q --> T[Connection Validator]
     end
 ```
-
----
-
-## Token Budget Manager (TBM) — *Planned (Phase 3)*
-
-> **Status:** Not yet implemented. Goal-level `token_budget` fields exist in the source code (see `src/goals/runtime.ts`) and subagent request budgets are enforced (`src/task/executor.ts`). The full TBM vision below is a design target for Phase 3.
-
-### What Exists Today
-
-- **Goal token budgets:** Each goal can specify a `token_budget` integer. When exceeded, the goal transitions to `budget-limited` status and the agent reports usage.
-- **Subagent request budgets:** Soft per-subagent request limits. Crossing the budget triggers a steering notice; at 1.5x the run is aborted gracefully.
-
-### What Is Planned
-
-The following TBM features are design targets — not implemented:
-
-- Context delta caching (provider-level prefix caching)
-- Multi-resolution context pyramid (lazy context escalation)
-- Lazy skill loading (inject only relevant skills)
-- Conversation tombstoning (compress old messages)
-- Response cache (exact + semantic matching)
-- Token dashboard (`/tokens` command)
-- Caveman / Normal / Verbose communication modes (`/mode` command)
-
-> **Detailed design doc:** [docs/tbm.md](docs/tbm.md)
-
----
-
-## Project Timeline
-
-> **Start:** 2026-06-23 · **Target MVP:** ~2026-07-21 · **Status:** Phase 1 ✅ Complete
-
-| Phase | Description | Duration | Target Date | Status |
-|-------|------------|----------|-------------|--------|
-| **0** | Planning & Docs | 1 day | 2026-06-23 | ✅ Done |
-| **1** | Fork + Scaffold + CLI + Terminal UI | 3-5 days | 2026-06-28 | ✅ Done |
-| **2** | Core Agent + Telegram | 1 week | 2026-07-05 | ⏳ Pending |
-| **3** | Memory + Skills | 1 week | 2026-07-12 | ⏳ Pending |
-| **4** | Multi-Agent + Advanced | 1 week | 2026-07-19 | ⏳ Pending |
-| **5** | Polish + Publish | 3-5 days | 2026-07-21 | ⏳ Pending |
-
-### June 2026
-
-- [x] **2026-06-23**: PRD v2.0, README, all docs, package.json, install.sh, CI/CD template
-- [x] **2026-06-24**: Forked Pi Agent source, rebranded to `snscoder`, config system + terminal UI scaffolded
-
-### July 2026 (planned)
-
-- [ ] Week 2 (Jun 29 – Jul 5): Provider integration, chat loop, Telegram bot
-- [ ] Week 3 (Jul 6 – 12): SQLite memory, skill loader, context DSL, TBM
-- [ ] Week 4 (Jul 13 – 19): Multi-agent, ensemble, session DAG
-- [ ] Week 5 (Jul 20 – 21): bun publish, binaries, Docker, final docs
-
-### Post-MVP
-
-- Agent-as-a-Service (HTTP/gRPC)
-- Visual Regression (Playwright)
-- Policy-as-Code (OPA)
-- Observability (OpenTelemetry)
-- Skills marketplace
 
 ---
 
@@ -502,11 +438,6 @@ ui:
   streaming: true
   code_highlight: true
   markdown_render: true
-
-# ── Token Budget Manager (Planned — Phase 3) ─────────────────
-# tbm:
-#   enabled: true
-#   ... (not yet implemented; see docs/tbm.md for design target)
 ```
 
 ### Environment Variables
@@ -549,8 +480,6 @@ snscoder --version                # Show version
 | `/clear` | Clear terminal output |
 | `/help` | Show available commands |
 | `/exit` | Exit |
-| `/mode <caveman\|normal\|verbose>` | *Planned (Phase 3)* — Switch communication mode |
-| `/tokens` | *Planned (Phase 3)* — Show token usage dashboard |
 
 ---
 
@@ -925,7 +854,7 @@ rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 
 **Q: How is this different from oh-my-pi / Pi Agent?**
 
-oh-my-pi / Pi Agent is a TypeScript-based agent framework with multi-platform and multi-user features. SNS MyAgent strips it down to a focused, local-first, single-user terminal agent. Conversational configuration, single user, terminal only, with a built-in Token Budget Manager.
+oh-my-pi / Pi Agent is a TypeScript-based agent framework with multi-platform and multi-user features. SNS MyAgent strips it down to a focused, local-first, single-user terminal agent with conversational configuration.
 
 **Q: How is this different from other agent CLIs?**
 
@@ -967,10 +896,6 @@ Yes. Enabled by default (`ui.streaming: true`).
 - **LCM**: better for long sessions where context window is a constraint.
 
 Switch any time: *"switch memory to Mem0"*.
-
-**Q: What is Token Budget Manager?**
-
-TBM is a planned (Phase 3) token-efficiency system. Today, goal-level `token_budget` and subagent request budgets exist in code. The full vision — context caching, lazy skill loading, communication modes — is not yet implemented. See [docs/tbm.md](docs/tbm.md) for the design target.
 
 ---
 
