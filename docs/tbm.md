@@ -1,61 +1,30 @@
-# Token Budget Manager (TBM)
+# Token Budget Manager (TBM) — Design Document
 
-Built-in token efficiency system. No other agent has this.
+> **Status: Planned (Phase 3).** This document describes the design target for TBM. None of the features below are implemented yet.
 
----
+## What Exists Today
 
-## Problem
+Source code has two budget-related features:
 
-Every API call sends: system prompt (~2000 tokens) + conversation history (growing) + tool definitions (~1500 tokens) + skills + memories. Long sessions cost real money.
+1. **Goal token budgets** (`src/goals/runtime.ts`): Each goal can set a `token_budget` integer. When usage exceeds the budget, goal status transitions to `budget-limited` and a budget-limit prompt is injected.
 
-## Solution
+2. **Subagent request budgets** (`src/task/executor.ts`): Soft per-subagent request limits. Crossing the budget injects a steering notice; at 1.5x the budget the run aborts gracefully, salvaging partial output.
 
-TBM optimizes at every layer:
-
-```
-┌─────────────────────────────────────────────┐
-│           TOKEN BUDGET MANAGER              │
-├─────────────────────────────────────────────┤
-│  Context Delta Cache │ Multi-Res Pyramid    │
-│  Caveman Mode (RTK)  │ Lazy Skill Loading   │
-│  Tool Output Budget  │ Response Cache        │
-│  Semantic Dedup      │ Token Dashboard       │
-└─────────────────────────────────────────────┘
-```
+These are the only token-budget features verified in source code.
 
 ---
 
-## 3 Communication Modes
+## Planned Features (Not Implemented)
 
-| Mode | Example | Tokens | Use Case |
-|------|---------|--------|----------|
-| **Caveman** (RTK) | "Bug auth. Fix: `token_exp <` not `<=`." | ~20 | Debug, quick ops |
-| **Normal** | "Found bug in auth middleware. Token expiry check uses wrong operator." | ~60 | Daily work |
-| **Verbose** | Full explanation with context and alternatives... | ~150 | Learning, docs |
+The following are design targets for Phase 3. They do not exist in the codebase.
 
-Switch via `/mode caveman` or auto-detect by task complexity.
+### Context Delta Caching
 
----
+Instead of resending full context every turn, send only what changed. Static prefix (system prompt, tools, identity) cached at provider level; dynamic suffix (recent messages, tool output) sent as delta. Target savings: 60-80% input tokens after turn 1.
 
-## Context Delta Encoding
+### Multi-Resolution Context Pyramid
 
-Instead of resending full context every turn, TBM sends only what changed:
-
-```
-Turn 1: [full context 2000 tokens] → API call
-Turn 2: [delta: +200 tokens]       → cached prefix + delta
-Turn 3: [delta: +150 tokens]       → cached prefix + delta
-```
-
-- **Static prefix** (system prompt, tools, identity) cached at provider level
-- **Dynamic suffix** (recent messages, tool output) sent as delta
-- **Savings**: 60-80% input tokens after turn 1
-
----
-
-## Multi-Resolution Context Pyramid
-
-Not all context is equal. TBM loads context in levels:
+Load context in levels, escalating only when response quality drops:
 
 | Level | Content | Tokens | When |
 |-------|---------|--------|------|
@@ -65,11 +34,11 @@ Not all context is equal. TBM loads context in levels:
 | 3 | + Relevant skills | ~2,000 | Complex tasks |
 | 4 | + Full history | ~5,000 | Deep research |
 
-Start at Level 0. Escalate only if response quality drops.
+### Lazy Skill Loading
 
----
+Inject skill names only (~200 tokens) into every prompt. Load full skill content on-demand when relevant. Target: ~700 tokens vs 50,000+ if all loaded.
 
-## Tool Output Auto-Compress
+### Tool Output Auto-Compress
 
 | Tool | Max Budget | Strategy |
 |------|-----------|----------|
@@ -78,70 +47,42 @@ Start at Level 0. Escalate only if response quality drops.
 | `web_extract` | 1,000 tokens | Summarize key content |
 | `search_files` | 300 tokens | Top N results only |
 
----
+### Communication Modes
 
-## Lazy Skill Loading
+| Mode | Example | Tokens | Use Case |
+|------|---------|--------|----------|
+| Caveman | `Bug auth. Fix: token_exp < not <=.` | ~20 | Debug, quick ops |
+| Normal | `Found bug in auth middleware. Token expiry check uses wrong operator.` | ~60 | Daily work |
+| Verbose | Full explanation with context and alternatives... | ~150 | Learning, docs |
 
-Don't inject all 100+ skills into every prompt:
+Switch via `/mode caveman` or auto-detect by task complexity.
 
-```
-Skills Index (always): ~200 tokens (names only)
-Relevant skill loaded: +500 tokens (on-demand)
-Total: ~700 tokens vs 50,000+ if all loaded
-```
+> **Note:** RTK (`pi-rtk-optimizer`) is a separate theme/UI plugin. It is unrelated to communication modes.
 
----
+### Conversation Tombstoning
 
-## Conversation Tombstoning
+Compress old messages to minimal references. Model can still reference originals if needed. Target: 85% context reduction.
 
-Old messages compressed to minimal references:
+### Response Cache
 
-```
-Original:  "Can you help me fix the auth bug? The token expiry check..." (100 tokens)
-Tombstone:  [MSG-42: Auth bug, token_exp fix]  (15 tokens)
-```
+Exact match (`hash(query)`) and semantic match (embedding similarity > 0.95). Cache hit rate displayed in token dashboard.
 
-Model can still reference MSG-42 if needed. Context 85% smaller.
+### Token Dashboard
 
----
-
-## Response Cache
-
-Repeated queries return cached responses with zero API calls:
-
-- Exact match: `hash(query)` lookup, TTL-based
-- Semantic match: embedding similarity > 0.95 threshold
-- Cache hit rate displayed in token dashboard
+`/tokens` command showing session duration, input/output/cached tokens, cost estimate, and cache hit rate.
 
 ---
 
-## Token Dashboard
-
-```
-/tokens
-
-Session: 2h 15m
-─────────────────────────────
-Input:    12,450 tokens
-Output:    3,200 tokens
-Cached:    1,800 tokens (saved!)
-─────────────────────────────
-Total:    15,650 tokens
-Cost:     $0.038
-Cache Hit: 72%
-```
-
----
-
-## Savings Summary
+## Savings Estimates (Projected)
 
 | Technique | Savings | Complexity |
 |-----------|---------|------------|
-| Context Delta Encoding | 60-80% | High |
+| Context Delta Caching | 60-80% | High |
 | Multi-Resolution Pyramid | 40-60% | Medium |
 | Tool Output Budget | 30-50% | Low |
-| Semantic Deduplication | 20-30% | Medium |
 | Lazy Skill Loading | 90%+ | Low |
 | Conversation Tombstoning | 50-70% | Medium |
 | Response Cache | 100% (hit) | Low |
 | **Combined** | **60-80%** | — |
+
+> These are projected savings, not measured. None of the above techniques are implemented.
