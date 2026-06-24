@@ -114,7 +114,7 @@ export function resolveCliArgv(argv: string[]): ResolvedCliArgv {
 	const first = argv[0];
 	const reservedMessage = reservedTopLevelWordMessage(first, argv.length);
 	if (reservedMessage) return { error: reservedMessage };
-	if (first === "--help" || first === "-h" || first === "--version" || first === "-v" || first === "help") {
+	if (first === "--help" || first === "-h" || first === "--version" || first === "-v" || first === "-V" || first === "help") {
 		return { argv };
 	}
 	if (isSubcommand(first)) return { argv };
