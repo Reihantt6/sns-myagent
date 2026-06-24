@@ -1,22 +1,23 @@
 # Memory System
 
-SNS MyAgent supports 3 memory backends, switchable through conversation.
+SNS MyAgent supports 4 memory backends (mnemopi, mnemosyne, mem0, lcm), switchable through conversation.
 
 ---
 
-## Mnemosyne (Default)
+## mnemopi (Default)
 
-Three-tier memory backed by SQLite + FTS5 full-text search.
+Built-in memory backend forked from oh-my-pi. SQLite + vector embeddings + graph. Zero setup, no external services.
 
 ### Architecture
 ```
 ┌─────────────────────────────────────┐
-│           MNEMOSYNE                 │
+│           MNEMOPI                   │
 ├─────────────────────────────────────┤
 │  Working Memory   │ Session-scoped  │
 │  Episodic Memory  │ Cross-session   │
 │  Semantic Memory  │ Persistent      │
 │  Knowledge Graph  │ Relationships   │
+│  Vector Search    │ Embeddings      │
 └─────────────────────────────────────┘
 ```
 
@@ -30,7 +31,7 @@ Three-tier memory backed by SQLite + FTS5 full-text search.
 
 ### Commands
 ```
-/recall <query>              # Full-text search
+/recall <query>              # Semantic + full-text search
 /memory add <fact>           # Store semantic memory
 /memory list                 # List recent
 /memory list --tier episodic # Filter by tier
@@ -92,13 +93,13 @@ Compressed context representation for long-running sessions.
 ### Through conversation
 ```
 > switch memory to Mem0
-> switch memory to Mnemosyne
+> switch memory to mnemopi
 ```
 
 ### Through config
 ```yaml
 memory:
-  backend: mem0  # mnemosyne | mem0 | lcm
+  backend: mem0  # mnemopi | mnemosyne | mem0 | lcm
 ```
 
 ---

@@ -40,8 +40,7 @@ tools:
       - ls
       - cat
       - git
-      - npm
-      - node
+      - bun
       - python3
       - curl
     blocked_commands:
@@ -58,7 +57,7 @@ tools:
 # ── Memory ────────────────────────────────────────────────────
 memory:
   enabled: true
-  backend: mnemosyne          # mnemosyne | mem0 | lcm
+  backend: mnemopi            # mnemopi | mnemosyne | mem0 | lcm
   db_path: ~/.sns-myagent/memory.db
   max_working_entries: 50
   auto_summarize: true
@@ -119,8 +118,8 @@ tbm:
 
 | Variable | Purpose | Example |
 |----------|---------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
-| `ANTHROPIC_API_KEY` | Anthropic API key | `sk-ant-...` |
+| `OPENAI_API_KEY` | OpenAI API key | `<your-openai-key>` |
+| `ANTHROPIC_API_KEY` | Anthropic API key | `<your-anthropic-key>` |
 | `SNS_MODEL` | Override default model | `claude-sonnet-4-20250514` |
 | `SNS_PROVIDER` | Override default provider | `anthropic` |
 | `SNS_CONFIG_PATH` | Custom config file path | `/etc/sns/config.yaml` |
