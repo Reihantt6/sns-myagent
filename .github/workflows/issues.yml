@@ -1,0 +1,93 @@
+name: Issue triage
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  label-and-welcome:
+    name: Auto-label and welcome
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Apply labels and post welcome
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ctx = github.context;
+            const isPR = !!ctx.payload.pull_request;
+            const item = isPR ? ctx.payload.pull_request : ctx.payload.issue;
+            const labels = new Set(['needs-triage']);
+
+            // Heuristic auto-labeling from title + body
+            const text = ((item.title || '') + ' ' + (item.body || '')).toLowerCase();
+
+            if (/\bbug\b|\berror\b|\bfail\b|\bcrash\b|\bbroken\b/.test(text)) {
+              labels.add('bug');
+            }
+            if (/\bdoc\b|\breadme\b|\bdocumentation\b/.test(text)) {
+              labels.add('documentation');
+            }
+            if (/\bfeat\b|\bfeature\b|\brequest\b|\bsuggestion\b|\bidea\b/.test(text)) {
+              labels.add('enhancement');
+            }
+            if (/\bquest\b|\?$/.test(text)) {
+              labels.add('question');
+            }
+            if (/\bci\b|\bbuild\b|\bworkflow\b|\baction\b/.test(text)) {
+              labels.add('ci');
+            }
+            if (/\btype\b|\btypescript\b|\btsc\b/.test(text)) {
+              labels.add('typescript');
+            }
+            if (/\bbun\b|\binstall\b|\bpostinstall\b/.test(text)) {
+              labels.add('tooling');
+            }
+
+            try {
+              if (isPR) {
+                await github.rest.issues.addLabels({
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  issue_number: item.number,
+                  labels: Array.from(labels),
+                });
+              } else {
+                await github.rest.issues.addLabels({
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  issue_number: item.number,
+                  labels: Array.from(labels),
+                });
+
+                // Welcome message
+                const welcome = [
+                  '👋 Thanks for opening this issue!',
+                  '',
+                  'A maintainer will triage shortly. To help us help you:',
+                  '',
+                  '- Run `bash scripts/diagnose.sh` and paste the output',
+                  '- Include Bun/Node version (`bun --version`, `node --version`)',
+                  '- Include steps to reproduce',
+                  '- Check existing issues for duplicates',
+                  '',
+                  'This issue was auto-labeled: ' + Array.from(labels).map(l => '`' + l + '`').join(', '),
+                ].join('\n');
+
+                await github.rest.issues.createComment({
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  issue_number: item.number,
+                  body: welcome,
+                });
+              }
+              console.log('Applied labels:', Array.from(labels).join(', '));
+            } catch (e) {
+              console.log('Label/welcome step failed (non-fatal):', e.message);
+            }
