@@ -144,4 +144,4 @@ Cache Hit: 72%
 | Lazy Skill Loading | 90%+ | Low |
 | Conversation Tombstoning | 50-70% | Medium |
 | Response Cache | 100% (hit) | Low |
-| **Combined** | **70-90%** | — |
+| **Combined** | **60-80%** | — |

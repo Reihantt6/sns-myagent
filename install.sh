@@ -13,42 +13,43 @@ info()  { echo -e "${GREEN}[info]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[warn]${NC} $1"; }
 error() { echo -e "${RED}[error]${NC} $1"; exit 1; }
 
-# Check Node.js
-check_node() {
-  if command -v node &>/dev/null; then
-    NODE_VER=$(node -v | sed 's/v//' | cut -d. -f1)
-    if [ "$NODE_VER" -lt 20 ]; then
-      warn "Node.js $NODE_VER found but >= 20 required. Installing via nvm..."
-      install_node=true
+# Check Bun (>= 1.3.14 required per package.json engines.bun)
+check_bun() {
+  if command -v bun &>/dev/null; then
+    BUN_VER=$(bun --version | cut -d. -f1,2)
+    BUN_MAJOR=$(echo "$BUN_VER" | cut -d. -f1)
+    BUN_MINOR=$(echo "$BUN_VER" | cut -d. -f2)
+    if [ "$BUN_MAJOR" -lt 1 ] || { [ "$BUN_MAJOR" -eq 1 ] && [ "$BUN_MINOR" -lt 3 ]; }; then
+      warn "Bun $BUN_VER found but >= 1.3.14 required. Installing latest..."
+      install_bun=true
     else
-      info "Node.js $(node -v) found ✓"
-      install_node=false
+      info "Bun $(bun --version) found ✓"
+      install_bun=false
     fi
   else
-    warn "Node.js not found. Installing via nvm..."
-    install_node=true
+    warn "Bun not found. Installing..."
+    install_bun=true
   fi
 
-  if [ "$install_node" = true ]; then
-    if ! command -v nvm &>/dev/null; then
-      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  if [ "$install_bun" = true ]; then
+    curl -fsSL https://bun.sh/install | bash
+    export BUN_INSTALL="$HOME/.bun"
+    [ -s "$BUN_INSTALL/bin/bun" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+    if ! command -v bun &>/dev/null; then
+      error "Bun installation failed. Install manually: https://bun.sh"
     fi
-    nvm install 22
-    nvm use 22
-    info "Node.js $(node -v) installed ✓"
+    info "Bun $(bun --version) installed ✓"
   fi
 }
 
 # Install SNS MyAgent
 install_snscoder() {
-  if command -v npm &>/dev/null; then
-    info "Installing snscoder globally via npm..."
-    npm install -g snscoder
+  if command -v bun &>/dev/null; then
+    info "Installing snscoder globally via bun..."
+    bun add -g snscoder
     info "snscoder installed ✓"
   else
-    error "npm not found. Install Node.js first: https://nodejs.org"
+    error "bun not found. Install Bun first: https://bun.sh"
   fi
 }
 
@@ -69,12 +70,12 @@ main() {
   echo "║     SNS MyAgent Installer            ║"
   echo "╚══════════════════════════════════════╝"
   echo ""
-  check_node
+  check_bun
   install_snscoder
   setup
   echo ""
   info "Run 'snscoder' to start."
-  info "Or: npm start (from cloned repo)"
+  info "Or: bun run build && snscoder (from cloned repo)"
   echo ""
 }
 

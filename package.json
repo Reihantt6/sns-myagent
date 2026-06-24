@@ -28,9 +28,11 @@
   "main": "./src/index.ts",
   "types": "./dist/types/index.d.ts",
   "bin": {
-    "snscoder": "dist/cli.js"
+    "snscoder": "bin/snscoder.js"
   },
   "scripts": {
+    "fetch-binary": "node scripts/fetch-binary.mjs",
+    "postinstall": "node scripts/fetch-binary.mjs",
     "build": "bun scripts/build-binary.ts",
     "check": "biome check . && bun run check:types",
     "check:types": "tsgo -p tsconfig.json --noEmit",
