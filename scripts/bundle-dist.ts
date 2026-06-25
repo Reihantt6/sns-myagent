@@ -79,7 +79,12 @@ async function main(): Promise<void> {
 	// so embed the dashboard archive the same way compiled binaries do
 	// (scripts/build-binary.ts). Reset afterwards to keep the checked-in
 	// placeholder empty.
-	await runCommand(["bun", "--cwd=../stats", "scripts/generate-client-bundle.ts", "--generate"]);
+	// Skip if ../stats doesn't exist (standalone clone / npm publish).
+	const statsDir = path.join(packageDir, "..", "stats");
+	const hasStats = await fs.stat(statsDir).then(s => s.isDirectory()).catch(() => false);
+	if (hasStats) {
+		await runCommand(["bun", "--cwd=../stats", "scripts/generate-client-bundle.ts", "--generate"]);
+	}
 	try {
 		await runCommand([
 			"bun",
@@ -97,7 +102,9 @@ async function main(): Promise<void> {
 			"./src/cli.ts",
 		]);
 	} finally {
-		await runCommand(["bun", "--cwd=../stats", "scripts/generate-client-bundle.ts", "--reset"]);
+		if (hasStats) {
+			await runCommand(["bun", "--cwd=../stats", "scripts/generate-client-bundle.ts", "--reset"]);
+		}
 	}
 	await ensureShebang();
 	const stat = await fs.stat(cliPath);
