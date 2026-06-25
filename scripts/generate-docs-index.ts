@@ -16,7 +16,7 @@ import * as path from "node:path";
 import { gzipSync } from "node:zlib";
 import { Glob } from "bun";
 
-const docsDir = path.resolve(import.meta.dir, "../../../docs");
+const docsDir = path.resolve(import.meta.dir, "../docs");
 const outputPath = path.resolve(import.meta.dir, "../src/internal-urls/docs-index.generated.txt");
 const GENERATE_FLAG = "--generate";
 const RESET_FLAG = "--reset";
