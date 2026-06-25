@@ -117,14 +117,6 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 - **Hermes Agent** — TypeScript-based agent framework with multi-platform and multi-user focus. Not a single-user terminal agent.
 - **OpenClaw** — Personal AI assistant with multi-platform and desktop apps. Single-user and local-first.
 
-**Current SNS MyAgent Status (Phase 2 in progress):**
-- ✅ Phase 0: Planning & Docs complete
-- ✅ Phase 1: Fork + Scaffold complete (CLI, config, UI, CI/CD)
-- 🚧 Phase 2: Core Agent + Telegram (provider integration, chat loop, tool system, Telegram bot) — **in progress**
-- ⏳ Phase 3: Memory + Skills (SQLite memory, skill loader, TBM)
-- ⏳ Phase 4: Multi-Agent + Advanced (orchestrator, parallel execution, multi-model)
-- ⏳ Phase 5: Polish + Publish (npm publish, binaries, Docker)
-
 **Bottom line:** SNS MyAgent and oh-my-pi share the conversational-configuration model. SNS MyAgent is purpose-built for single-user terminal use — lightweight, local-first, and zero multi-platform overhead. oh-my-pi delivers similar capabilities inside a larger multi-platform, multi-user package.
 
 ---
