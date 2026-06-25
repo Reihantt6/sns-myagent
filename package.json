@@ -42,7 +42,7 @@
     "fmt": "biome format --write . && bun run format-prompts",
     "format-prompts": "bun scripts/format-prompts.ts",
     "generate-docs-index": "bun scripts/generate-docs-index.ts --generate",
-    "prepack": "bun scripts/generate-docs-index.ts --generate && bun --cwd=../collab-web run build:tool-views && bun scripts/bundle-dist.ts || ( bun scripts/generate-docs-index.ts --reset; exit 1 )",
+    "prepack": "bun scripts/generate-docs-index.ts --generate && (bun --cwd=../collab-web run build:tool-views 2>/dev/null || echo 'collab-web not found, skipping') && bun scripts/bundle-dist.ts || ( bun scripts/generate-docs-index.ts --reset; exit 1 )",
     "postpack": "bun scripts/generate-docs-index.ts --reset",
     "bench:guard": "bun scripts/bench-guard.ts"
   },
