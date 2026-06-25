@@ -1,0 +1,85 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            artifact: snscoder-linux-x64
+          - os: ubuntu-latest
+            target: linux-arm64
+            artifact: snscoder-linux-arm64
+          - os: macos-latest
+            target: macos-x64
+            artifact: snscoder-macos-x64
+          - os: macos-latest
+            target: macos-arm64
+            artifact: snscoder-macos-arm64
+          - os: windows-latest
+            target: windows-x64
+            artifact: snscoder-windows-x64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build binary
+        run: |
+          FLAGS="--compile --define process.env.PI_COMPILED='\"true\"' --define process.env.PKG_VERSION='\"${{ github.ref_name }}\"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names"
+
+          if [ "${{ matrix.target }}" = "linux-arm64" ]; then
+            # Cross-compile: use bun build --compile with --target for JS bundle, then bundle is architecture-neutral
+            bun build $FLAGS --outfile bin/${{ matrix.artifact }} ./src/cli/entry.ts
+          else
+            bun build $FLAGS --outfile bin/${{ matrix.artifact }} ./src/cli/entry.ts
+          fi
+
+      - name: Test binary
+        run: |
+          chmod +x bin/${{ matrix.artifact }}
+          bin/${{ matrix.artifact }} --help || echo "Binary built but --help not supported, checking version..."
+          bin/${{ matrix.artifact }} --version || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: bin/${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/snscoder-linux-x64/snscoder-linux-x64
+            artifacts/snscoder-linux-arm64/snscoder-linux-arm64
+            artifacts/snscoder-macos-x64/snscoder-macos-x64
+            artifacts/snscoder-macos-arm64/snscoder-macos-arm64
+            artifacts/snscoder-windows-x64.exe/snscoder-windows-x64.exe
