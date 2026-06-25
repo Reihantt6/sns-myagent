@@ -24,7 +24,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Phase 1 scaffold complete: forked from Pi Agent, rebranded as `@sns-myagent/cli` with `snscoder` binary (commit `d1480eb`)
 - GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) with staged verify → install → typecheck → lint → build → diagnose jobs
 - BYOK provider config system with `.sns-myagent/config.yaml` + env overrides
-- Real source-derived inventory of 58 built-in slash commands and 70+ tools documented in README
+- Real source-derived inventory of 58 built-in slash commands and 30 built-in tools documented in README
 - `docs/memory.md` covering mnemopi / mnemosyne / mem0 / lcm backends
 - `docs/tbm.md` Token Budget Manager reference
 - `SECURITY.md` vulnerability reporting + security model
