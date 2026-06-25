@@ -1,6 +1,6 @@
 # Memory System
 
-SNS MyAgent supports 4 memory backends (mnemopi, mnemosyne, mem0, lcm), switchable through conversation.
+SNS MyAgent supports 7 memory backends (mnemopi, hindsight, mnemosyne, mem0, lcm, local, off), switchable through conversation. Source: `src/memory-backend/resolve.ts`.
 
 ---
 
@@ -99,7 +99,7 @@ Compressed context representation for long-running sessions.
 ### Through config
 ```yaml
 memory:
-  backend: mem0  # mnemopi | mnemosyne | mem0 | lcm
+  backend: mnemopi  # mnemopi | hindsight | mnemosyne | mem0 | lcm | local | off
 ```
 
 ---
