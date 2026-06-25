@@ -79,13 +79,13 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 
 ### What Makes It Different
 
-| Differentiator | Description |
-|----------------|-------------|
-| **Conversational Configuration** | Add MCP servers, switch memory backends, change providers — all through chat. No manual config editing. |
-| **Adaptive Memory** | Choose between Mnemosyne (three-tier), Mem0, or mnemopi (SQLite + vector) — switchable through conversation. |
-| **Self-Configuring** | The agent manages its own setup: installs dependencies, writes config files, and verifies connections. |
-| **Personal-First** | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
-| **Lightweight** | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
+| Differentiator | Status | Description |
+|----------------|--------|-------------|
+| **Conversational Configuration** | 🚧 Phase 2 | Add MCP servers, switch memory backends, change providers — all through chat. No manual config editing. |
+| **Adaptive Memory** | 🚧 Phase 3 | Choose between Mnemosyne (three-tier), Mem0, or mnemopi (SQLite + vector) — switchable through conversation. |
+| **Self-Configuring** | 🚧 Phase 2 | The agent manages its own setup: installs dependencies, writes config files, and verifies connections. |
+| **Personal-First** | ✅ Done | Single-user design. No multi-tenancy overhead, no server infrastructure, no auth layers. |
+| **Lightweight** | ✅ Done | Stripped from oh-my-pi (Pi Agent ecosystem). Terminal-only, no desktop app, no voice, no multi-platform messaging. Core agent loop + tools + memory. |
 
 ---
 
@@ -116,6 +116,14 @@ SNS MyAgent inverts that flow. **The agent is the configuration interface.** Des
 - **oh-my-pi** — memory built-in (mnemopi: SQLite + vector embeddings + graph). MCP inherited from other config tools (Cursor, Claude Code, etc.). 32 built-in tools, LSP integration.
 - **Hermes Agent** — TypeScript-based agent framework with multi-platform and multi-user focus. Not a single-user terminal agent.
 - **OpenClaw** — Personal AI assistant with multi-platform and desktop apps. Single-user and local-first.
+
+**Current SNS MyAgent Status (Phase 2 in progress):**
+- ✅ Phase 0: Planning & Docs complete
+- ✅ Phase 1: Fork + Scaffold complete (CLI, config, UI, CI/CD)
+- 🚧 Phase 2: Core Agent + Telegram (provider integration, chat loop, tool system, Telegram bot) — **in progress**
+- ⏳ Phase 3: Memory + Skills (SQLite memory, skill loader, TBM)
+- ⏳ Phase 4: Multi-Agent + Advanced (orchestrator, parallel execution, multi-model)
+- ⏳ Phase 5: Polish + Publish (npm publish, binaries, Docker)
 
 **Bottom line:** SNS MyAgent and oh-my-pi share the conversational-configuration model. SNS MyAgent is purpose-built for single-user terminal use — lightweight, local-first, and zero multi-platform overhead. oh-my-pi delivers similar capabilities inside a larger multi-platform, multi-user package.
 
@@ -356,7 +364,7 @@ snscoder
 > search the web for "node.js best practices 2025"
 > create a Python script that parses CSV files
 > refactor the function in src/utils.ts to use async/await
-> /recall what was that database connection string?
+> /memory view
 ```
 
 No `config.yaml` editing required. The agent handles it.
@@ -466,20 +474,87 @@ snscoder --version                # Show version
 
 ### Interactive Commands
 
+SNS MyAgent ships **58 built-in slash commands** registered in `src/slash-commands/builtin-registry.ts`. Commands fall into six groups:
+
+#### Session & Navigation
 | Command | Description |
 |---------|-------------|
-| `/load <skill>` | Load a skill by name |
-| `/unload <skill>` | Unload a skill |
-| `/skills` | List available skills |
-| `/recall <query>` | Search memory |
-| `/memory add <fact>` | Store a memory |
-| `/memory list` | List recent memories |
-| `/memory clear` | Clear working memory |
-| `/provider <name>` | Switch LLM provider mid-session |
-| `/model <name>` | Switch model mid-session |
-| `/clear` | Clear terminal output |
-| `/help` | Show available commands |
-| `/exit` | Exit |
+| `/new` | Start a new session |
+| `/fresh` | Close the current provider session and start fresh |
+| `/session [info\|delete]` | Show session info, or delete the persisted session file |
+| `/rename <title>` | Rename the current session |
+| `/resume` | Resume a previous session |
+| `/drop` | Drop a session from history |
+| `/compact` | Compact the conversation context |
+| `/shake` | Shake-style compaction modes |
+| `/handoff` | Produce a HANDOFF.md for the next agent |
+| `/exit` / `/quit` | Exit snscoder |
+
+#### Model & Provider
+| Command | Description |
+|---------|-------------|
+| `/model` | Open the model picker (same as alt+m) |
+| `/switch` | Switch model for this session (same as alt+p) |
+| `/fast [on\|off\|status]` | Toggle fast-mode (OpenAI/Claude-only modes) |
+| `/login` | Sign in to a provider |
+| `/logout` | Sign out |
+| `/setup` | Open provider setup wizard |
+
+#### Memory
+| Command | Description |
+|---------|-------------|
+| `/memory view` | Show current memory injection payload |
+| `/memory stats` | Show memory backend statistics |
+| `/memory diagnose` | Run memory backend diagnostics |
+| `/memory clear` | Clear persisted memory data and artifacts |
+| `/memory enqueue` | Enqueue memory consolidation maintenance |
+| `/memory mm list\|show\|refresh\|history\|seed\|delete\|reload` | Mental-model maintenance |
+
+#### Goals & Planning
+| Command | Description |
+|---------|-------------|
+| `/plan` | Enter planning mode |
+| `/plan-review` | Review the active plan |
+| `/goal <set\|show\|pause\|resume\|drop\|budget>` | Long-running goal orchestration |
+| `/guided-goal` | Guided goal walkthrough |
+| `/loop` | Configure loop control |
+| `/btw` / `/tan` / `/omfg` | Quick side-question commands |
+
+#### Tools, Context & Extensions
+| Command | Description |
+|---------|-------------|
+| `/tools` | Show tools currently visible to the agent |
+| `/context` | Show context-window breakdown |
+| `/mcp [reload]` | Show MCP server status / force reload runtime tools |
+| `/ssh` | Run a command on a remote SSH host |
+| `/extensions` | Show loaded extensions |
+| `/plugins` | Show installed plugins |
+| `/marketplace` | Open the marketplace manager |
+| `/reload-plugins` | Reload plugin registry |
+| `/agents` | List subagents |
+| `/advisor [on\|off\|status\|dump]` | Advisor subagent control |
+| `/browser [headless\|visible]` | Switch browser visibility mode |
+
+#### Output & Sharing
+| Command | Description |
+|---------|-------------|
+| `/copy` | Copy last assistant response to clipboard |
+| `/export` | Export session to file |
+| `/dump` | Dump raw session transcript |
+| `/share` | Share session via collab link |
+| `/collab [view\|status\|stop]` | Live collab (host a session for others to join) |
+| `/join <link>` | Join a collab session as a guest |
+| `/leave` | Leave the current collab session |
+| `/todo <edit\|copy\|export\|import\|append\|start\|done\|drop\|rm>` | Markdown todo list management |
+| `/jobs` | Show async background jobs |
+| `/usage [show\|reset]` | Show provider token usage, or reset Codex rate-limit |
+| `/stats [--port]` | Launch local stats dashboard |
+| `/changelog [full]` | Show recent changelog entries |
+| `/hotkeys` | Show keyboard shortcuts |
+| `/retry` | Retry the last prompt |
+| `/debug` | Toggle debug logging |
+
+> Skills and extensions contribute additional commands at runtime (see `/skills` listed dynamically by `available-commands.ts`). Use **Tab** in the TUI for autocomplete of every command.
 
 ---
 
