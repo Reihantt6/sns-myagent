@@ -133,7 +133,7 @@ export const TAB_GROUPS: Record<SettingTab, readonly string[]> = {
 		"Discovery & MCP",
 		"Developer",
 	],
-	tasks: ["Modes", "Subagents", "Isolation", "Commands & Skills"],
+	tasks: ["Modes", "Subagents", "Isolation", "Commands & Skills", "Cron"],
 	providers: ["Services", "Fireworks", "Tiny Model", "Protocol", "Privacy"],
 };
 
@@ -4021,6 +4021,32 @@ export const SETTINGS_SCHEMA = {
 			group: "Commands & Skills",
 			label: "OpenCode Project Commands",
 			description: "Load commands from .opencode/commands/",
+		},
+	},
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Cron
+	// ────────────────────────────────────────────────────────────────────────
+
+	"cron.enabled": {
+		type: "boolean",
+		default: false,
+		ui: {
+			tab: "tasks",
+			group: "Cron",
+			label: "Cron Scheduler",
+			description: "Enable background cron scheduler for periodic task execution",
+		},
+	},
+
+	"cron.intervalMs": {
+		type: "number",
+		default: 60000,
+		ui: {
+			tab: "tasks",
+			group: "Cron",
+			label: "Check Interval (ms)",
+			description: "How often the cron scheduler checks for due jobs (milliseconds)",
 		},
 	},
 
