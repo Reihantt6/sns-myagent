@@ -225,14 +225,33 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Memory Backends
 
-Four backends, configured via `memory.backend` in settings. Source: `src/memory-backend/resolve.ts`.
+Seven backends, configured via `memory.backend` in settings. Source: `src/memory-backend/resolve.ts`.
 
 | Backend | Description | Source |
 |---------|-------------|--------|
 | **mnemopi** (default) | SQLite + vector embeddings + graph. Local, zero setup. | `src/mnemopi/` (7 files) |
 | **hindsight** | Remote memory backend | `src/hindsight/` (5 files) |
+| **mnemosyne** | Three-tier memory: episodic → semantic → procedural. Auto-consolidation. | `src/memory-backend/mnemosyne-backend.ts` |
+| **mem0** | Semantic facts with auto-extraction. Relevance + recency scoring. | `src/memory-backend/mem0-backend.ts` |
+| **lcm** | Latent Context Memory. Delta encoding + multi-resolution. | `src/memory-backend/lcm-backend.ts` |
 | **local** | Rollout summary pipeline | `src/memory-backend/local-backend.ts` |
 | **off** | Memory disabled | `src/memory-backend/off-backend.ts` |
+
+## Cron Scheduler
+
+Persistent background scheduler, SQLite-backed. Source: `src/cron/`.
+
+```bash
+/cron list              # List all jobs
+/cron add <name> <expr> <action> [args]   # Add: action = prompt|shell|skill
+/cron run <name>        # Run immediately
+/cron remove <name>     # Delete
+/cron status            # Show scheduler status
+/cron enable <name>     # Enable
+/cron disable <name>    # Disable
+```
+
+Example: `/cron add backup "0 2 * * *" shell "git push"` runs `git push` daily at 2 AM.
 
 ### mnemopi Settings
 
@@ -300,8 +319,12 @@ bun run src/cli/entry.ts
 |----------|--------|
 | Linux x64 | Binary, npm, curl, source |
 | Linux ARM64 (Termux/Android) | Binary, npm, curl, source |
-| macOS | Source (Bun), npm |
-| Windows | npm, PowerShell installer, WSL |
+| macOS x64 | Binary (CI), npm, source |
+| macOS ARM64 (M1/M2/M3) | Binary (CI), npm, source |
+| Windows x64 | Binary (CI), npm, PowerShell installer, WSL |
+| Android (Termux) | Binary, curl installer |
+
+Prebuilt binaries: [GitHub Releases](https://github.com/Reihantt6/sns-myagent/releases). Auto-built for all platforms on every `v*` tag via `.github/workflows/build-release.yml`.
 
 ---
 
