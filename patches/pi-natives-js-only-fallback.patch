@@ -1,0 +1,41 @@
+--- a/node_modules/@oh-my-pi/pi-natives/native/loader-state.js
++++ b/node_modules/@oh-my-pi/pi-natives/native/loader-state.js
+@@ -747,6 +747,39 @@
+ 		);
+ 	}
++
++	// --- JS-only fallback: return a no-op stub proxy so the binary can ---
++	// --- start up even when pi_natives .node files are unavailable.     ---
++	if (ctx.isCompiledBinary) {
++		const details = errors.map(error => `- ${error}`).join("\n");
++		startupMarker(`native:loadNative:jsOnlyFallback:${details}`);
++		try {
++			fs.writeSync(2, `[pi-natives] JS-only mode: native addon unavailable for ${ctx.addonLabel}\n`);
++			fs.writeSync(2, `[pi-natives] Tried:\n${details}\n`);
++			fs.writeSync(2, `[pi-natives] Native features (grep, pty, shell, clipboard, syntax highlighting, etc.) are disabled.\n`);
++		} catch {
++			// stderr unavailable
++		}
++
++		const noop = new Proxy(function () {}, {
++			get(_target, prop) {
++				if (prop === Symbol.toPrimitive) return () => "";
++				if (prop === Symbol.toStringTag) return "NativeStub";
++				if (prop === "then") return undefined;
++				if (prop === Symbol.iterator) return function* () {};
++				if (prop === "length") return 0;
++				return noop;
++			},
++			apply(_target, _thisArg, args) {
++				return noop;
++			},
++			construct(_target, _args) {
++				return noop;
++			},
++		});
++		return noop;
++	}
++
+ 	const details = errors.map(error => `- ${error}`).join("\n");
+ 	throw new Error(
+ 		`Failed to load pi_natives native addon for ${ctx.addonLabel}.\n\nTried:\n${details}\n\n${buildHelpMessage(ctx)}`,
