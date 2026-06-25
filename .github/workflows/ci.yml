@@ -178,12 +178,12 @@ jobs:
             exit 1
           }
 
-      - name: Verify dist
+      - name: Verify binary
         run: |
-          test -d dist || { echo "::error::dist/ missing"; exit 1; }
-          COUNT=$(find dist -type f | wc -l)
-          echo "dist contains $COUNT files"
-          [ "$COUNT" -gt 0 ] || { echo "::error::dist/ empty"; exit 1; }
+          test -f bin/snscoder-linux-x64 || { echo "::error::bin/snscoder-linux-x64 missing"; exit 1; }
+          SIZE=$(stat -c%s bin/snscoder-linux-x64 2>/dev/null || stat -f%z bin/snscoder-linux-x64)
+          echo "binary size: $SIZE bytes"
+          [ "$SIZE" -gt 1000000 ] || { echo "::error::binary too small"; exit 1; }
 
   # Stage 6: test (independent)
   test:
