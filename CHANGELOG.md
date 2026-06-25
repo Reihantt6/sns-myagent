@@ -21,9 +21,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 **Phase 2: Core Agent + Telegram** — In progress
 - Provider integration (OpenAI, Anthropic, Ollama, OpenRouter, custom)
 - Chat loop (streaming, tool calling)
-- Tool system (file_read, file_write, terminal, web_search)
-- Telegram bot (polling mode, chat, file upload)
-- Telegram commands (`/code`, `/review`, `/status`, `/help`, `/model`)
+- Tool system — see [`src/tools/`](src/tools/) for the full 70+ tool inventory. Headline tools: `bash` (51741B), `write`, `fetch`, `search`, `gh`, `browser`, `ast-edit`, `tts`, `eval`, `debug`, `todo`, `read`
+- Telegram bot (polling mode, chat, file upload) — *not yet present in `src/`; planned*
+- Telegram commands (`/code`, `/review`, `/status`, `/help`, `/model`) — *planned*
 - Multi-platform testing (Linux, Windows, Termux)
 
 **Phase 3: Memory + Skills** — Pending
