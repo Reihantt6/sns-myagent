@@ -2122,13 +2122,13 @@ export const SETTINGS_SCHEMA = {
 	// migration for details.
 	"memory.backend": {
 		type: "enum",
-		values: ["off", "local", "hindsight", "mnemopi"] as const,
+		values: ["off", "local", "hindsight", "mnemopi", "mnemosyne", "mem0", "lcm"] as const,
 		default: "off",
 		ui: {
 			tab: "memory",
 			group: "General",
 			label: "Memory Backend",
-			description: "Off, local summary pipeline, Mnemopi SQLite, or Hindsight remote memory",
+			description: "Off, local summary pipeline, Mnemopi SQLite, Mnemosyne, Mem0, LCM, or Hindsight remote memory",
 			options: [
 				{ value: "off", label: "Off", description: "No memory subsystem runs" },
 				{ value: "local", label: "Local", description: "Local rollout summarisation pipeline (memory_summary.md)" },
@@ -2137,6 +2137,21 @@ export const SETTINGS_SCHEMA = {
 					value: "mnemopi",
 					label: "Mnemopi",
 					description: "Local SQLite recall/retain backend with optional embeddings",
+				},
+				{
+					value: "mnemosyne",
+					label: "Mnemosyne",
+					description: "Three-tier memory: episodic, semantic, procedural with FTS5",
+				},
+				{
+					value: "mem0",
+					label: "Mem0",
+					description: "Semantic memory with auto-extraction and recency weighting",
+				},
+				{
+					value: "lcm",
+					label: "LCM",
+					description: "Latent Context Memory with delta encoding and multi-resolution",
 				},
 			],
 		},
