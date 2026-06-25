@@ -9,46 +9,26 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Roadmap
+### Added
+- Phase 1 scaffold complete: forked from Pi Agent, rebranded as `@sns-myagent/cli` with `snscoder` binary (commit `d1480eb`)
+- GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) with staged verify → install → typecheck → lint → build → diagnose jobs
+- BYOK provider config system with `.sns-myagent/config.yaml` + env overrides
+- Real source-derived inventory of 58 built-in slash commands and 70+ tools documented in README
+- `docs/memory.md` covering mnemopi / mnemosyne / mem0 / lcm backends
+- `docs/tbm.md` Token Budget Manager reference
+- `SECURITY.md` vulnerability reporting + security model
+- `CONTRIBUTING.md` dev setup + commit conventions
+- `install.sh` / `install.ps1` cross-platform installers
 
-**Phase 1: Fork + Scaffold** — ✅ Done (commit `d1480eb`)
-- Fork Pi Agent → rename to sns-myagent
-- Rebrand: package name (`@sns-myagent/cli`), CLI command (`snscoder`), config dir (`.sns-myagent`)
-- GitHub Actions CI/CD (build, lint, test)
-- Basic CLI structure (`snscoder chat`, `snscoder setup`, `snscoder --version`)
-- Config system (config.yaml, env vars, BYOK provider setup)
+### Changed
+- Bumped `@oh-my-pi/*` packages from `16.1.15` → `16.1.18`
+- `bin/snscoder` entrypoint now resolves to `bin/snscoder.js`
+- README rewritten to remove fabricated slash-commands and tools tables — all claims now sourced from `src/`
+- CHANGELOG Phase 2 entries flagged Telegram bot as not yet shipped (no `src/telegram/` files)
 
-**Phase 2: Core Agent + Telegram** — In progress
-- Provider integration (OpenAI, Anthropic, Ollama, OpenRouter, custom)
-- Chat loop (streaming, tool calling)
-- Tool system — see [`src/tools/`](src/tools/) for the full 70+ tool inventory. Headline tools: `bash` (51741B), `write`, `fetch`, `search`, `gh`, `browser`, `ast-edit`, `tts`, `eval`, `debug`, `todo`, `read`
-- Telegram bot (polling mode, chat, file upload) — *not yet present in `src/`; planned*
-- Telegram commands (`/code`, `/review`, `/status`, `/help`, `/model`) — *planned*
-- Multi-platform testing (Linux, Windows, Termux)
-
-**Phase 3: Memory + Skills** — Pending
-- Memory backend: SQLite (local-first, zero-dep) — already shipped via mnemopi
-- Memory types: user preferences, project context, lesson learned, code patterns
-- Auto-memory: extract from conversation, store, recall next session
-- Skill loader: Markdown (SKILL.md) + TypeScript (executable)
-- Context DSL: declarative context rules (`.sns-myagent/context.yaml`)
-- Token Budget Manager (TBM) — already shipped (60-80% input token savings)
-
-**Phase 4: Multi-Agent + Advanced** — Pending
-- Multi-agent orchestrator (main → spawn sub-agents)
-- Agent roles config (`agents.yaml`)
-- Parallel task execution
-- Multi-model ensemble (consensus, critic, best-of-N)
-- Session DAG (fork/merge conversations)
-- Error handling, retry, timeout
-
-**Phase 5: Polish + Publish** — Pending
-- npm publish (`@sns-myagent/cli`)
-- Standalone binaries (Linux, macOS, Windows)
-- Docker image (`ghcr.io/reihantt6/sns-myagent`)
-- `install.sh` one-liner — already shipped
-- GitHub Release
-- E2E smoke test all platforms
+### Status
+- Latest released version: [0.1.0] — 2026-06-23
+- Internal phase tracker: see `PROGRESS.md` (gitignored, not on GitHub)
 
 ---
 
@@ -72,5 +52,4 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - `docs/terminal-ui.md` — TUI design spec
 
 ### Status
-- Phase: **Phase 1 done, Phase 2 in progress**
-- Version: v0.1.0 = scaffold + docs complete, core agent landing
+- v0.1.0 = scaffold + docs complete; core agent landing
