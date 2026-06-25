@@ -74,63 +74,19 @@ function cmdInit(): number {
 	}
 }
 
-function cmdChat(args: string[]): number {
-	const stub = args.includes("--stub");
-	process.stdout.write("snscoder chat — interactive mode\n");
-	if (stub) {
-		process.stdout.write("(stub mode: memory wiring arrives in Phase 2B)\n");
-	}
+async function cmdChat(_args: string[]): Promise<number> {
 	const cfg = loadConfig();
-	if (!cfg) {
-		process.stdout.write("! no config found, run `snscoder init` first\n");
-		process.stdout.write("  starting with in-memory defaults for this session\n");
-	} else {
-		process.stdout.write(`model: ${cfg.model.provider}/${cfg.model.model}\n`);
-		process.stdout.write("type 'exit' to quit\n");
-	}
-	// Readline-style loop using readline from Node built-ins.
-	return runReadlineLoop(cfg);
-}
-
-async function readLine(prompt: string): Promise<string> {
-	const { createInterface } = await import("node:readline/promises");
-	const { stdin, stdout } = await import("node:process");
-	const rl = createInterface({ input: stdin, output: stdout });
-	try {
-		const answer = await rl.question(prompt);
-		return answer;
-	} finally {
-		rl.close();
-	}
-}
-
-function runReadlineLoop(cfg: Config | null): number {
-	// Synchronous-ish loop using readline question/await via deasync-free path.
-	// Keep it simple: each turn re-creates the interface so SIGINT cleanly closes it.
-	const modelLabel = cfg ? `${cfg.model.provider}/${cfg.model.model}` : "defaults";
-	process.stdout.write(`[${modelLabel}] ready.\n`);
-	void (async () => {
-		while (true) {
-			let line: string;
-			try {
-				line = await readLine("you> ");
-			} catch {
-				process.stdout.write("\n");
-				break;
-			}
-			const trimmed = line.trim();
-			if (trimmed === "" || trimmed === "exit" || trimmed === "quit") {
-				process.stdout.write("bye.\n");
-				break;
-			}
-			process.stdout.write(`echo: ${trimmed}\n`);
-		}
-		// Explicit exit so the process actually terminates.
-		process.exit(0);
-	})();
-	// Return a non-zero so Node keeps the event loop alive until readline ends.
+	const { runEchoChat } = await import("../tui/chat-ui.js");
+	await runEchoChat({
+		model: cfg?.model.model,
+		provider: cfg?.model.provider,
+		version: PKG_VERSION,
+		agentName: cfg?.agentName ?? "SnsCoder",
+	});
 	return 0;
 }
+
+
 
 function cmdConfigShow(cfg: Config): number {
 	process.stdout.write(JSON.stringify(cfg, null, 2) + "\n");
