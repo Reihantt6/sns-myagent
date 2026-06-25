@@ -36,3 +36,4 @@ npm-debug.log*
 
 # Binary
 *.tgz
+DOCS-AUDIT-TRACKER.md
