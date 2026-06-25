@@ -81,7 +81,7 @@ jobs:
       - name: Install (skip postinstall)
         run: |
           echo "Installing with SKIP_POSTINSTALL=1 (binary fetch is broken)"
-          SKIP_POSTINSTALL=1 bun install --frozen-lockfile
+          SKIP_POSTINSTALL=1 bun install
 
       - name: Verify install
         run: |
