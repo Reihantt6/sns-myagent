@@ -10,6 +10,9 @@ build/
 .env
 .env.local
 .sns-myagent/config.yaml
+.sns-myagent/*.json
+# Internal dev tracking directory (KANBAN / PHASE plans / patches)
+.sns-myagent/
 
 # OS
 .DS_Store
@@ -35,6 +38,11 @@ coverage/
 *.log
 npm-debug.log*
 
-# Binary
+# Binary artifacts
 *.tgz
+bin/snscoder-linux-x64
+bin/snscoder.js
 DOCS-AUDIT-TRACKER.md
+
+# Migration artifacts
+package.json.orig

@@ -19,12 +19,26 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - `SECURITY.md` vulnerability reporting + security model
 - `CONTRIBUTING.md` dev setup + commit conventions
 - `install.sh` / `install.ps1` cross-platform installers
+- Phase 1.5: prebuilt Linux x64 standalone binary (`bin/snscoder-linux-x64`) produced via `bun build --compile` in `scripts/build-binary.ts`
+- Phase 1.5: integration smoke tests (`test/integration/`) covering CLI binary launch + version/help output
+- Phase 1.5: `grammy` dependency added for the Telegram adapter (`src/telegram/` adapter stub)
+- Phase 1.5: default-config YAML writer (`DEFAULT_CONFIG_YAML` in `src/config/defaults.ts`) — first-run writes a real `config.yaml` instead of silently no-op
 
 ### Changed
 - Bumped `@oh-my-pi/*` packages from `16.1.15` → `16.1.18`
 - `bin/snscoder` entrypoint now resolves to `bin/snscoder.js`
 - README rewritten to remove fabricated slash-commands and tools tables — all claims now sourced from `src/`
 - CHANGELOG Phase 2 entries flagged Telegram bot as not yet shipped (no `src/telegram/` files)
+- `package.json` `build` script moved from inline `bun build` flags to `bun scripts/build-binary.ts` for readability
+- `src/config/defaults.ts` now exports `DEFAULT_CONFIG_FILE`, `DEFAULT_CONFIG_YAML`, `DEFAULT_MODEL`, `DEFAULT_PROVIDER` to satisfy `src/config/index.ts` import (was 4 pre-existing TS errors)
+
+### Removed
+- Dead code: `src/shims/pi-agent-core-shim.ts` — never imported anywhere, kept only as a self-documented escape hatch that became obsolete once `@oh-my-pi/pi-agent-core` 16.1.18 barrel re-exports stabilised
+- `package.json.orig` migration artifact (superseded by current `package.json`; diff captured in `.sns-myagent/`)
+- `src/shims/` directory (empty after shim removal)
+
+### Fixed
+- 4 pre-existing TS errors at `src/config/index.ts:20` — missing exports on `defaults.ts` (`DEFAULT_CONFIG_FILE`, `DEFAULT_CONFIG_YAML`, `DEFAULT_MODEL`, `DEFAULT_PROVIDER`)
 
 ### Status
 - Latest released version: [0.1.0] — 2026-06-23
