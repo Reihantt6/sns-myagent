@@ -31,6 +31,7 @@ import { formatShakeSummary, type ShakeMode } from "../session/shake-types";
 import { urlHyperlinkAlways } from "../tui";
 import { getChangelogPath, parseChangelog } from "../utils/changelog";
 import { CollabQrCodeComponent } from "./helpers/collab-qrcode";
+import { handleCronCommand } from "./helpers/cron";
 import { buildContextReportText } from "./helpers/context-report";
 import { formatDuration } from "./helpers/format";
 import { createMarketplaceManager } from "./helpers/marketplace-manager";
@@ -2216,6 +2217,21 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 			// If a prompt was provided, pass it through as input
 			if (prompt) return { prompt };
 		},
+	},
+	{
+		name: "cron",
+		description: "Manage cron jobs (scheduled tasks)",
+		allowArgs: true,
+		subcommands: [
+			{ name: "list", description: "List all cron jobs" },
+			{ name: "add", description: "Add a new cron job", usage: "<name> <cron-expr> <type> <action>" },
+			{ name: "remove", description: "Remove a cron job", usage: "<id>" },
+			{ name: "run", description: "Manually run a cron job", usage: "<id>" },
+			{ name: "status", description: "Show scheduler status" },
+			{ name: "enable", description: "Enable the cron scheduler" },
+			{ name: "disable", description: "Disable the cron scheduler" },
+		],
+		handle: handleCronCommand,
 	},
 	{
 		name: "quit",
