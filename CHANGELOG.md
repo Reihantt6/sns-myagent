@@ -10,6 +10,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Added
+- **TBM (Token Budget Manager) fully implemented** — 7 core modules:
+  - Context Delta Cache: static/dynamic message splitting, ~40% token savings
+  - Context Pyramid: 5 compression levels (L0–L4), auto-demotion based on budget pressure
+  - Lazy Skill Loading: index-on-demand instead of bulk inject, ~85% savings
+  - Tool Output Compression: per-tool budgets, auto-truncation, JSON/HTML/markdown reducers
+  - Conversation Tombstoning: old messages → 10-line summaries, ~85% reduction
+  - Response Cache: exact + semantic (Jaccard bigram) match, configurable TTL
+  - Communication Modes: caveman/normal/verbose/auto with system prompt directives
+- `/tokens` command: full TBM dashboard (session stats, cache hits, compression, pyramid level, cost estimate)
+- `/mode` command: set caveman/normal/verbose/auto communication mode
+- `TbmManager` singleton class coordinating all subsystems
 - Phase 1 scaffold complete: forked from Pi Agent, rebranded as `@sns-myagent/cli` with `snscoder` binary (commit `d1480eb`)
 - GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) with staged verify → install → typecheck → lint → build → diagnose jobs
 - BYOK provider config system with `.sns-myagent/config.yaml` + env overrides
