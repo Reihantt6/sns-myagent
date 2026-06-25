@@ -44,7 +44,7 @@ jobs:
 
       - name: Build binary
         env:
-          FLAGS: --compile --define process.env.PI_COMPILED='"true"' --define process.env.PKG_VERSION='"${{ github.ref_name }}"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names
+          FLAGS: --compile --target=bun --define process.env.PI_COMPILED='"true"' --define process.env.PKG_VERSION='"${{ github.ref_name }}"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names
         run: bun build $FLAGS --outfile bin/${{ matrix.artifact }} ./src/cli/entry.ts
 
       - name: Test binary exists
