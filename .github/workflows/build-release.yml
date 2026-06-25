@@ -49,9 +49,10 @@ jobs:
         run: bun build $FLAGS --outfile bin/${{ matrix.artifact }} ./src/cli/entry.ts
 
       - name: Test binary exists
+        shell: bash
         run: |
           ls -la bin/${{ matrix.artifact }}
-          file bin/${{ matrix.artifact }}
+          if [ -f bin/${{ matrix.artifact }} ]; then echo "✓ Binary exists"; else echo "✗ Missing"; exit 1; fi
 
       - uses: actions/upload-artifact@v4
         with:
