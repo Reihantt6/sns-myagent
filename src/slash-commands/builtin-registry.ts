@@ -2238,6 +2238,55 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 		description: "Quit the application",
 		handleTui: shutdownHandlerTui,
 	},
+	{
+		name: "tokens",
+		description: "Show Token Budget Manager dashboard — session stats, cache hits, compression, pyramid level",
+		inlineHint: "[compact]",
+		allowArgs: true,
+		handle: async (command, runtime) => {
+			try {
+				// TBM is accessed via session.tbm if available
+				const session = runtime.session as unknown as Record<string, unknown>;
+				const tbm = session.tbm as { renderDashboard(): string; renderCompactDashboard(): string } | undefined;
+				if (!tbm) {
+					await runtime.output("TBM not initialized. Check config tbm.enabled.");
+					return commandConsumed();
+				}
+				const compact = command.args.trim() === "compact";
+				await runtime.output(compact ? tbm.renderCompactDashboard() : tbm.renderDashboard());
+				return commandConsumed();
+			} catch (err) {
+				await runtime.output(`Failed to render TBM dashboard: ${errorMessage(err)}`);
+				return commandConsumed();
+			}
+		},
+	},
+	{
+		name: "mode",
+		description: "Set communication mode: caveman (terse), normal, verbose, or auto",
+		inlineHint: "[caveman|normal|verbose|auto|status]",
+		allowArgs: true,
+		handle: async (command, runtime) => {
+			const arg = command.args.trim().toLowerCase();
+			const session = runtime.session as unknown as Record<string, unknown>;
+			const tbm = session.tbm as { setMode(mode: string): void; renderCompactDashboard(): string } | undefined;
+			if (!tbm) {
+				await runtime.output("TBM not initialized.");
+				return commandConsumed();
+			}
+			if (!arg || arg === "status") {
+				await runtime.output(tbm.renderCompactDashboard());
+				return commandConsumed();
+			}
+			if (!["caveman", "normal", "verbose", "auto"].includes(arg)) {
+				await runtime.output("Usage: /mode [caveman|normal|verbose|auto|status]");
+				return commandConsumed();
+			}
+			tbm.setMode(arg);
+			await runtime.output(`Communication mode set to: ${arg}`);
+			return commandConsumed();
+		},
+	},
 ];
 
 const BUILTIN_SLASH_COMMAND_LOOKUP = new Map<string, SlashCommandSpec>();
