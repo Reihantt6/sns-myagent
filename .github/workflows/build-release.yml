@@ -37,12 +37,13 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - name: Install dependencies
         run: bun install
 
       - name: Build binary
+        shell: bash
         env:
           FLAGS: --compile --target=bun --define process.env.PI_COMPILED='"true"' --define process.env.PKG_VERSION='"${{ github.ref_name }}"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names
         run: bun build $FLAGS --outfile bin/${{ matrix.artifact }} ./src/cli/entry.ts
