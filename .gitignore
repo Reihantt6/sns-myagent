@@ -46,3 +46,12 @@ DOCS-AUDIT-TRACKER.md
 
 # Migration artifacts
 package.json.orig
+
+# Internal tracking
+PLAN-*.md
+PROGRESS.md
+KANBAN.md
+_HANDOFF_*
+MASTER-PLAN*
+*-DESIGN.md
+*-INFRA.md
