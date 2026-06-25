@@ -20,6 +20,9 @@ export async function resolveMemoryBackend(settings: Settings): Promise<MemoryBa
 	const id = settings.get("memory.backend");
 	if (id === "hindsight") return (await import("../hindsight/backend")).hindsightBackend;
 	if (id === "mnemopi") return (await import("../mnemopi/backend")).mnemopiBackend;
+	if (id === "mnemosyne") return (await import("./mnemosyne-backend")).mnemosyneBackend;
+	if (id === "mem0") return (await import("./mem0-backend")).mem0Backend;
+	if (id === "lcm") return (await import("./lcm-backend")).lcmBackend;
 	if (id === "local") return localBackend;
 	return offBackend;
 }
