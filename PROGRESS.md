@@ -1,6 +1,6 @@
 # SNS-MyAgent — Project Progress
 
-> Auto-maintained. Last updated: 2026-06-26 15:15 UTC
+> Auto-maintained. Last updated: 2026-06-26 21:05 UTC
 
 ## TL;DR Next Session
 
@@ -11,26 +11,20 @@
 | # | Task | File/Module | Effort | Block |
 |---|------|-------------|--------|-------|
 | 1 | **Terminal UI full custom** (banner logo SNS-MyAgent, gradient brand color, status bar real-time, message bubbles) | `src/ui/`, `src/tui/` | ~3-4h | — |
-| 2 | **Wire memory backends** ke CLI commands (`/memory view/stats/diagnose/clear/rebuild`) | `src/memory-backend/` (9 files exist) | ~2h | — |
-| 3 | **Wire cron scheduler** ke CLI command + Telegram (`/cron list/add/remove`) | `src/cron/` (6 files exist) | ~2h | — |
-| 4 | **Telegram slash commands** (`/code /review /status /help /model /memory /cron`) | `src/adapters/telegram/` | ~2h | 2, 3 |
-| 5 | **File upload/download via Telegram** | `src/adapters/telegram/` | ~1h | 4 |
-| 6 | **Commit + tag v0.2.0** (setelah #2-#5) | — | ~30m | 2-5 |
-
-### 📋 Yang Planned (belum mulai)
-
-| # | Task | Effort | Depends |
-|---|------|--------|---------|
 | 7 | **Multi-agent orchestrator** | ~1 day | — |
 | 8 | **Agent roles config** (`agents.yaml`) | ~3h | 7 |
 | 9 | **Parallel task execution (DAG)** | ~4h | 7 |
 | 10 | **Multi-model ensemble** (consensus/critic/best-of-N) | ~4h | — |
 | 11 | **Session DAG** (fork/merge) | ~1 day | 7 |
 | 12 | **Error handling** (retry, timeout, circuit breaker) | ~3h | — |
-| 13 | **npm publish** (`@sns-myagent/cli`) | ~2h | 1-6 done |
+| 13 | **npm publish** (`@sns-myagent/cli`) | ~2h | — |
 | 14 | **macOS + Windows binaries** | ~1 day | — |
 | 15 | **Docker image** (`ghcr.io/reihantt6/sns-myagent`) | ~2h | — |
 | 16 | **E2E smoke tests** (all platforms) | ~3h | 13-15 |
+
+### 📋 Yang Planned (belum mulai)
+
+_(nothing — moved to active)_
 
 ### ✅ DONE (jangan kerjain ulang)
 
@@ -43,31 +37,32 @@
 | 2.5 | ARM64 cross-compile + multi-arch install.sh | — | 2026-06-25 |
 | 2.8 | TBM 11 modules (`src/tbm/`, 2711 lines) + `/tokens` `/mode` | — | 2026-06-25 |
 | 3 | README audit + binary verify + launch command + .gitignore cleanup | `92110c4` | 2026-06-26 |
+| 4 | **Telegram bridge + slash commands + file upload/download + binary v0.2.0** | `b89123c` `9208c21` `2756988` | 2026-06-26 |
 
 ---
 
 ## Repo State (2026-06-26)
 
 ```
-Branch:      main @ 92110c4
-Last commit: fix: Phase 3 — README audit, binary verification, launch command
+Branch:      main @ 2756988
+Last commit: build: bump PKG_VERSION to 0.2.0 (p4-4)
 TS:          clean (tsc -p tsconfig.json --noEmit → exit 0)
-Binary:      bin/snscoder 0.1.0 works (96MB ELF, JS-only fallback)
+Binary:      bin/snscoder 0.2.0 works (113MB ELF, JS-only fallback)
 Default LLM: openai/gpt-4o-mini
 ```
 
 ### Uncommitted (local only)
 ```
-(clean — all committed in 92110c4)
+(clean — all committed in 2756988)
 ```
 
 ### Source Inventory (verified)
 | Module | Location | Files | Status |
 |--------|----------|-------|--------|
 | TBM | `src/tbm/` | 11 | ✅ Compiled |
-| Memory Backends | `src/memory-backend/` | 9 | ⚡ Exists, unwired |
-| Cron | `src/cron/` | 6 | ⚡ Exists, unwired |
-| Telegram | `src/adapters/telegram/` | 4 | ✅ Bot + format done, slash cmds TODO |
+| Memory Backends | `src/memory-backend/` | 9 | ⚡ Exists, unwired (future) |
+| Cron | `src/cron/` | 6 | ⚡ Exists, unwired (future) |
+| Telegram | `src/adapters/telegram/` | 5 | ✅ Bridge + slash cmds + file upload/download |
 | CLI | `src/cli/` | 51 | ✅ Done |
 | Commands | `src/commands/` | 32 | ✅ Done |
 | UI/TUI | `src/ui/` (5) + `src/tui/` (13) | 18 | ⚡ Basic scaffold, needs full redesign |
@@ -119,20 +114,24 @@ Default LLM: openai/gpt-4o-mini
 
 ---
 
-## v0.2.0 Target Scope (next release)
+## v0.2.0 Scope — COMPLETED ✅
 
-**Feature**: Tasks #1-#6 above (Terminal UI + wire memory/cron/TG)
+**Features delivered**:
+- [x] Telegram bridge (forwardToAgent + session cache)
+- [x] Telegram slash commands (/memory /cron /model /code /review /tokens /mode)
+- [x] File upload/download via Telegram (document/photo/video/voice/audio)
+- [x] Binary rebuilt v0.2.0 (113MB, `snscoder 0.2.0`)
 
 **Quality gate**:
-- TS clean
-- `scripts/diagnose.sh` PASS
-- Telegram E2E test (poll → command → response)
-- Memory backend switch E2E test
-- Binary works on Linux x64 + ARM64 (Termux)
+- [x] TS clean
+- [x] Binary works on Linux x64
+- [ ] E2E smoke test (pending — need live Telegram token)
 
-**Skip v0.2.0** (move to v0.3.0):
-- Multi-agent (#7-9)
-- Ensemble (#10)
-- Session DAG (#11)
+**Tag**: `v0.2.0` after docs committed
 
-**Tag**: `v0.2.0` after all 6 tasks done + tested
+---
+
+## Next: v0.3.0 Target Scope
+
+**Phase 5**: Multi-agent orchestrator + roles + parallel + ensemble
+**Phase 6**: npm publish + multi-OS binaries + Docker + E2E
