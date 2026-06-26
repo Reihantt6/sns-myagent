@@ -1,6 +1,6 @@
 /**
- * SnsCoder splash screen — gradient banner + system info blocks.
- * Rendered as bordered terminal blocks like Antigravity/Pi/Hermes.
+ * SNS-MyAgent splash screen — branded gradient banner + system info blocks.
+ * Premium terminal UI with gradient logo, rounded box, and info panel.
  */
 import chalk from "chalk";
 import gradient from "gradient-string";
@@ -10,13 +10,12 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const BANNER_ART = `
- ███████╗███╗   ██╗███████╗
- ██╔════╝████╗  ██║██╔════╝
- ███████╗██╔╝██╗  ███████╗
- ╚════██║██║╚██╗  ╚════██║
- ███████║██║ ╚██╗ ███████║
- ╚══════╝╚═╝  ╚═╝ ╚══════╝
-`;
+███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+██║ ╚████║███████╗██╔╝ ╚██╗╚██████╔╝███████║
+╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝ ╚═════╝ ╚══════╝`;
 
 const SUBTITLE = "My-Agent • SnsCoder CLI";
 
@@ -68,7 +67,7 @@ function makeInfoBlocks(info: SplashInfo, width: number): string {
 
 export function renderSplash(info: SplashInfo = {}): string {
   const cols = process.stdout.columns ?? 80;
-  const bannerWidth = Math.min(cols - 2, 60);
+  const bannerWidth = Math.min(cols - 2, 64);
 
   // Gradient banner
   const bannerLines = BANNER_ART.split("\n").filter(l => l.trim().length > 0);

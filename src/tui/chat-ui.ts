@@ -11,6 +11,7 @@ import { stdin, stdout } from "node:process";
 import { platform } from "node:os";
 import { cwd } from "node:process";
 import { renderSplash, type SplashInfo } from "./splash.js";
+import { renderStatusBar, clearStatusBar, type StatusBarState } from "../ui/status-bar.js";
 import {
   renderChatBlock,
   renderToolBlock,
@@ -33,6 +34,8 @@ interface ChatSessionConfig {
   provider?: string;
   version: string;
   agentName?: string;
+  tokensUsed?: number;
+  memoryHits?: number;
   onUserMessage?: (msg: string) => Promise<string | null>;
 }
 
@@ -140,8 +143,19 @@ const BUILTIN_COMMANDS: SlashCommand[] = [
 
 export async function runChatSession(config: ChatSessionConfig): Promise<void> {
   const messages: ChatMessage[] = [];
-  const model = config.model ? `${config.provider ?? "?"}/${config.model}` : "defaults";
+  const model = config.model ? `${config.provider ?? "??"}/${config.model}` : "defaults";
+  const sessionStarted = Date.now();
+  const statusState: StatusBarState = {
+    model: config.model ?? "none",
+    tokensUsed: config.tokensUsed ?? 0,
+    sessionStarted,
+    memoryHits: config.memoryHits ?? 0,
+  };
 
+  const updateStatus = (): void => {
+    clearStatusBar();
+    renderStatusBar(statusState);
+  };
   // Print splash
   const splashInfo: SplashInfo = {
     model: config.model,
@@ -151,9 +165,11 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
   };
   clearScreen();
   stdout.write(renderSplash(splashInfo) + "\n\n");
-
+  updateStatus();
   const print = (text: string): void => {
+    clearStatusBar();
     stdout.write(text + "\n");
+    updateStatus();
   };
 
   const ctx: ChatContext = { messages, config, print };
@@ -193,6 +209,8 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
     // User message
     const userMsg: ChatMessage = { role: "user", content: trimmed, timestamp: new Date() };
     messages.push(userMsg);
+    statusState.tokensUsed += trimmed.split(/\s+/).length; // rough word count
+    updateStatus();
     print(renderChatBlock({
       role: "user",
       content: trimmed,
@@ -228,6 +246,9 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
     const reply = response ?? `echo: ${trimmed}`;
     const assistantMsg: ChatMessage = { role: "assistant", content: reply, timestamp: new Date() };
     messages.push(assistantMsg);
+    statusState.tokensUsed += reply.split(/\s+/).length;
+    statusState.memoryHits += 1;
+    updateStatus();
     print(renderChatBlock({
       role: "assistant",
       content: reply,

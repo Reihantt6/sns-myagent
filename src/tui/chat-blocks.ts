@@ -1,11 +1,12 @@
 /**
  * Chat message block renderers — bordered terminal blocks for each message role.
- * User, assistant, tool, system messages each get distinct visual treatment.
- * Inspired by Antigravity CLI / Pi / Hermes block-style rendering.
+ * User, assistant, tool, system messages each get distinct gradient border treatment.
+ * Premium branded terminal UI for SNS-MyAgent.
  */
 import chalk from "chalk";
 import gradient from "gradient-string";
 import { visibleWidth } from "@oh-my-pi/pi-tui";
+import { BRAND_GRADIENT, ROLE_HEX } from "#src/ui/colors.js";
 
 // ── Box-drawing chars (rounded) ──
 const BOX = {
@@ -21,11 +22,11 @@ const BOX = {
 
 // ── Color themes per role ──
 const ROLE_COLORS = {
-  user: { border: chalk.cyan, label: chalk.cyan.bold, accent: "#00d2ff" },
-  assistant: { border: chalk.magenta, label: chalk.magenta.bold, accent: "#7b2ff7" },
-  tool: { border: chalk.yellow, label: chalk.yellow, accent: "#ffd700" },
-  system: { border: chalk.dim, label: chalk.dim, accent: "#666666" },
-  error: { border: chalk.red, label: chalk.red.bold, accent: "#ff4444" },
+  user: { border: chalk.cyan, label: chalk.cyan.bold, gradient: [ROLE_HEX.user, "#0099cc"] },
+  assistant: { border: chalk.magenta, label: chalk.magenta.bold, gradient: [ROLE_HEX.assistant, "#9b59b6"] },
+  tool: { border: chalk.yellow, label: chalk.yellow, gradient: [ROLE_HEX.tool, "#e6a700"] },
+  system: { border: chalk.dim, label: chalk.dim, gradient: [ROLE_HEX.system, "#555555"] },
+  error: { border: chalk.red, label: chalk.red.bold, gradient: [ROLE_HEX.error, "#cc0000"] },
 } as const;
 
 export type MessageRole = keyof typeof ROLE_COLORS;
@@ -71,7 +72,7 @@ function wrapAnsi(text: string, maxWidth: number): string[] {
 }
 
 /**
- * Render a single chat message as a bordered block.
+ * Render a single chat message as a bordered block with gradient border.
  */
 export function renderChatBlock(opts: ChatBlockOptions): string {
   const cols = process.stdout.columns ?? 80;
@@ -84,44 +85,51 @@ export function renderChatBlock(opts: ChatBlockOptions): string {
 
   const lines: string[] = [];
 
-  // ── Top bar ──
+  // ── Top bar with gradient label ──
   const label = opts.label ?? opts.role.toUpperCase();
   const labelText = ` ${label} `;
   const topFill = BOX.horizontal.repeat(
     Math.max(0, innerWidth - visibleWidth(labelText) + pad * 2)
   );
+  const gradBorder = gradient(colors.gradient as [string, string]);
   lines.push(
-    border(BOX.topLeft + BOX.horizontal.repeat(2)) +
+    gradBorder(BOX.topLeft + BOX.horizontal.repeat(2)) +
       colors.label(labelText) +
-      border(topFill + BOX.topRight)
+      gradBorder(topFill + BOX.topRight)
   );
 
-  // ── Content lines ──
+  // ── Content lines with gradient side borders ──
   const contentLines = wrapAnsi(opts.content, innerWidth);
   const padStr = " ".repeat(pad);
   for (const line of contentLines) {
     const vis = visibleWidth(line);
     const fill = " ".repeat(Math.max(0, innerWidth - vis));
-    lines.push(border(BOX.vertical) + padStr + line + fill + padStr + border(BOX.vertical));
+    lines.push(
+      gradBorder(BOX.vertical) + padStr + line + fill + padStr + gradBorder(BOX.vertical)
+    );
   }
 
   // ── Meta line (timestamp, tokens, etc.) ──
   if (opts.meta) {
     const metaText = chalk.dim(opts.meta);
     const metaFill = " ".repeat(Math.max(0, innerWidth - visibleWidth(opts.meta)));
-    lines.push(border(BOX.vertical) + padStr + metaText + metaFill + padStr + border(BOX.vertical));
+    lines.push(
+      gradBorder(BOX.vertical) + padStr + metaText + metaFill + padStr + gradBorder(BOX.vertical)
+    );
   }
 
   // ── Streaming indicator ──
   if (opts.streaming) {
     const spinner = chalk.cyan("⣾") + chalk.dim(" thinking...");
     const spinFill = " ".repeat(Math.max(0, innerWidth - visibleWidth("⣾ thinking...")));
-    lines.push(border(BOX.vertical) + padStr + spinner + spinFill + padStr + border(BOX.vertical));
+    lines.push(
+      gradBorder(BOX.vertical) + padStr + spinner + spinFill + padStr + gradBorder(BOX.vertical)
+    );
   }
 
   // ── Bottom bar ──
   lines.push(
-    border(BOX.bottomLeft + BOX.horizontal.repeat(width - 2) + BOX.bottomRight)
+    gradBorder(BOX.bottomLeft + BOX.horizontal.repeat(width - 2) + BOX.bottomRight)
   );
 
   return lines.join("\n");
@@ -137,23 +145,23 @@ export function renderInline(role: MessageRole, text: string): string {
 }
 
 /**
- * Render a separator/divider line.
+ * Render a separator/divider line with gradient accent.
  */
 export function renderDivider(label?: string): string {
   const cols = process.stdout.columns ?? 80;
-  const border = chalk.dim;
+  const grad = gradient(BRAND_GRADIENT);
   if (!label) {
-    return border("─".repeat(cols - 2));
+    return grad("─".repeat(cols - 2));
   }
   const labelText = ` ${label} `;
   const fill = BOX.horizontal.repeat(Math.max(0, cols - 4 - visibleWidth(labelText)));
-  return border(`${fill.slice(0, Math.floor(fill.length / 2))}`) +
+  return grad(`${fill.slice(0, Math.floor(fill.length / 2))}`) +
     chalk.dim(labelText) +
-    border(`${fill.slice(Math.floor(fill.length / 2))}`);
+    grad(`${fill.slice(Math.floor(fill.length / 2))}`);
 }
 
 /**
- * Render a tool-call status block (compact, with spinner/done/error icon).
+ * Render a tool-call status block (compact, with gradient border).
  */
 export function renderToolBlock(
   toolName: string,
@@ -162,7 +170,12 @@ export function renderToolBlock(
 ): string {
   const cols = process.stdout.columns ?? 80;
   const width = Math.min(cols - 2, 72);
-  const border = status === "error" ? chalk.red : status === "running" ? chalk.yellow : chalk.dim;
+  const gradColors = status === "error"
+    ? ["#ff4444", "#cc0000"]
+    : status === "running"
+    ? ["#ffd700", "#e6a700"]
+    : ["#00d2ff", "#7b2ff7"];
+  const grad = gradient(gradColors as [string, string]);
 
   const icon = status === "running" ? chalk.yellow("⚙") : status === "done" ? chalk.green("✓") : chalk.red("✗");
   const label = ` ${icon} tool:${toolName} `;
@@ -171,7 +184,7 @@ export function renderToolBlock(
     Math.max(0, width - 2 - visibleWidth(` ⚙ tool:${toolName} `) - visibleWidth(detail ?? ""))
   );
 
-  return border(BOX.topLeft + BOX.horizontal) + label + detailText + border(fill + BOX.topRight);
+  return grad(BOX.topLeft + BOX.horizontal) + label + detailText + grad(fill + BOX.topRight);
 }
 
 /**
