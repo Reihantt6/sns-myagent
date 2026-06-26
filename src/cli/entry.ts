@@ -13,9 +13,11 @@ const head = argv[0];
 
 // Auto-boot the Telegram polling adapter when a token is present and the
 // user is not explicitly running a different subcommand. Disable with
-// SNS_TELEGRAM_AUTOSTART=0.
+// SNS_TELEGRAM_AUTOSTART=0. Skip for "launch" which starts the full agent
+// session and will wire the adapter after the session is ready.
 function maybeAutostartTelegram(): void {
 	if (head === "telegram") return; // explicit start/stop handles its own lifecycle
+	if (head === "launch") return; // defer to runInteractiveMode in main.ts
 	if (process.env.SNS_TELEGRAM_AUTOSTART === "0") return;
 	const token = process.env.SNS_TELEGRAM_BOT_TOKEN;
 	if (!token) return;

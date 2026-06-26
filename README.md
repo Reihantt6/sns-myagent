@@ -18,12 +18,12 @@
 </p>
 
 <p align="center">
-  <strong>BYOK coding agent CLI — 30 built-in tools, 58 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
+  <strong>BYOK coding agent CLI — 30 built-in tools, 61 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
 </p>
 
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/version-0.1.0-yellow?style=flat-square" alt="Version 0.1.0">
+  <img src="https://img.shields.io/badge/version-0.2.0-yellow?style=flat-square" alt="Version 0.2.0">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
   <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
 </p>
@@ -60,9 +60,9 @@
 | Feature | Source |
 |---------|--------|
 | **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **58 slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **61 slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via `@oh-my-pi/pi-ai` |
-| **4 memory backends** | mnemopi (default), hindsight, local, off — `src/memory-backend/resolve.ts` |
+| **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
 | **MCP integration** | 22 source files in `src/mcp/` |
 | **Plan mode** | `src/plan-mode/` — agent plans before executing |
 | **Goal mode** | Autonomous objective with token budget and lifecycle |
@@ -117,11 +117,10 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `debug` | Debugging assistance |
 
 ### Web & Browser
-
+### Web & Browser
 | Tool | Description |
 |------|-------------|
 | `web_search` | Web search via configured provider |
-| `search` | File/content search |
 | `search_tool_bm25` | BM25-based search tool |
 | `browser` | Headless browser automation (Puppeteer) |
 | `inspect_image` | Image analysis |
@@ -159,7 +158,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Slash Commands
 
-58 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
+61 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
 
 ### Session & Navigation
 
@@ -401,7 +400,7 @@ Settings use dot-separated paths. Full schema in `src/config/settings-schema.ts`
   "eval.jl": true,
 
   // Memory
-  "memory.backend": "mnemopi",  // "mnemopi" | "hindsight" | "local" | "off"
+  "memory.backend": "mnemopi",  // "mnemopi" | "hindsight" | "mnemosyne" | "mem0" | "lcm" | "local" | "off"
   "hindsight.scoping": "...",
 
   // MCP
