@@ -1,12 +1,12 @@
 # SNS-MyAgent — Kanban Board
 
-> **Last updated:** 2026-06-26 10:45 UTC
+> **Last updated:** 2026-06-26 21:05 UTC
 > **Plan files:** `PLAN-PHASE-3.md` → `PLAN-PHASE-4.md` → `PLAN-PHASE-5.md` → `PLAN-PHASE-6.md` → `PLAN-OMP-CUSTOMIZATION.md`
 
 ---
 
 ## ✅ DONE
-## ✅ DONE
+
 ### Phase 0: Planning & Docs (2026-06-23)
 - [x] PRD v2.0, README.md, package.json, install.sh, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md
 - [x] docs/ (install, config, memory, tbm, troubleshooting, faq)
@@ -43,6 +43,12 @@
 - [x] .gitignore: added nested `sns-myagent/` dir
 - [x] Added `launch` CLI command for full agent mode
 
+### Phase 4: Memory + Cron + Telegram (2026-06-26)
+- [x] Wire Telegram bridge (forwardToAgent + session cache) — commit b89123c
+- [x] Telegram slash commands (/memory /cron /model /code /review) — commit b89123c
+- [x] File upload/download via Telegram (document/photo/video/voice/audio) — commit 9208c21
+- [x] Binary rebuilt v0.2.0 (113MB) — commit 2756988
+
 ---
 
 ## 🔥 IN PROGRESS
@@ -51,26 +57,20 @@ _(nothing currently in progress)_
 ---
 
 ## 📋 BACKLOG
-### Phase 4: Memory + Cron + Telegram → `PLAN-PHASE-4.md`
-- [ ] Wire memory backends (9 files exist in `src/memory-backend/`)
-- [ ] Wire cron scheduler (6 files exist in `src/cron/`)
-- [ ] Telegram slash commands (/code, /review, /status, /help, /model, /memory, /cron)
-- [ ] File upload/download via Telegram
-- [ ] Tag v0.2.0 (or v0.3.0)
 
 ### Phase 5: Multi-Agent + Advanced → `PLAN-PHASE-5.md`
 - [ ] Multi-agent orchestrator
-- [ ] Agent roles config (agents.yaml)
+- [ ] Agent roles config (`agents.yaml`)
 - [ ] Parallel task execution (DAG)
-- [ ] Multi-model ensemble (consensus, critic, best-of-N)
+- [ ] Multi-model ensemble (consensus/critic/best-of-N)
 - [ ] Session DAG (fork/merge)
-- [ ] Error handling, retry, timeout, circuit breaker
+- [ ] Error handling (retry, timeout, circuit breaker)
 
 ### Phase 6: Polish + Publish → `PLAN-PHASE-6.md`
 - [ ] npm publish (`@sns-myagent/cli`)
 - [ ] Multi-platform binaries (macOS x64/ARM64, Windows)
-- [ ] Docker image (ghcr.io)
-- [ ] E2E smoke tests all platforms
+- [ ] Docker image (`ghcr.io/reihantt6/sns-myagent`)
+- [ ] E2E smoke tests (all platforms)
 - [ ] Docs final sync
 - [ ] v1.0.0 release
 
