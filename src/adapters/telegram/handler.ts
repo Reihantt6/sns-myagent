@@ -12,6 +12,7 @@ import { logger } from "@oh-my-pi/pi-utils";
 export type ParsedMessage =
 	| { kind: "command"; command: TelegramCommand; args: string; raw: string; userId: number; chatId: number; messageId: number }
 	| { kind: "chat"; text: string; userId: number; chatId: number; messageId: number }
+	| { kind: "file"; fileId: string; fileName: string; mimeType: string; caption: string; userId: number; chatId: number; messageId: number }
 	| { kind: "empty"; userId: number; chatId: number; messageId: number };
 
 export type TelegramCommand =
@@ -33,6 +34,59 @@ export function parseMessage(msg: Message): ParsedMessage {
 	const chatId = msg.chat.id;
 	const messageId = msg.message_id;
 	const text = (msg.text ?? msg.caption ?? "").trim();
+
+	// Detect file attachments (document, photo, video, audio, voice)
+	if (msg.document) {
+		return {
+			kind: "file",
+			fileId: msg.document.file_id,
+			fileName: msg.document.file_name ?? "file",
+			mimeType: msg.document.mime_type ?? "application/octet-stream",
+			caption: text,
+			userId, chatId, messageId,
+		};
+	}
+	if (msg.photo && msg.photo.length > 0) {
+		const largest = msg.photo[msg.photo.length - 1]!;
+		return {
+			kind: "file",
+			fileId: largest.file_id,
+			fileName: `photo_${messageId}.jpg`,
+			mimeType: "image/jpeg",
+			caption: text,
+			userId, chatId, messageId,
+		};
+	}
+	if (msg.video) {
+		return {
+			kind: "file",
+			fileId: msg.video.file_id,
+			fileName: msg.video.file_name ?? `video_${messageId}.mp4`,
+			mimeType: msg.video.mime_type ?? "video/mp4",
+			caption: text,
+			userId, chatId, messageId,
+		};
+	}
+	if (msg.voice) {
+		return {
+			kind: "file",
+			fileId: msg.voice.file_id,
+			fileName: `voice_${messageId}.ogg`,
+			mimeType: msg.voice.mime_type ?? "audio/ogg",
+			caption: text,
+			userId, chatId, messageId,
+		};
+	}
+	if (msg.audio) {
+		return {
+			kind: "file",
+			fileId: msg.audio.file_id,
+			fileName: msg.audio.file_name ?? `audio_${messageId}.mp3`,
+			mimeType: msg.audio.mime_type ?? "audio/mpeg",
+			caption: text,
+			userId, chatId, messageId,
+		};
+	}
 
 	if (text.length === 0) {
 		return { kind: "empty", userId, chatId, messageId };
@@ -104,6 +158,8 @@ export interface HandleContext {
 	resetChatSession?: (chatId: string) => boolean;
 	/** Optional callback to get bridge stats. */
 	getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
+	/** Optional callback to download a Telegram file to local path. */
+	downloadFile?: (fileId: string, fileName: string) => Promise<string>;
 }
 
 /**
@@ -168,6 +224,23 @@ export async function resolveReply(parsed: ParsedMessage, ctx: HandleContext): P
 			const chatText = (parsed as { kind: "chat"; text: string }).text;
 			if (ctx.forwardToAgent) return ctx.forwardToAgent(chatText, ctx.sessionKey);
 			return `[stub\\-agent echo] you said: ${escapeForPlain(chatText)}`;
+		}
+
+		case "file": {
+			const f = parsed as Extract<ParsedMessage, { kind: "file" }>;
+			if (!ctx.downloadFile) {
+				return "⚠️ File handling not configured. Send text instead.";
+			}
+			try {
+				const localPath = await ctx.downloadFile(f.fileId, f.fileName);
+				const fileInfo = `📎 File uploaded: ${f.fileName} (${f.mimeType})\nSaved to: ${localPath}`;
+				const prompt = f.caption ? `${fileInfo}\n\nUser caption: ${f.caption}` : fileInfo;
+				if (ctx.forwardToAgent) return ctx.forwardToAgent(prompt, ctx.sessionKey);
+				return `File saved to ${localPath}. Agent not wired — cannot process.`;
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : String(err);
+				return `⚠️ File download failed: ${escapeForPlain(msg)}`;
+			}
 		}
 	}
 }

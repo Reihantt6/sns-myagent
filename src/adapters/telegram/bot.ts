@@ -10,8 +10,11 @@
  * drives an `AgentRegistry` session — see `handler.ts` for the stub.
  */
 
-import { Bot, type Context } from "grammy";
+import { Bot, type Context, InputFile } from "grammy";
 import { logger } from "@oh-my-pi/pi-utils";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import * as os from "node:os";
 import { markdownToTelegram } from "./format";
 import { parseMessage, resolveReply, type HandleContext } from "./handler";
 
@@ -123,6 +126,36 @@ export class TelegramBot {
 		return sent.message_id;
 	}
 
+	/** Send a file/document to a chat. */
+	async sendDocument(chatId: number, filePath: string, caption?: string): Promise<number> {
+		const input = new InputFile(filePath);
+		const sent = await this.#bot.api.sendDocument(chatId, input, {
+			caption,
+			...(caption ? { parse_mode: "MarkdownV2" as const } : {}),
+		});
+		return sent.message_id;
+	}
+
+	/**
+	 * Download a Telegram file to local temp dir. Returns the local path.
+	 * Used by handler.ts `case "file"` via the HandleContext callback.
+	 */
+	async downloadFile(fileId: string, fileName: string): Promise<string> {
+		const downloadDir = path.join(os.tmpdir(), "sns-telegram-files");
+		await fs.mkdir(downloadDir, { recursive: true });
+		const file = await this.#bot.api.getFile(fileId);
+		if (!file.file_path) throw new Error("Telegram returned no file_path");
+		const fileUrl = `https://api.telegram.org/file/bot${this.#bot.token}/${file.file_path}`;
+		const resp = await fetch(fileUrl);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status} downloading file`);
+		const buffer = Buffer.from(await resp.arrayBuffer());
+		const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+		const localPath = path.join(downloadDir, `${Date.now()}_${safeName}`);
+		await fs.writeFile(localPath, buffer);
+		logger.debug("telegram: file downloaded", { fileId, localPath, size: buffer.length });
+		return localPath;
+	}
+
 	/** Test\\-only: simulate an inbound update without going through Telegram. */
 	async __handleUpdateForTests(ctx: Context): Promise<void> {
 		await this.#onMessage(ctx);
@@ -149,6 +182,7 @@ export class TelegramBot {
 			forwardToAgent: this.#opts.forwardToAgent,
 			resetChatSession: this.#opts.resetChatSession,
 			getBridgeStats: this.#opts.getBridgeStats,
+			downloadFile: (fileId: string, fileName: string) => this.downloadFile(fileId, fileName),
 		};
 		try {
 			const reply = await resolveReply(parsed, handleCtx);
