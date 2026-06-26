@@ -6,7 +6,7 @@
 ---
 
 ## ✅ DONE
-
+## ✅ DONE
 ### Phase 0: Planning & Docs (2026-06-23)
 - [x] PRD v2.0, README.md, package.json, install.sh, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md
 - [x] docs/ (install, config, memory, tbm, troubleshooting, faq)
@@ -35,21 +35,22 @@
 - [x] `/tokens` + `/mode` slash commands wired
 - [x] tsc --noEmit passes
 
+### Phase 3: Fix + Polish (2026-06-26, commit 92110c4)
+- [x] Binary verified working (`bin/snscoder --version`)
+- [x] README audit: tool count 30 ✓, slash commands 58→61, memory backends 4→7
+- [x] Removed duplicate `search` in tool table
+- [x] Version badge synced to 0.2.0
+- [x] .gitignore: added nested `sns-myagent/` dir
+- [x] Added `launch` CLI command for full agent mode
+
 ---
 
 ## 🔥 IN PROGRESS
-
 _(nothing currently in progress)_
 
 ---
 
 ## 📋 BACKLOG
-
-### Phase 3: Fix + Polish → `PLAN-PHASE-3.md`
-- [ ] Fix binary execution (pi_natives native addon)
-- [ ] Fix README inaccuracies (tool names, memory backends, counts)
-- [ ] Commit + tag v0.1.1 or v0.2.0
-
 ### Phase 4: Memory + Cron + Telegram → `PLAN-PHASE-4.md`
 - [ ] Wire memory backends (9 files exist in `src/memory-backend/`)
 - [ ] Wire cron scheduler (6 files exist in `src/cron/`)
