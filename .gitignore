@@ -55,3 +55,6 @@ _HANDOFF_*
 MASTER-PLAN*
 *-DESIGN.md
 *-INFRA.md
+
+# Nested copy
+sns-myagent/

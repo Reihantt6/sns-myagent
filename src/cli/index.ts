@@ -322,6 +322,7 @@ Commands:
   version                     print package version
   init                        create .sns-myagent/config.json (defaults)
   chat [--stub]               start interactive chat (stub for Phase 2B)
+  launch                      start full agent interactive mode
   config show                 print current config
   config get <key>            read a dot-path value (e.g. model.provider)
   config set <key> <value>    update a dot-path value
@@ -350,11 +351,19 @@ export async function runCliAsync(argv: string[]): Promise<number> {
 			return cmdConfig(rest);
 		case "telegram":
 			return cmdTelegram(rest);
+		case "launch":
+			return cmdLaunch(rest);
 		default:
 			process.stderr.write(`✗ unknown command: ${cmd}\n`);
 			process.stderr.write(HELP);
 			return 1;
 	}
+}
+
+async function cmdLaunch(args: string[]): Promise<number> {
+	const { main } = await import("../main.js");
+	await main(args);
+	return 0;
 }
 
 export function runCli(argv: string[]): Promise<number> {
