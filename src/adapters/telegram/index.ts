@@ -36,14 +36,24 @@ let shuttingDown = false;
  */
 export function startTelegramAdapter(
 	token: string | undefined = process.env.SNS_TELEGRAM_BOT_TOKEN,
-	opts: { autostart?: boolean; forwardToAgent?: (text: string, sessionKey: string) => Promise<string> } = {},
+	opts: {
+		autostart?: boolean;
+		forwardToAgent?: (text: string, sessionKey: string) => Promise<string>;
+		resetChatSession?: (chatId: string) => boolean;
+		getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
+	} = {},
 ): TelegramBot | undefined {
 	if (activeBot) return activeBot;
 	if (!token) return undefined;
 	const autostart = opts.autostart ?? process.env.SNS_TELEGRAM_AUTOSTART !== "0";
 	if (!autostart) return undefined;
 
-	const bot = new TelegramBot({ token, forwardToAgent: opts.forwardToAgent });
+	const bot = new TelegramBot({
+		token,
+		forwardToAgent: opts.forwardToAgent,
+		resetChatSession: opts.resetChatSession,
+		getBridgeStats: opts.getBridgeStats,
+	});
 	activeBot = bot;
 
 	bot.start().catch((error) => {
