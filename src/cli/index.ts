@@ -15,6 +15,7 @@ import { loadConfig, saveConfig, configPath, ensureConfig } from "../config/load
 import type { Config } from "../config/schema.js";
 import { defaultConfigFn } from "../config/loader.js";
 import { startTelegramAdapter, stopTelegramAdapter } from "../adapters/telegram/index.js";
+import { createForwardToAgent, resetChatSession, getBridgeStats } from "../adapters/telegram/bridge.js";
 
 // ---------- package version (single source of truth) ----------
 
@@ -224,7 +225,19 @@ async function cmdTelegram(args: string[]): Promise<number> {
 			process.stderr.write(`✗ telegram start: ${probe.error}\n`);
 			return 1;
 		}
-		const bot = startTelegramAdapter(token, { autostart: true });
+
+		// Wire the agent bridge — per-chat sessions via createAgentSession()
+		const agentForwarder = createForwardToAgent();
+		// Adapt 3-arg bridge to 2-arg handler signature: (text, sessionKey) → string
+		const forwardToAgent = (text: string, sessionKey: string) =>
+			agentForwarder(sessionKey, "telegram", text);
+
+		const bot = startTelegramAdapter(token, {
+			autostart: true,
+			forwardToAgent,
+			resetChatSession,
+			getBridgeStats,
+		});
 		if (!bot) {
 			process.stderr.write("✗ autostart refused by adapter\n");
 			return 1;

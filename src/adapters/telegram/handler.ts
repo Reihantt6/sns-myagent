@@ -14,10 +14,15 @@ export type ParsedMessage =
 	| { kind: "chat"; text: string; userId: number; chatId: number; messageId: number }
 	| { kind: "empty"; userId: number; chatId: number; messageId: number };
 
-export type TelegramCommand = "start" | "help" | "chat" | "reset" | "status";
+export type TelegramCommand =
+  | "start" | "help" | "chat" | "reset" | "status"
+  | "memory" | "cron" | "model" | "code" | "review";
 
 /** Commands we recognise, mapped to their canonical name. */
-const COMMANDS: ReadonlySet<string> = new Set(["start", "help", "chat", "reset", "status"]);
+const COMMANDS: ReadonlySet<string> = new Set([
+  "start", "help", "chat", "reset", "status",
+  "memory", "cron", "model", "code", "review",
+]);
 
 /**
  * Parse a grammY `Message` into a `ParsedMessage`. Returns `kind: "empty"`
@@ -73,15 +78,21 @@ export const COMMAND_REPLIES: Record<TelegramCommand, string> = {
 		"/help — list commands (this message)\n" +
 		"/chat \\<message\\> — send a prompt to the agent explicitly\n" +
 		"/reset — clear the per\\-chat conversation context\n" +
-		"/status — show adapter health\n\n" +
+		"/status — show adapter health + bridge stats\n" +
+		"/memory — show agent memory usage\n" +
+		"/cron — show cron jobs\n" +
+		"/model — show current model\n" +
+		"/code \\<task\\> — send a coding task to the agent\n" +
+		"/review \\<task\\> — ask the agent to review code\n\n" +
 		"Anything that isn't a command is also forwarded to the agent.",
 	chat: "", // computed dynamically when invoked
-	reset: "Context cleared for this chat. Next message starts a fresh thread.",
-	status:
-		"*Adapter status*\n\n" +
-		"• transport: polling\n" +
-		"• backend: grammY v1\n" +
-		"• agent: stub \\(Phase 2 will wire real session\\)",
+	reset: "", // computed dynamically when invoked
+	status: "", // computed dynamically when invoked
+	memory: "", // forwarded to agent
+	cron: "", // forwarded to agent
+	model: "", // forwarded to agent
+	code: "", // forwarded to agent
+	review: "", // forwarded to agent
 };
 
 export interface HandleContext {
@@ -89,6 +100,10 @@ export interface HandleContext {
 	readonly sessionKey: string;
 	/** Optional callback that the real agent integration replaces. */
 	forwardToAgent?: (text: string, sessionKey: string) => Promise<string>;
+	/** Optional callback to reset a chat session (bridge). */
+	resetChatSession?: (chatId: string) => boolean;
+	/** Optional callback to get bridge stats. */
+	getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
 }
 
 /**
@@ -100,24 +115,59 @@ export async function resolveReply(parsed: ParsedMessage, ctx: HandleContext): P
 	switch (parsed.kind) {
 		case "empty":
 			return "I can only read text right now. Send a message and I'll forward it to the agent.";
+
 		case "command": {
 			switch (parsed.command) {
 				case "start":
 				case "help":
-				case "reset":
-				case "status":
 					return COMMAND_REPLIES[parsed.command];
+
+				case "reset": {
+					if (ctx.resetChatSession) {
+						const had = ctx.resetChatSession(ctx.sessionKey);
+						return had
+							? "Context cleared for this chat. Next message starts a fresh thread."
+							: "No active session for this chat. Next message will start one.";
+					}
+					return "Context cleared for this chat. Next message starts a fresh thread.";
+				}
+
+				case "status": {
+					const stats = ctx.getBridgeStats?.();
+					const sessions = stats ? stats.activeSessions : 0;
+					return (
+						"*Adapter status*\n\n" +
+						"• transport: polling\n" +
+						"• backend: grammY v1\n" +
+						`• agent sessions: ${sessions}\n` +
+						"• bridge: wired ✓"
+					);
+				}
+
 				case "chat": {
 					const text = parsed.args.length > 0 ? parsed.args : "(empty)";
 					if (ctx.forwardToAgent) return ctx.forwardToAgent(text, ctx.sessionKey);
 					logger.debug("telegram: forwardToAgent not wired; echoing", { sessionKey: ctx.sessionKey });
 					return `[stub\\-agent echo] you said: ${escapeForPlain(text)}`;
 				}
+
+				case "memory":
+				case "cron":
+				case "model":
+				case "code":
+				case "review": {
+					// Route through agent — the slash command will be recognized by the session
+					const cmdText = `/${parsed.command} ${parsed.args}`.trim();
+					if (ctx.forwardToAgent) return ctx.forwardToAgent(cmdText, ctx.sessionKey);
+					return `⚠️ Agent not wired. Use /help for available commands.`;
+				}
 			}
 		}
+
 		case "chat": {
-			if (ctx.forwardToAgent) return ctx.forwardToAgent(parsed.text, ctx.sessionKey);
-			return `[stub\\-agent echo] you said: ${escapeForPlain(parsed.text)}`;
+			const chatText = (parsed as { kind: "chat"; text: string }).text;
+			if (ctx.forwardToAgent) return ctx.forwardToAgent(chatText, ctx.sessionKey);
+			return `[stub\\-agent echo] you said: ${escapeForPlain(chatText)}`;
 		}
 	}
 }

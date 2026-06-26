@@ -20,6 +20,10 @@ export interface TelegramBotOptions {
 	readonly token: string;
 	/** Optional agent hook. When omitted, the handler echoes with a marker. */
 	forwardToAgent?: (text: string, sessionKey: string) => Promise<string>;
+	/** Reset per-chat session (bridge). */
+	resetChatSession?: (chatId: string) => boolean;
+	/** Get bridge stats. */
+	getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
 	/** Per\\-chat session store. Injectable for tests; defaults to a Map. */
 	sessionStore?: Map<string, number>;
 	/** Logger overrides. */
@@ -143,6 +147,8 @@ export class TelegramBot {
 		const handleCtx: HandleContext = {
 			sessionKey,
 			forwardToAgent: this.#opts.forwardToAgent,
+			resetChatSession: this.#opts.resetChatSession,
+			getBridgeStats: this.#opts.getBridgeStats,
 		};
 		try {
 			const reply = await resolveReply(parsed, handleCtx);
