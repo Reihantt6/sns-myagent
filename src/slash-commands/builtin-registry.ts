@@ -32,6 +32,7 @@ import { urlHyperlinkAlways } from "../tui";
 import { getChangelogPath, parseChangelog } from "../utils/changelog";
 import { CollabQrCodeComponent } from "./helpers/collab-qrcode";
 import { handleCronCommand } from "./helpers/cron";
+import { handleTaskCommand } from "./helpers/task";
 import { buildContextReportText } from "./helpers/context-report";
 import { formatDuration } from "./helpers/format";
 import { createMarketplaceManager } from "./helpers/marketplace-manager";
@@ -2232,6 +2233,19 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 			{ name: "disable", description: "Disable the cron scheduler" },
 		],
 		handle: handleCronCommand,
+	},
+	{
+		name: "task",
+		description: "Manage async background tasks",
+		allowArgs: true,
+		subcommands: [
+			{ name: "run", description: "Spawn async task in background", usage: "<description>" },
+			{ name: "list", description: "Show all tasks" },
+			{ name: "status", description: "Check specific task", usage: "<id>" },
+			{ name: "cancel", description: "Cancel running task", usage: "<id>" },
+			{ name: "result", description: "Get task result", usage: "<id>" },
+		],
+		handle: handleTaskCommand,
 	},
 	{
 		name: "quit",
