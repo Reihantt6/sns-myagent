@@ -17,12 +17,12 @@ export type ParsedMessage =
 
 export type TelegramCommand =
   | "start" | "help" | "chat" | "reset" | "status"
-  | "memory" | "cron" | "model" | "code" | "review";
+  | "memory" | "cron" | "model" | "code" | "review" | "task";
 
 /** Commands we recognise, mapped to their canonical name. */
 const COMMANDS: ReadonlySet<string> = new Set([
   "start", "help", "chat", "reset", "status",
-  "memory", "cron", "model", "code", "review",
+  "memory", "cron", "model", "code", "review", "task",
 ]);
 
 /**
@@ -147,6 +147,7 @@ export const COMMAND_REPLIES: Record<TelegramCommand, string> = {
 	model: "", // forwarded to agent
 	code: "", // forwarded to agent
 	review: "", // forwarded to agent
+	task: "", // forwarded to agent
 };
 
 export interface HandleContext {
@@ -211,7 +212,8 @@ export async function resolveReply(parsed: ParsedMessage, ctx: HandleContext): P
 				case "cron":
 				case "model":
 				case "code":
-				case "review": {
+				case "review":
+			case "task": {
 					// Route through agent — the slash command will be recognized by the session
 					const cmdText = `/${parsed.command} ${parsed.args}`.trim();
 					if (ctx.forwardToAgent) return ctx.forwardToAgent(cmdText, ctx.sessionKey);
