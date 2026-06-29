@@ -54,16 +54,15 @@ export class ConsensusStrategy implements EnsembleStrategy {
     const { winner, agreement } = this.#findConsensus(candidates);
 
     return {
-      final: winner.content,
-      responses: allResponses,
-      strategy: this.name,
-      rounds: 1,
-      totalTimeMs: Date.now() - startTime,
-      totalTokens: aggregateTokens(allResponses),
-      winner: winner.role,
-      metadata: { agreement, threshold: this.#threshold, met: agreement >= this.#threshold },
-    };
-  }
+			final: winner.content,
+			responses: allResponses,
+			strategy: this.name,
+			rounds: 1,
+			totalTimeMs: Date.now() - startTime,
+			totalTokens: aggregateTokens(allResponses),
+			winner: winner.role,
+		};
+	}
 
   #findConsensus(candidates: AgentResponse[]): { winner: AgentResponse; agreement: number } {
     if (candidates.length === 1) return { winner: candidates[0], agreement: 1 };

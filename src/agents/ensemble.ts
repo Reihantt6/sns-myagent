@@ -145,32 +145,35 @@ function createStrategy(name: string, options: Record<string, unknown>): Ensembl
 }
 
 function createResilientExecutor(
-  config: ReturnType<typeof getAgentsConfig>["config"],
-  options: EnsembleOptions,
+	config: ReturnType<typeof getAgentsConfig>["config"],
+	options: EnsembleOptions,
 ) {
-  return async (role: string, prompt: string): Promise<AgentResponse> => {
-    const agentConfig = config.agents[role];
-    const modelKey = agentConfig?.model ?? "default";
+	return async (role: string, prompt: string): Promise<AgentResponse> => {
+		const agentConfig = config.agents[role];
+		const modelKey = agentConfig?.model ?? "default";
 
-    const breaker = resilience.getCircuitBreaker(modelKey);
+		const breaker = resilience.getCircuitBreaker(modelKey);
 
-    return resilience.withRetry(
-      async () => {
-        return resilience.withTimeout(
-          async () => {
-            // This will be replaced by actual agent execution via the wrapper
-            throw new Error("executeAgent must be provided by caller");
-          },
-          options.taskTimeoutMs ?? config.task_timeout_ms ?? 120_000,
-          `ensemble:${role}`,
-        );
-      },
-      {
-        maxAttempts: config.retry_attempts ?? 3,
-        baseDelayMs: 1000,
-      },
-    );
-  };
+		const result = await resilience.withRetry(
+			async () => {
+				return resilience.withTimeout(
+					async () => {
+						// This will be replaced by actual agent execution via the wrapper
+						throw new Error("executeAgent must be provided by caller");
+					},
+					options.taskTimeoutMs ?? config.task_timeout_ms ?? 120_000,
+					`ensemble:${role}`,
+				);
+			},
+			{
+				maxAttempts: config.retry_attempts ?? 3,
+				baseDelayMs: 1000,
+			},
+		);
+		if (!result.success) throw result.error ?? new Error("resilient executor failed");
+		// Type guard: caller must inject a real AgentResponse executor.
+		return result.result as unknown as AgentResponse;
+	};
 }
 
 function buildCostBreakdown(
@@ -201,23 +204,26 @@ function buildCostBreakdown(
  * Convenience wrapper for non-ensemble usage.
  */
 export async function executeAgentTask(
-  role: string,
-  prompt: string,
-  executeAgent: (role: string, prompt: string) => Promise<AgentResponse>,
-  options: { timeoutMs?: number; retries?: number } = {},
+	role: string,
+	prompt: string,
+	executeAgent: (role: string, prompt: string) => Promise<AgentResponse>,
+	options: { timeoutMs?: number; retries?: number } = {},
 ): Promise<AgentResponse> {
-  const config = getAgentsConfig().config;
-  const timeoutMs = options.timeoutMs ?? config.task_timeout_ms ?? 120_000;
-  const retries = options.retries ?? config.retry_attempts ?? 3;
+	const config = getAgentsConfig().config;
+	const timeoutMs = options.timeoutMs ?? config.task_timeout_ms ?? 120_000;
+	const retries = options.retries ?? config.retry_attempts ?? 3;
 
-  return resilience.withRetry(
-    async () => resilience.withTimeout(
-      () => executeAgent(role, prompt),
-      timeoutMs,
-      `agent:${role}`,
-    ),
-    { maxAttempts: retries },
-  );
+	const result = await resilience.withRetry(
+		async () =>
+			resilience.withTimeout(
+				() => executeAgent(role, prompt),
+				timeoutMs,
+				`agent:${role}`,
+			),
+		{ maxAttempts: retries },
+	);
+	if (!result.success) throw result.error ?? new Error("agent task failed");
+	return result.result as unknown as AgentResponse;
 }
 
 export { getAgentsConfig } from "./config.js";
