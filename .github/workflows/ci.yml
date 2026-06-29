@@ -264,11 +264,26 @@ jobs:
     continue-on-error: false
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ">=1.3.14"
+      - name: Install deps (for pi_natives)
+        run: |
+          SKIP_POSTINSTALL=1 bun install --no-save || echo "install step skipped"
       - name: Download binary
         uses: actions/download-artifact@v4
         with:
           name: snscoder-linux-x64
           path: bin/
+      - name: Install pi_natives for JS-only fallback
+        run: |
+          mkdir -p $HOME/.omp/natives/16.1.18
+          if [ -d node_modules/@oh-my-pi/pi-natives-linux-x64 ]; then
+            cp node_modules/@oh-my-pi/pi-natives-linux-x64/*.node $HOME/.omp/natives/16.1.18/ || true
+            ls -la $HOME/.omp/natives/16.1.18/
+          else
+            echo "::warning::pi-natives-linux-x64 package not in node_modules, skipping"
+          fi
       - name: Run smoke test
         run: |
           chmod +x scripts/smoke-test.sh
