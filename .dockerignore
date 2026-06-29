@@ -1,0 +1,21 @@
+# SNS-MyAgent .dockerignore
+node_modules/
+dist/
+bin/
+.sns-myagent/
+.git/
+.github/
+coverage/
+*.log
+*.tsbuildinfo
+PLAN-*.md
+PROGRESS.md
+KANBAN.md
+HANDOFF*.md
+ROADMAP-INTERNAL.md
+TODO-INTERNAL.md
+DOCS-AUDIT-TRACKER.md
+__tests__/
+test/
+scripts/__tests__/
+.cache/
