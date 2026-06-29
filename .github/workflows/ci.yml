@@ -248,12 +248,29 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  # Stage 8: e2e smoke test (runs against built binary)
+  smoke:
+    name: E2E smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build]
+    continue-on-error: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run smoke test
+        run: |
+          chmod +x scripts/smoke-test.sh
+          bash scripts/smoke-test.sh ./bin/snscoder-linux-x64 || {
+            echo "::error::smoke test failed"
+            exit 1
+          }
+
   # Final gate
   all-checks:
     name: All checks summary
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    needs: [verify, install, typecheck, lint, build, test, diagnose]
+    needs: [verify, install, typecheck, lint, build, test, diagnose, smoke]
     if: always()
     steps:
       - name: Report
@@ -269,13 +286,15 @@ jobs:
           echo "| build | ${{ needs.build.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| test | ${{ needs.test.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| diagnose | ${{ needs.diagnose.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| smoke | ${{ needs.smoke.result }} |" >> "$GITHUB_STEP_SUMMARY"
 
           # Fail if any required stage failed
           if [ "${{ needs.verify.result }}" = "failure" ] || \
              [ "${{ needs.install.result }}" = "failure" ] || \
              [ "${{ needs.typecheck.result }}" = "failure" ] || \
              [ "${{ needs.lint.result }}" = "failure" ] || \
-             [ "${{ needs.build.result }}" = "failure" ]; then
+             [ "${{ needs.build.result }}" = "failure" ] || \
+             [ "${{ needs.smoke.result }}" = "failure" ]; then
             echo "::error::one or more required checks failed"
             exit 1
           fi
