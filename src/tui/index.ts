@@ -14,3 +14,4 @@ export * from "./width-aware-text";
 export * from "./splash";
 export * from "./chat-blocks";
 export * from "./chat-ui";
+export { renderCommandPalette, filterCommands, CHAT_COMMANDS, type PaletteCommand, type CommandPaletteOptions } from "./command-palette";

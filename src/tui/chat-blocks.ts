@@ -118,12 +118,15 @@ export function renderChatBlock(opts: ChatBlockOptions): string {
     );
   }
 
-  // ── Streaming indicator ──
+  // ── Streaming indicator (animated) ──
   if (opts.streaming) {
-    const spinner = chalk.cyan("⣾") + chalk.dim(" thinking...");
-    const spinFill = " ".repeat(Math.max(0, innerWidth - visibleWidth("⣾ thinking...")));
+    const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    const frameIdx = Date.now() % (frames.length * 80);
+    const frame = frames[Math.floor(frameIdx / 80)];
+    const spinnerText = `${chalk.cyan(frame)} ${chalk.dim("thinking...")}`;
+    const spinFill = " ".repeat(Math.max(0, innerWidth - visibleWidth(spinnerText)));
     lines.push(
-      gradBorder(BOX.vertical) + padStr + spinner + spinFill + padStr + gradBorder(BOX.vertical)
+      gradBorder(BOX.vertical) + padStr + spinnerText + spinFill + padStr + gradBorder(BOX.vertical)
     );
   }
 
