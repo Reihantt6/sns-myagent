@@ -1,0 +1,56 @@
+name: Docker Build & Push
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          tags: |
+            ghcr.io/reihantt6/sns-myagent:latest-${{ matrix.arch }}
+            ghcr.io/reihantt6/sns-myagent:${{ steps.version.outputs.VERSION }}-${{ matrix.arch }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.VERSION }}
+            TARGETARCH=${{ matrix.arch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Create multi-arch manifest
+        if: matrix.arch == 'amd64'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/reihantt6/sns-myagent:latest
+            ghcr.io/reihantt6/sns-myagent:${{ steps.version.outputs.VERSION }}
