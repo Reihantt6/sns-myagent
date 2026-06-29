@@ -24,11 +24,36 @@ const ACCENT_GRADIENT = ["#7b2ff7", "#00d2ff"];
 
 function readVersion(): string {
   try {
+    // Strategy 1: import.meta.url relative path (works in most bundler/ts-node setups)
     const here = dirname(fileURLToPath(import.meta.url));
-    const pkgPath = resolve(here, "..", "..", "package.json");
-    const raw = readFileSync(pkgPath, "utf8");
-    const pkg = JSON.parse(raw) as { version?: string };
-    return pkg.version ?? "0.0.0";
+    const candidates = [
+      resolve(here, "..", "..", "package.json"),       // src/tui/ → root
+      resolve(here, "..", "package.json"),              // dist/tui/ → dist/ (fallback)
+      resolve(here, "..", "..", "dist", "package.json"), // flat dist
+    ];
+
+    for (const pkgPath of candidates) {
+      try {
+        const raw = readFileSync(pkgPath, "utf8");
+        const pkg = JSON.parse(raw) as { version?: string };
+        if (pkg.version && pkg.version !== "0.0.0") return pkg.version;
+      } catch { /* try next */ }
+    }
+
+    // Strategy 2: Walk up from CWD looking for package.json with matching name
+    let dir = process.cwd();
+    for (let i = 0; i < 5; i++) {
+      try {
+        const raw = readFileSync(resolve(dir, "package.json"), "utf8");
+        const pkg = JSON.parse(raw) as { name?: string; version?: string };
+        if (pkg.name === "@sns-myagent/cli" && pkg.version) return pkg.version;
+      } catch { /* continue */ }
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+
+    return "0.0.0";
   } catch {
     return "0.0.0";
   }

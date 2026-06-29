@@ -1,7 +1,9 @@
 /**
  * Render a code or markdown cell with optional output section.
  */
-import { Markdown } from "@oh-my-pi/pi-tui";
+import { Markdown, visibleWidth } from "@oh-my-pi/pi-tui";
+import chalk from "chalk";
+import gradient from "gradient-string";
 import { getMarkdownTheme, highlightCode, type Theme } from "../modes/theme/theme";
 import {
 	formatDuration,
@@ -213,6 +215,93 @@ export interface MarkdownCellOptions {
 	contentMaxLines?: number;
 	expanded?: boolean;
 	width: number;
+}
+
+// ── Collapsible tool output helpers ──
+
+const COLLAPSE_BORDER = {
+  topLeft: "╭",
+  topRight: "╮",
+  bottomLeft: "╰",
+  bottomRight: "╯",
+  horizontal: "─",
+  vertical: "│",
+} as const;
+
+/**
+ * Render a collapsible section for tool output.
+ * When collapsed: shows header + line count hint.
+ * When expanded: shows full output in bordered block.
+ */
+export function renderCollapsibleOutput(
+  label: string,
+  content: string,
+  expanded: boolean,
+  width: number,
+  theme: Theme,
+  maxLines: number = 8,
+): string[] {
+  const grad = theme.fg;
+  const lines: string[] = [];
+  const inner = Math.max(20, width - 4);
+
+  if (!expanded) {
+    // Collapsed: just header + hint
+    const lineCount = content.split("\n").length;
+    const hint = chalk.dim(` (${lineCount} lines, click to expand)`);
+    lines.push(`  ${grad("accent", "▸")} ${grad("toolTitle", label)}${hint}`);
+    return lines;
+  }
+
+  // Expanded: bordered block
+  const gradColors = ["#00d2ff", "#7b2ff7"] as [string, string];
+  const g = gradient(gradColors);
+
+  // Header
+  const headerText = ` ${label} `;
+  const headerFill = COLLAPSE_BORDER.horizontal.repeat(
+    Math.max(0, inner - headerText.length - 2),
+  );
+  lines.push(g(COLLAPSE_BORDER.topLeft + COLLAPSE_BORDER.horizontal) + grad("toolTitle", headerText) + g(headerFill + COLLAPSE_BORDER.topRight));
+
+  // Content
+  const rawLines = content.split("\n");
+  const visibleLines = rawLines.slice(0, maxLines);
+  for (const line of visibleLines) {
+    const visLen = visibleWidth(line);
+    const fill = " ".repeat(Math.max(0, inner - visLen));
+    lines.push(g(COLLAPSE_BORDER.vertical) + " " + line + fill + " " + g(COLLAPSE_BORDER.vertical));
+  }
+
+  // Hidden lines hint
+  const remaining = rawLines.length - maxLines;
+  if (remaining > 0) {
+    const moreText = `  ... +${remaining} more lines`;
+    const moreFill = " ".repeat(Math.max(0, inner - moreText.length));
+    lines.push(g(COLLAPSE_BORDER.vertical) + chalk.dim(moreText) + moreFill + g(COLLAPSE_BORDER.vertical));
+  }
+
+  // Footer
+  lines.push(g(COLLAPSE_BORDER.bottomLeft + COLLAPSE_BORDER.horizontal.repeat(inner) + COLLAPSE_BORDER.bottomRight));
+
+  return lines;
+}
+
+/**
+ * Render a collapsible tool output cell with gradient border.
+ * Wraps renderCodeCell with collapsible behavior.
+ */
+export function renderCollapsibleCodeCell(options: {
+  code: string;
+  language?: string;
+  title?: string;
+  status?: "pending" | "running" | "warning" | "complete" | "error";
+  output?: string;
+  expanded?: boolean;
+  width: number;
+}, theme: Theme): string[] {
+  const { expanded = false, ...rest } = options;
+  return renderCodeCell({ ...rest, codeMaxLines: expanded ? 200 : 8, outputMaxLines: expanded ? 50 : 4, expanded }, theme);
 }
 
 export function renderMarkdownCell(options: MarkdownCellOptions, theme: Theme): string[] {
