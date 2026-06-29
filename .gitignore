@@ -40,8 +40,9 @@ npm-debug.log*
 
 # Binary artifacts
 *.tgz
-bin/snscoder-linux-x64
-bin/snscoder.js
+bin/
+bin/snscoder*
+!bin/.gitkeep
 DOCS-AUDIT-TRACKER.md
 
 # Migration artifacts
