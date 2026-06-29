@@ -12,10 +12,7 @@
 |---|------|-------------|--------|-------|
 | 5.1d | **CLI `orchestrate` agent executor** (wire real LLM call) | `src/agents/executor.ts` (NEW) | ~4h | — |
 | 11 | **Session DAG** (fork/merge) | ~1 day | — |
-| 13 | **npm publish** (`@sns-myagent/cli`) | ~2h | — |
-| 14 | **macOS + Windows binaries** (CI matrix) | ~1 day | 13 |
-| 15 | **Docker image** (`ghcr.io/reihantt6/sns-myagent`) | ~2h | — |
-| 16 | **E2E smoke tests** (all platforms) | ~3h | 13-15 |
+| 15 | **Docker hub push verify** (run `docker pull ghcr.io/.../v0.3.0` + smoke run) | manual | ~30m | — |
 
 ### 📋 Yang Planned (belum mulai)
 
@@ -35,6 +32,7 @@ _(nothing — moved to active)_
 | 4 | **Telegram bridge + slash commands + file upload/download + binary v0.2.0** | `b89123c` `9208c21` `2756988` | 2026-06-26 |
 | 5.3 | Async workflow engine — task-store + runner + notifier + /task | `4a9a819` | 2026-06-27 |
 | 5 | **Multi-agent orchestration**: agents.yaml + 3 ensemble strategies + resilience + 21 tests + CLI `orchestrate` + v0.3.0 binary | `c2a2a0d` `a0d4393` `17be410` `519684a` `e3e9782` | 2026-06-30 |
+| 6 | **Publish**: npm v0.3.0 + GitHub release (5 binaries) + Docker (amd64/arm64) + E2E smoke (8 checks, CI green) | `f5c0391` `12f8450` `afe1648` `ea00dd6` `99af3e1` | 2026-06-30 |
 
 ---
 
@@ -113,6 +111,7 @@ Default LLM: openai/gpt-4o-mini
 | 11 | **Terminal UI redesign — premium branded, bukan generic CLI** | 2026-06-26 |
 | 12 | **Multi-agent orchestrator wraps existing Pi infra (don't rebuild)** | 2026-06-27 |
 | 13 | **JS-only fallback acceptable for binary mode** (pi-natives can't bundle, napi-rs limitation) | 2026-06-30 |
+| 14 | **npm auth present locally — no need to ask Bung for token** | 2026-06-30 |
 
 ---
 
@@ -146,18 +145,27 @@ Default LLM: openai/gpt-4o-mini
 - [x] `src/agents/config.ts` — agents.yaml schema + arktype validation + role resolver + fs.watch hot-reload
 - [x] `src/agents/ensemble.ts` — orchestrator entry with cost breakdown
 - [x] `src/agents/strategies/{consensus,critic,best-of-n}.ts` — 3 strategies
+- [x] `src/agents/strategies/index.ts` — barrel export
 - [x] `src/agents/resilience.ts` — withRetry + withTimeout + withFallback + CircuitBreaker
 - [x] CLI `snscoder orchestrate <prompt> [--strategy S] [--agents r1,r2]` — stub until executor wired
 - [x] 21 deterministic tests pass (strategies 6 + resilience 9 + config 6)
 - [x] Binary rebuilt v0.3.0 (117MB, JS-only mode, `snscoder 0.3.0`)
+- [x] **npm published**: `npm install -g @sns-myagent/cli` → v0.3.0
+- [x] **GitHub release**: v0.3.0 with 5 platform binaries (linux x64/arm64, macos x64/arm64, windows x64)
+- [x] **Docker image**: Dockerfile + .dockerignore + .github/workflows/docker.yml (amd64+arm64 → ghcr.io)
+- [x] **E2E smoke test**: scripts/smoke-test.sh (8 checks) wired into CI
 
 **Quality gate**:
-- [x] TS clean (0 errors)
-- [x] 21/21 tests pass
+- [x] TS clean (0 errors, tsc/tsgo)
+- [x] 21/21 agents tests pass + 21/21 async tests pass
+- [x] CI green: typecheck, lint, build, test, diagnose, **smoke**
 - [x] Binary builds + runs (`./bin/snscoder-linux-x64 version` → `snscoder 0.3.0`)
-- [x] All `orchestrate` and 6 other commands available in CLI
+- [x] All CLI commands working (version, help, init, config, telegram, orchestrate, launch)
+- [x] Public repo verified (curl GitHub API = 200, raw.githubusercontent.com = 200)
+- [x] npm package verified (`npm view @sns-myagent/cli version` → 0.3.0)
+- [x] Release assets downloadable (5 binaries attached)
 
-**Tag**: `v0.3.0` after Phase 6 E2E + npm publish
+**Tag**: `v0.3.0` → ✅ shipped
 
 ---
 
@@ -174,4 +182,9 @@ Default LLM: openai/gpt-4o-mini
 | 2026-06-30 | 5 | Splash version multi-path fallback + CWD walk | Hermes |
 | 2026-06-30 | 5 | modes rebrand patches (welcome, splash, event-controller) | Hermes |
 | 2026-06-30 | 5 | Premium TUI: command-palette + error-display + gradient + memory-toast | Hermes |
-| 2026-06-27 | 5.3 | Async workflow engine + 21 tests + /task command | Hermes |
+| 2026-06-30 | 5.3 | Async workflow engine + 21 tests + /task command | Hermes |
+| 2026-06-30 | 6 | **npm publish v0.3.0**: `@sns-myagent/cli` registered on npmjs.org | Hermes |
+| 2026-06-30 | 6 | **Docker**: Dockerfile + .dockerignore + ci workflow (amd64+arm64) | Hermes |
+| 2026-06-30 | 6 | **E2E smoke**: scripts/smoke-test.sh (8 checks) + CI integration | Hermes |
+| 2026-06-30 | 6 | **GitHub release v0.3.0**: 5 platform binaries attached | Hermes |
+| 2026-06-30 | 6 | Fixed CI tsgo type errors (strategies barrel + TaskResult unwrap) | Hermes |
