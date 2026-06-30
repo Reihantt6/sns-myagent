@@ -333,13 +333,17 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
 
 // ---------- router ----------
 
-const HELP = `Usage: snscoder <command> [options]
+const HELP = `Usage: snscoder [command] [options]
+
+If no command is given, starts the full agent interactive mode.
 
 Commands:
+  (none)                      start full agent interactive mode (default)
+  agent                       alias for default
   version                     print package version
   init                        create .sns-myagent/config.json (defaults)
   chat [--stub]               start interactive chat (stub for Phase 2B)
-  launch                      start full agent interactive mode
+  launch                      alias for default
   config show                 print current config
   config get <key>            read a dot-path value (e.g. model.provider)
   config set <key> <value>    update a dot-path value
@@ -352,6 +356,10 @@ export async function runCliAsync(argv: string[]): Promise<number> {
 	const [cmd, ...rest] = argv;
 	switch (cmd) {
 		case undefined:
+		case "agent":
+		case "launch":
+			// No-arg `snscoder` (or explicit `agent`/`launch`) → start full agent mode.
+			return cmdLaunch(rest);
 		case "help":
 		case "--help":
 		case "-h":

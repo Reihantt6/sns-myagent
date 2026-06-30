@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@sns-myagent/cli",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "SNS-MyAgent — Pi Agent size, full features. BYOK coding agent CLI.",
   "homepage": "https://github.com/Reihantt6/sns-myagent",
   "author": "Reihantt6",
@@ -28,7 +28,8 @@
   "main": "./src/index.ts",
   "types": "./dist/types/index.d.ts",
   "bin": {
-    "snscoder": "bin/snscoder.js"
+    "snscoder": "bin/snscoder.js",
+    "snsagent": "bin/snscoder.js"
   },
   "scripts": {
     "fetch-binary": "node scripts/fetch-binary.mjs",
