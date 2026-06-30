@@ -20,7 +20,7 @@ const LOGO = `
 ██║ ╚████║███████╗██╔╝ ╚██╗╚██████╔╝███████║
 ╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝ ╚═════╝ ╚══════╝`;
 
-const SUBTITLE = "My-Agent • SnsCoder CLI";
+const SUBTITLE = "My-Agent • SnsAgent CLI";
 
 /**
  * Show the premium banner with gradient logo + config info.

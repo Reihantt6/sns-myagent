@@ -17,7 +17,7 @@ const BANNER_ART = `
 ██║ ╚████║███████╗██╔╝ ╚██╗╚██████╔╝███████║
 ╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝ ╚═════╝ ╚══════╝`;
 
-const SUBTITLE = "My-Agent • SnsCoder CLI";
+const SUBTITLE = "My-Agent • SnsAgent CLI";
 
 const SNY_GRADIENT = ["#00d2ff", "#7b2ff7", "#ff6b9d"];
 const ACCENT_GRADIENT = ["#7b2ff7", "#00d2ff"];
@@ -126,5 +126,5 @@ export function renderInlineHeader(info: SplashInfo = {}): string {
     ? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
     : chalk.dim("no model");
   const ver = chalk.dim(`v${readVersion()}`);
-  return `\n  ${gradient(SNY_GRADIENT)("SnsCoder")} ${ver}  ${chalk.dim("│")}  ${model}\n`;
+  return `\n  ${gradient(SNY_GRADIENT)("SnsAgent")} ${ver}  ${chalk.dim("│")}  ${model}\n`;
 }
