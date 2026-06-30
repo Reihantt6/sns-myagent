@@ -1,6 +1,5 @@
 /**
- * Status bar — bottom-line summary.
- * Minimal: dim key + accent value. No gradient, no per-segment color.
+ * Status bar — flat single line, dim key + cyan value.
  */
 
 import chalk from "chalk";
@@ -27,12 +26,11 @@ export function renderStatusBar(state: StatusBarState): void {
 		? `${(state.tokensUsed / 1000).toFixed(1)}k`
 		: String(state.tokensUsed);
 
-	// Single dim/accent pair, no per-segment color
 	const k = (s: string) => chalk.dim(s);
 	const v = (s: string) => chalk.cyan(s);
 	const sep = chalk.dim(" · ");
 
-	const bar = `  ${k("model")} ${v(state.model)}${sep}${k("tokens")} ${v(tokens)}${sep}${k("time")} ${v(elapsed)}${sep}${k("mem")} ${v(String(state.memoryHits))}  `;
+	const bar = `  ${k("model")} ${v(state.model)}${sep}${k("tokens")} ${v(tokens)}${sep}${k("time")} ${v(elapsed)}${sep}${k("mem")} ${v(String(state.memoryHits))}`;
 
 	process.stdout.write(`\x1b[2K\r${bar}`);
 }

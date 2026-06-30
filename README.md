@@ -60,7 +60,7 @@
 | Feature | Source |
 |---------|--------|
 | **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **61 slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **157 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via `@oh-my-pi/pi-ai` |
 | **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
 | **MCP integration** | 22 source files in `src/mcp/` |
@@ -594,6 +594,56 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and security policies
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+## Implementation Status (v0.3.7)
+
+What is actually wired and working in the source tree, verified 2026-06-30:
+
+### Tools (30 / 30) — `src/tools/builtin-names.ts`
+
+All 30 tools are real implementations, not stubs.
+
+### Slash Commands (157) — `src/slash-commands/builtin-registry.ts`
+
+157 commands registered. All callable via `/<name>` in interactive mode.
+
+### Memory Backends (7 / 7) — `src/memory-backend/resolve.ts`
+
+| Backend | Status | Requires config |
+|---------|--------|-----------------|
+| `mnemopi` (default) | ✅ Works out of box | None — local SQLite + vector + graph |
+| `local` | ✅ Works out of box | None — rollout summary pipeline |
+| `off` | ✅ Works out of box | None — no-op |
+| `mnemosyne` | ✅ Wired | `mnemosyne` Python daemon running locally |
+| `mem0` | ✅ Wired | `MEM0_API_KEY` (or self-hosted endpoint) |
+| `lcm` | ✅ Wired | `LCM_HOST` (default `127.0.0.1:8500`) |
+| `hindsight` | ✅ Wired | `HINDSIGHT_API_KEY` or remote endpoint |
+
+Set via `memory.backend` in `~/.sns-myagent/config.yaml`. Default is `mnemopi`.
+
+### Telegram Adapter — `src/adapters/telegram/`
+
+5 files (bot, handler, format, index, bridge). 10 slash commands wired: `/start /help /chat /reset /status /memory /cron /model /code /review`. File upload/download supported. Auto-boot when `SNS_TELEGRAM_BOT_TOKEN` is set.
+
+### Multi-Agent Orchestration — `src/agents/`
+
+7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout), 21 tests pass. CLI `orchestrate <prompt>` is wired but executor is stubbed (returns clear "not wired yet" message).
+
+### Terminal UI — `src/tui/` + `src/ui/`
+
+8 files. `MY snsagent` splash, `●` prefix chat blocks, flat status bar, command palette, error display, memory toast. No gradient, no rounded boxes — flat list style. v0.3.6+ rebrand.
+
+### CI / CD
+
+GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, smoke, all-checks. 5 platform binaries (linux x64/arm64, macos x64/arm64, windows x64) auto-built on tag push. Docker multi-arch image auto-built and pushed to `ghcr.io/reihantt6/sns-myagent`.
+
+### Published
+
+- npm: `npm install -g @sns-myagent/cli` → v0.3.7
+- GitHub releases: 5 binaries per version
+- Docker: `ghcr.io/reihantt6/sns-myagent:v0.3.7`
 
 ---
 

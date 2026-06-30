@@ -1,21 +1,10 @@
 /**
- * Chat message block renderers — single-accent bordered blocks.
- * One border style (rounded), one accent color (cyan). No role-specific
- * rainbow. Per-role distinction via bold label only.
+ * Chat blocks — flat `●` prefix style.
+ * No rounded boxes, no per-role color. One accent (cyan) for the bullet.
+ * Role distinction via the bullet label only.
  */
 import chalk from "chalk";
 import { visibleWidth } from "@oh-my-pi/pi-tui";
-
-const BOX = {
-	topLeft: "╭",
-	topRight: "╮",
-	bottomLeft: "╰",
-	bottomRight: "╯",
-	horizontal: "─",
-	vertical: "│",
-} as const;
-
-const ACCENT = chalk.cyan;
 
 export type MessageRole = "user" | "assistant" | "tool" | "system" | "error";
 
@@ -26,6 +15,8 @@ const ROLE_LABEL: Record<MessageRole, string> = {
 	system: "system",
 	error: "error",
 };
+
+const BULLET = chalk.cyan("●");
 
 export interface ChatBlockOptions {
 	role: MessageRole;
@@ -64,65 +55,42 @@ function wrapAnsi(text: string, maxWidth: number): string[] {
 
 export function renderChatBlock(opts: ChatBlockOptions): string {
 	const cols = process.stdout.columns ?? 80;
-	const width = Math.min(opts.width ?? cols, cols) - 2;
-	const pad = 1;
-	const innerWidth = width - 2 - pad * 2;
+	const width = opts.width ?? Math.min(cols - 4, 80);
+	const innerWidth = width - 6; // "  ● label  "
 
-	const lines: string[] = [];
-
-	// Top bar: accent line + label
 	const label = opts.label ?? ROLE_LABEL[opts.role];
-	const labelText = ` ${label} `;
-	const topFill = BOX.horizontal.repeat(Math.max(0, innerWidth - visibleWidth(labelText) + pad * 2));
-	lines.push(ACCENT(BOX.topLeft + BOX.horizontal.repeat(2)) + chalk.bold(labelText) + ACCENT(topFill + BOX.topRight));
+	const headerRight = opts.meta ? chalk.dim(opts.meta) : "";
 
-	// Content
+	// Header: `● label                     meta`
+	const headerFillLen = Math.max(0, innerWidth - visibleWidth(label) - visibleWidth(headerRight));
+	const headerFill = " ".repeat(headerFillLen);
+	const header = `  ${BULLET} ${chalk.bold(label)}${headerFill}${headerRight ? "  " + headerRight : ""}`;
+
+	// Content: indent continuation lines with `│` for visual grouping
 	const contentLines = wrapAnsi(opts.content, innerWidth);
-	const padStr = " ".repeat(pad);
-	for (const line of contentLines) {
-		const vis = visibleWidth(line);
-		const fill = " ".repeat(Math.max(0, innerWidth - vis));
-		lines.push(ACCENT(BOX.vertical) + padStr + line + fill + padStr + ACCENT(BOX.vertical));
-	}
+	const indented = contentLines.map((l) => `  ${chalk.dim("│")} ${l}`);
 
-	// Meta
-	if (opts.meta) {
-		const metaText = chalk.dim(opts.meta);
-		const metaFill = " ".repeat(Math.max(0, innerWidth - visibleWidth(opts.meta)));
-		lines.push(ACCENT(BOX.vertical) + padStr + metaText + metaFill + padStr + ACCENT(BOX.vertical));
-	}
+	const parts: string[] = [header, ...indented];
 
-	// Streaming
 	if (opts.streaming) {
-		const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-		const frameIdx = Date.now() % (frames.length * 80);
-		const frame = frames[Math.floor(frameIdx / 80)];
-		const spinnerText = `${ACCENT(frame)} ${chalk.dim("thinking...")}`;
-		const spinFill = " ".repeat(Math.max(0, innerWidth - visibleWidth(spinnerText)));
-		lines.push(ACCENT(BOX.vertical) + padStr + spinnerText + spinFill + padStr + ACCENT(BOX.vertical));
+		parts.push(`  ${chalk.dim("│")} ${chalk.cyan("…")} ${chalk.dim("thinking")}`);
 	}
 
-	// Bottom bar
-	lines.push(ACCENT(BOX.bottomLeft + BOX.horizontal.repeat(width - 2) + BOX.bottomRight));
-
-	return lines.join("\n");
+	return parts.join("\n");
 }
 
 /** Compact inline message — no box. */
 export function renderInline(role: MessageRole, text: string): string {
-	const label = chalk.bold(`[${ROLE_LABEL[role]}]`);
-	return `${label} ${text}`;
+	return `${BULLET} ${chalk.bold(ROLE_LABEL[role])}  ${text}`;
 }
 
-/** Separator line, optional label. */
+/** Separator line — single dim rule. */
 export function renderDivider(label?: string): string {
 	const cols = process.stdout.columns ?? 80;
-	if (!label) {
-		return chalk.dim("─".repeat(cols - 2));
-	}
+	if (!label) return chalk.dim("─".repeat(cols - 2));
 	const labelText = ` ${label} `;
 	const fill = "─".repeat(Math.max(0, cols - 2 - visibleWidth(labelText)));
-	return chalk.dim(fill.slice(0, Math.floor(fill.length / 2))) + chalk.dim(labelText) + chalk.dim(fill.slice(Math.floor(fill.length / 2)));
+	return chalk.dim(fill) + chalk.dim(labelText) + chalk.dim(fill);
 }
 
 /** Tool-call status line. */
@@ -131,18 +99,13 @@ export function renderToolBlock(
 	status: "running" | "done" | "error",
 	detail?: string,
 ): string {
-	const icon = status === "running" ? chalk.cyan("⚙") : status === "done" ? chalk.green("✓") : chalk.red("✗");
+	const icon = status === "running" ? chalk.cyan("●") : status === "done" ? chalk.green("●") : chalk.red("●");
 	const label = ` ${icon} tool:${toolName} `;
 	const detailText = detail ? chalk.dim(` ${detail}`) : "";
 	return label + detailText;
 }
 
-/** Session header. */
+/** Session header — single line. */
 export function renderSessionHeader(model: string, version: string): string {
-	const cols = process.stdout.columns ?? 80;
-	const left = ACCENT.bold(" snsagent");
-	const ver = chalk.dim(` v${version}`);
-	const modelStr = chalk.dim(" · ") + chalk.cyan(model);
-	const sep = chalk.dim("─".repeat(Math.max(0, cols - visibleWidth(left + ver + modelStr) - 2)));
-	return `\n${left}${ver}${modelStr}\n${sep}\n`;
+	return `  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${chalk.dim(`v${version}`)}  ${chalk.dim("·")}  ${chalk.cyan(model)}\n`;
 }
