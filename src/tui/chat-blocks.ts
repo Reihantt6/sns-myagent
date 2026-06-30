@@ -195,7 +195,7 @@ export function renderToolBlock(
  */
 export function renderSessionHeader(model: string, version: string): string {
   const cols = process.stdout.columns ?? 80;
-  const left = gradient(["#00d2ff", "#7b2ff7"])(" SnsCoder");
+  const left = gradient(["#00d2ff", "#7b2ff7"])(" SnsAgent");
   const ver = chalk.dim(` v${version}`);
   const modelStr = chalk.cyan(` ${model}`);
   const sep = chalk.dim(" │ ");
