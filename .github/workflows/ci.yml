@@ -180,16 +180,16 @@ jobs:
 
       - name: Verify binary
         run: |
-          test -f bin/snscoder-linux-x64 || { echo "::error::bin/snscoder-linux-x64 missing"; exit 1; }
-          SIZE=$(stat -c%s bin/snscoder-linux-x64 2>/dev/null || stat -f%z bin/snscoder-linux-x64)
+          test -f bin/snsagent-linux-x64 || { echo "::error::bin/snsagent-linux-x64 missing"; exit 1; }
+          SIZE=$(stat -c%s bin/snsagent-linux-x64 2>/dev/null || stat -f%z bin/snsagent-linux-x64)
           echo "binary size: $SIZE bytes"
           [ "$SIZE" -gt 1000000 ] || { echo "::error::binary too small"; exit 1; }
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: snscoder-linux-x64
-          path: bin/snscoder-linux-x64
+          name: snsagent-linux-x64
+          path: bin/snsagent-linux-x64
           retention-days: 1
 
   # Stage 6: test (independent)
@@ -273,7 +273,7 @@ jobs:
       - name: Download binary
         uses: actions/download-artifact@v4
         with:
-          name: snscoder-linux-x64
+          name: snsagent-linux-x64
           path: bin/
       - name: Install pi_natives for JS-only fallback
         run: |
@@ -287,8 +287,8 @@ jobs:
       - name: Run smoke test
         run: |
           chmod +x scripts/smoke-test.sh
-          chmod +x bin/snscoder-linux-x64
-          bash scripts/smoke-test.sh ./bin/snscoder-linux-x64 || {
+          chmod +x bin/snsagent-linux-x64
+          bash scripts/smoke-test.sh ./bin/snsagent-linux-x64 || {
             echo "::error::smoke test failed"
             exit 1
           }

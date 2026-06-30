@@ -9,7 +9,7 @@
 
 set -uo pipefail
 
-BIN="${1:-./bin/snscoder-linux-x64}"
+BIN="${1:-./bin/snsagent-linux-x64}"
 FAIL=0
 PASS=0
 
@@ -62,8 +62,8 @@ fi
 
 # Version: pi_natives may be missing on CI runner → JS-only fallback may exit 1
 # but version text still prints. Check substring rather than exit code.
-run_loose "version flag prints version" "snscoder " --version
-run_loose "version subcommand prints version" "snscoder " version
+run_loose "version flag prints version" "snsagent " --version
+run_loose "version subcommand prints version" "snsagent " version
 
 # Help: help uses only built-in code, should exit 0 reliably
 run_check "help flag" 0 --help

@@ -10,26 +10,26 @@ ARG TARGETARCH=amd64
 RUN apk add --no-cache curl ca-certificates
 RUN mkdir -p /out && \
     case "${TARGETARCH}" in \
-        amd64) BIN="snscoder-linux-x64" ;; \
-        arm64) BIN="snscoder-linux-arm64" ;; \
+        amd64) BIN="snsagent-linux-x64" ;; \
+        arm64) BIN="snsagent-linux-arm64" ;; \
         *) echo "Unsupported arch: ${TARGETARCH}" && exit 1 ;; \
     esac && \
     curl -fsSL \
       "https://github.com/Reihantt6/sns-myagent/releases/download/v${VERSION}/${BIN}" \
-      -o "/out/snscoder" && \
-    chmod +x /out/snscoder
+      -o "/out/snsagent" && \
+    chmod +x /out/snsagent
 
 # ─── Stage 2: Runtime ────────────────────────────────────────────────────────
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates bash tini
-COPY --from=fetcher /out/snscoder /usr/local/bin/snscoder
-RUN snscoder --version || true
+COPY --from=fetcher /out/snsagent /usr/local/bin/snsagent
+RUN snsagent --version || true
 
 WORKDIR /workspace
 VOLUME ["/workspace", "/root/.sns-myagent"]
 ENV PATH="/usr/local/bin:${PATH}"
 ENV SNS_TELEGRAM_AUTOSTART=0
-ENTRYPOINT ["/sbin/tini", "--", "snscoder"]
+ENTRYPOINT ["/sbin/tini", "--", "snsagent"]
 CMD ["chat"]
 
 # Default labels

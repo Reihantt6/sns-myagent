@@ -2,11 +2,11 @@
  * SNS-MyAgent Phase 2A CLI — minimal router.
  *
  * Commands:
- *   snscoder version               print package version
- *   snscoder init                  create .sns-myagent/config.json with defaults
- *   snscoder chat [--stub]         start interactive chat (stub for Phase 2B)
- *   snscoder config [show|get k|set k v]   show / read / write config values
- *   snscoder help                  this help
+ *   snsagent version               print package version
+ *   snsagent init                  create .sns-myagent/config.json with defaults
+ *   snsagent chat [--stub]         start interactive chat (stub for Phase 2B)
+ *   snsagent config [show|get k|set k v]   show / read / write config values
+ *   snsagent help                  this help
  *
  * No external parser — manual argv handling, zero new deps.
  */
@@ -57,7 +57,7 @@ export const PKG_VERSION = readPackageVersion();
 // ---------- command handlers ----------
 
 function cmdVersion(): number {
-	process.stdout.write(`snscoder ${PKG_VERSION}\n`);
+	process.stdout.write(`snsagent ${PKG_VERSION}\n`);
 	return 0;
 }
 
@@ -143,7 +143,7 @@ function cmdConfigSet(cfg: Config, key: string, valueRaw: string): number {
 function cmdConfig(args: string[]): number {
 	const cfg = loadConfig();
 	if (!cfg) {
-		process.stderr.write("✗ no config found, run `snscoder init` first\n");
+		process.stderr.write("✗ no config found, run `snsagent init` first\n");
 		return 1;
 	}
 	const sub = args[0];
@@ -153,7 +153,7 @@ function cmdConfig(args: string[]): number {
 	if (sub === "get") {
 		const key = args[1];
 		if (!key) {
-			process.stderr.write("✗ usage: snscoder config get <key>\n");
+			process.stderr.write("✗ usage: snsagent config get <key>\n");
 			return 1;
 		}
 		return cmdConfigGet(cfg, key);
@@ -162,7 +162,7 @@ function cmdConfig(args: string[]): number {
 		const key = args[1];
 		const value = args[2];
 		if (!key || value === undefined) {
-			process.stderr.write("✗ usage: snscoder config set <key> <value>\n");
+			process.stderr.write("✗ usage: snsagent config set <key> <value>\n");
 			return 1;
 		}
 		return cmdConfigSet(cfg, key, value);
@@ -195,7 +195,7 @@ async function cmdTelegram(args: string[]): Promise<number> {
 	if (sub === "status") {
 		const cfg = loadConfig();
 		if (!cfg) {
-			process.stderr.write("✗ no config found, run `snscoder init` first\n");
+			process.stderr.write("✗ no config found, run `snsagent init` first\n");
 			return 1;
 		}
 		const envToken = process.env.SNS_TELEGRAM_BOT_TOKEN;
@@ -220,7 +220,7 @@ async function cmdTelegram(args: string[]): Promise<number> {
 			);
 			return 2;
 		}
-		process.stdout.write(`snscoder telegram: starting polling bot...\n`);
+		process.stdout.write(`snsagent telegram: starting polling bot...\n`);
 		// Probe the token first so a bogus token exits cleanly with a
 		// readable error instead of triggering an UnhandledRejection
 		// from grammY's internal polling loop.
@@ -266,7 +266,7 @@ function parseTelegramOpts(args: string[]): TelegramOptions {
 	return { token: parseFlag(args, "token") };
 }
 
-const TG_HELP = `Usage: snscoder telegram <subcommand>
+const TG_HELP = `Usage: snsagent telegram <subcommand>
 
 Subcommands:
   start [--token <TOKEN>]   start the polling bot (token: flag > env > config)
@@ -333,7 +333,7 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
 
 // ---------- router ----------
 
-const HELP = `Usage: snscoder [command] [options]
+const HELP = `Usage: snsagent [command] [options]
 
 If no command is given, starts the full agent interactive mode.
 
@@ -358,7 +358,7 @@ export async function runCliAsync(argv: string[]): Promise<number> {
 		case undefined:
 		case "agent":
 		case "launch":
-			// No-arg `snscoder` (or explicit `agent`/`launch`) → start full agent mode.
+			// No-arg `snsagent` (or explicit `agent`/`launch`) → start full agent mode.
 			return cmdLaunch(rest);
 		case "help":
 		case "--help":
@@ -391,7 +391,7 @@ export async function runCliAsync(argv: string[]): Promise<number> {
 async function cmdOrchestrate(args: string[]): Promise<number> {
 	if (args.length === 0) {
 		process.stderr.write("✗ orchestrate requires a prompt\n");
-		process.stderr.write("  usage: snscoder orchestrate <prompt>\n");
+		process.stderr.write("  usage: snsagent orchestrate <prompt>\n");
 		process.stderr.write("  flags:  --strategy consensus|critic|best_of_n\n");
 		process.stderr.write("          --agents role1,role2\n");
 		process.stderr.write("          --ensemble <name>   (from agents.yaml)\n");

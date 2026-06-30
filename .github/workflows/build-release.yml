@@ -16,19 +16,19 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux-x64
-            artifact: snscoder-linux-x64
+            artifact: snsagent-linux-x64
           - os: ubuntu-latest
             target: linux-arm64
-            artifact: snscoder-linux-arm64
+            artifact: snsagent-linux-arm64
           - os: macos-latest
             target: macos-x64
-            artifact: snscoder-macos-x64
+            artifact: snsagent-macos-x64
           - os: macos-latest
             target: macos-arm64
-            artifact: snscoder-macos-arm64
+            artifact: snsagent-macos-arm64
           - os: windows-latest
             target: windows-x64
-            artifact: snscoder-windows-x64.exe
+            artifact: snsagent-windows-x64.exe
 
     runs-on: ${{ matrix.os }}
 
@@ -76,8 +76,8 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            artifacts/snscoder-linux-x64/snscoder-linux-x64
-            artifacts/snscoder-linux-arm64/snscoder-linux-arm64
-            artifacts/snscoder-macos-x64/snscoder-macos-x64
-            artifacts/snscoder-macos-arm64/snscoder-macos-arm64
-            artifacts/snscoder-windows-x64.exe/snscoder-windows-x64.exe
+            artifacts/snsagent-linux-x64/snsagent-linux-x64
+            artifacts/snsagent-linux-arm64/snsagent-linux-arm64
+            artifacts/snsagent-macos-x64/snsagent-macos-x64
+            artifacts/snsagent-macos-arm64/snsagent-macos-arm64
+            artifacts/snsagent-windows-x64.exe/snsagent-windows-x64.exe

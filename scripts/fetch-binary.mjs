@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // fetch-binary.mjs — Node.js postinstall for @sns-myagent/cli
 //
-// Downloads the prebuilt `snscoder` binary from the latest GitHub release
-// into <prefix>/bin/, then symlinks the active one to <prefix>/bin/snscoder
-// so `npm install -g @sns-myagent/cli` puts a working `snscoder` on PATH.
+// Downloads the prebuilt `snsagent` binary from the latest GitHub release
+// into <prefix>/bin/, then symlinks the active one to <prefix>/bin/snsagent
+// so `npm install -g @sns-myagent/cli` puts a working `snsagent` on PATH.
 //
 // Asset layout matches what .github/workflows/build-release.yml produces:
-//   snscoder-linux-x64          (raw, not zipped)
-//   snscoder-linux-arm64
-//   snscoder-darwin-x64
-//   snscoder-darwin-arm64
-//   snscoder-windows-x64.exe
+//   snsagent-linux-x64          (raw, not zipped)
+//   snsagent-linux-arm64
+//   snsagent-darwin-x64
+//   snsagent-darwin-arm64
+//   snsagent-windows-x64.exe
 //
 // Falls back to musl variant on Linux if glibc asset unavailable.
 // Never breaks `npm install` — on any failure prints warning + exits 0.
@@ -30,9 +30,9 @@ const UA = "sns-myagent-fetch-binary/0.2.0 (npm postinstall)";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // npm install -g layout: <prefix>/lib/node_modules/@sns-myagent/cli/scripts/fetch-binary.mjs
-// <prefix>/lib/node_modules/@sns-myagent/cli/node_modules/.bin/snscoder  (npm symlinks bin)
+// <prefix>/lib/node_modules/@sns-myagent/cli/node_modules/.bin/snsagent  (npm symlinks bin)
 // We want to download into <prefix>/lib/node_modules/@sns-myagent/cli/bin/
-// so npm auto-symlinks it into <prefix>/bin/snscoder.
+// so npm auto-symlinks it into <prefix>/bin/snsagent.
 const REPO_ROOT = resolve(__dirname, "..");
 const BIN_DIR = join(REPO_ROOT, "bin");
 
@@ -57,15 +57,15 @@ function pickAssetName(platform, arch, isMusl) {
 		if (!a) return null;
 		// Release ships glibc variant by default. If user is on musl/alpine,
 		// try musl fallback (may 404 on releases that don't have it).
-		return isMusl ? [`snscoder-linux-${a}-musl`, `snscoder-linux-${a}`] : [`snscoder-linux-${a}`];
+		return isMusl ? [`snsagent-linux-${a}-musl`, `snsagent-linux-${a}`] : [`snsagent-linux-${a}`];
 	}
 	if (platform === "darwin") {
 		const a = x(arch);
 		if (!a) return null;
-		return [`snscoder-darwin-${a}`];
+		return [`snsagent-darwin-${a}`];
 	}
 	if (platform === "win32") {
-		return arch === "x64" ? [`snscoder-windows-x64.exe`] : null;
+		return arch === "x64" ? [`snsagent-windows-x64.exe`] : null;
 	}
 	return null;
 }
@@ -179,7 +179,7 @@ async function main() {
 		return;
 	}
 
-	const tmp = await mkdtemp(join(tmpdir(), "snscoder-"));
+	const tmp = await mkdtemp(join(tmpdir(), "snsagent-"));
 	const tmpFile = join(tmp, asset.name);
 	info(`downloading ${asset.name} (${(asset.size / 1024 / 1024).toFixed(2)} MB)`);
 
@@ -216,11 +216,9 @@ async function main() {
 		await chmod(target, 0o755);
 	}
 
-	// Symlink: bin/snscoder → bin/<asset-name> (so `snscoder` works on PATH)
-	// npm install -g creates bin/<name> symlinks for the entries in package.json "bin"
-	// (which is "snscoder" → "bin/snscoder.js"). We don't have that shim; instead
-	// we create a wrapper file bin/snscoder.js that exec's the platform binary.
-	const shim = isWin ? "snscoder.cmd" : "snscoder.js";
+	// Shim file (referenced by package.json "bin"): bin/snsagent.js
+	// It execs the platform-specific binary that postinstall downloaded.
+	const shim = isWin ? "snsagent.cmd" : "snsagent.js";
 	const shimPath = join(BIN_DIR, shim);
 
 	if (isWin) {
@@ -244,5 +242,5 @@ async function main() {
 
 main().catch((e) => {
 	err(`unexpected: ${e?.stack ?? e?.message ?? e}`);
-	process.exit(0); // never break npm install
+	process.exit(1); // hard-fail so user knows postinstall broke
 });
