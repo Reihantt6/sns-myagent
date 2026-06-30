@@ -34,7 +34,11 @@ import { fileURLToPath } from "node:url";
 function readPackageVersion(): string {
 	const fromDefine = process.env.PKG_VERSION;
 	if (typeof fromDefine === "string" && fromDefine.length > 0) {
-		return fromDefine;
+		// Bun's --define injects the literal value as written. When the value
+		// is a JSON string (e.g. --define process.env.PKG_VERSION='"0.3.0"'),
+		// the surrounding quotes leak into process.env. Strip them.
+		const stripped = fromDefine.replace(/^["']|["']$/g, "");
+		if (stripped.length > 0) return stripped;
 	}
 	try {
 		const here = dirname(fileURLToPath(import.meta.url));

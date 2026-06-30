@@ -106,6 +106,7 @@
   },
   "files": [
     "src",
+    "bin",
     "dist/cli.js",
     "dist/*.node",
     "scripts",
