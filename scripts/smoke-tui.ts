@@ -11,15 +11,8 @@ import { renderChatBlock, renderSessionHeader } from "../src/tui/chat-blocks.js"
 import { CHAT_COMMANDS, renderCommandPalette } from "../src/tui/command-palette.js";
 import { renderErrorDisplay } from "../src/ui/error-display.js";
 import { renderMemoryToast, renderMemoryRecall } from "../src/ui/memory-toast.js";
-import {
-  brand,
-  accentGrad,
-  subtle,
-  gradientLine,
-  labeledGradientLine,
-  roleGradient,
-  statusGradient,
-} from "../src/ui/gradient.js";
+import { renderStatusBar } from "../src/ui/status-bar.js";
+import { accent, brand, subtle, inline } from "../src/ui/gradient.js";
 
 // Stub stdout.columns so width-dependent renderers behave deterministically.
 Object.defineProperty(process.stdout, "columns", { value: 100, configurable: true });
@@ -69,7 +62,7 @@ console.log(
 );
 
 section("3. SESSION HEADER");
-console.log(renderSessionHeader("openai/gpt-4o-mini", "0.3.4"));
+console.log(renderSessionHeader("openai/gpt-4o-mini", "0.3.5"));
 
 section("4. COMMAND PALETTE");
 console.log(
@@ -99,16 +92,19 @@ console.log(
   renderMemoryRecall("dark theme", "user prefers dark theme for terminal UI", 0.92),
 );
 
-section("7. GRADIENT HELPERS");
-console.log("brand:        ", brand("SnsAgent — premium CLI"));
-console.log("accentGrad:   ", accentGrad("accent gradient text"));
-console.log("subtle:       ", subtle("subtle gradient"));
-console.log("gradientLine: ", gradientLine(60));
-console.log("labeledLine:  ", labeledGradientLine("VERIFIED", 60));
-console.log("roleGradient: ", roleGradient("assistant")("assistant message border"));
-console.log("statusGradient(success):", statusGradient("success")("✓ ok"));
-console.log("statusGradient(warning):", statusGradient("warning")("⚠ warning"));
-console.log("statusGradient(error):  ", statusGradient("error")("✗ failed"));
-console.log("statusGradient(info):   ", statusGradient("info")("ℹ info"));
+section("8. STATUS BAR");
+renderStatusBar({
+  model: "gpt-4o-mini",
+  tokensUsed: 12345,
+  sessionStarted: Date.now() - 10_000,
+  memoryHits: 3,
+});
+console.log(); // newline after status bar (renderStatusBar writes to stdout directly)
+
+section("9. GRADIENT HELPERS (minimal)");
+console.log("brand:        ", brand("SnsAgent — coding agent CLI"));
+console.log("accent:       ", accent("accent cyan"));
+console.log("subtle:       ", subtle("dim text"));
+console.log("inline:       ", inline("file.ts:42"));
 
 console.log("\n\x1b[1m\x1b[32m✓ All 7 TUI components rendered without crashing.\x1b[0m");
