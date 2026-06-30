@@ -26,6 +26,7 @@ export const defaultConfig: Config = {
 		path: "memory.jsonl",
 		maxEntries: 1000,
 		autoSummarize: true,
+		backend: "mnemopi",
 	},
 };
 
@@ -44,9 +45,10 @@ export const DEFAULT_CONFIG_YAML =
 	`  allowedChatIds: []\n` +
 	`  pollIntervalMs: ${defaultConfig.telegram.pollIntervalMs}\n` +
 	`memory:\n` +
-	`  path: ${defaultConfig.memory.path}\n` +
-	`  maxEntries: ${defaultConfig.memory.maxEntries}\n` +
-	`  autoSummarize: ${defaultConfig.memory.autoSummarize}\n`;
+		`  path: ${defaultConfig.memory.path}\n` +
+		`  maxEntries: ${defaultConfig.memory.maxEntries}\n` +
+		`  autoSummarize: ${defaultConfig.memory.autoSummarize}\n` +
+		`  backend: ${defaultConfig.memory.backend}\n`;
 
 /** Default LLM provider id. */
 export const DEFAULT_PROVIDER = defaultConfig.model.provider;
