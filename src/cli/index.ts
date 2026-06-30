@@ -16,6 +16,9 @@ import type { Config } from "../config/schema.js";
 import { defaultConfigFn } from "../config/loader.js";
 import { startTelegramAdapter, stopTelegramAdapter } from "../adapters/telegram/index.js";
 import { createForwardToAgent, resetChatSession, getBridgeStats } from "../adapters/telegram/bridge.js";
+import { createInterface } from "node:readline/promises";
+import { stdin, stdout } from "node:process";
+import chalk from "chalk";
 
 // ---------- package version (single source of truth) ----------
 
@@ -61,7 +64,7 @@ function cmdVersion(): number {
 	return 0;
 }
 
-function cmdInit(): number {
+async function cmdInit(): Promise<number> {
 	const path = configPath();
 	try {
 		const existing = loadConfig();
@@ -69,9 +72,70 @@ function cmdInit(): number {
 			process.stdout.write(`✓ config already exists at ${path}\n`);
 			return 0;
 		}
+
+		// Interactive memory backend selection
+		const rl = createInterface({ input: stdin, output: stdout });
+
+		process.stdout.write("\n");
+		process.stdout.write(`  ${chalk.cyan("●")} ${chalk.bold("Memory Backend Selection")}\n`);
+		process.stdout.write(`  ${chalk.dim("Select memory backend (default: mnemopi):")}\n`);
+		process.stdout.write(`    ${chalk.cyan("1")} mnemopi (default) — SQLite + vector + graph, offline, no config\n`);
+		process.stdout.write(`    ${chalk.cyan("2")} local — rollout summary only\n`);
+		process.stdout.write(`    ${chalk.cyan("3")} mnemosyne — advanced local (Python daemon)\n`);
+		process.stdout.write(`    ${chalk.cyan("4")} mem0 — cloud API (needs MEM0_API_KEY)\n`);
+		process.stdout.write(`    ${chalk.cyan("5")} lcm — local server (needs LCM_HOST)\n`);
+		process.stdout.write(`    ${chalk.cyan("6")} hindsight — cloud (needs HINDSIGHT_API_KEY)\n`);
+		process.stdout.write(`    ${chalk.cyan("7")} off — disabled\n`);
+		process.stdout.write(`  [1] `);
+
+		const answer = await rl.question("");
+
+		let backend: "mnemopi" | "hindsight" | "mnemosyne" | "mem0" | "lcm" | "local" | "off" = "mnemopi";
+		switch (answer.trim()) {
+			case "1":
+			case "":
+				backend = "mnemopi";
+				break;
+			case "2":
+				backend = "local";
+				break;
+			case "3":
+				backend = "mnemosyne";
+				break;
+			case "4":
+				backend = "mem0";
+				break;
+			case "5":
+				backend = "lcm";
+				break;
+			case "6":
+				backend = "hindsight";
+				break;
+			case "7":
+				backend = "off";
+				break;
+			default:
+				process.stdout.write(`  ${chalk.dim("unknown option, using default (mnemopi)")}\n`);
+				backend = "mnemopi";
+		}
+
+		// Mnemosyne needs Python daemon
+		if (backend === "mnemosyne") {
+			process.stdout.write(`\n  ${chalk.cyan("●")} mnemosyne requires Python daemon.\n`);
+			process.stdout.write(`  ${chalk.dim("Install now? (pip install mnemosyne) [Y/n] ")}`);
+			const yn = await rl.question("");
+			if (!yn || yn.toLowerCase() === "y") {
+				process.stdout.write(`  ${chalk.dim("installing mnemosyne... (placeholder)")}\n`);
+				// TODO: actual pip install
+			}
+		}
+
+		rl.close();
+
 		const cfg = defaultConfigFn();
+		cfg.memory = { ...cfg.memory, backend };
 		saveConfig(cfg);
-		process.stdout.write(`✓ created ${path}\n`);
+		process.stdout.write(`✓ created ${path} (memory backend: ${backend})\n`);
 		return 0;
 	} catch (err) {
 		process.stderr.write(`✗ init failed: ${(err as Error).message}\n`);

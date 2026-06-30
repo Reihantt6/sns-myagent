@@ -32,6 +32,8 @@ export interface MemoryConfig {
 	maxEntries: number;
 	/** Auto-summarize old entries when count exceeds threshold. */
 	autoSummarize: boolean;
+	/** Memory backend to use. */
+	backend: "mnemopi" | "hindsight" | "mnemosyne" | "mem0" | "lcm" | "local" | "off";
 }
 
 export interface Config {
@@ -109,6 +111,11 @@ export function validateConfig(raw: unknown): Config {
 	if (typeof mem.autoSummarize !== "boolean") {
 		throw new Error("config.memory.autoSummarize must be boolean");
 	}
+	// Optional backend field with default
+	const backend = mem.backend;
+	if (backend !== undefined && !isNonEmptyString(backend)) {
+		throw new Error("config.memory.backend must be a string if present");
+	}
 
 	const extra = r.extra;
 	if (extra !== undefined && (typeof extra !== "object" || extra === null || Array.isArray(extra))) {
@@ -133,6 +140,7 @@ export function validateConfig(raw: unknown): Config {
 			path: mem.path as string,
 			maxEntries: mem.maxEntries as number,
 			autoSummarize: mem.autoSummarize as boolean,
+			backend: (mem.backend ?? "mnemopi") as "mnemopi" | "hindsight" | "mnemosyne" | "mem0" | "lcm" | "local" | "off",
 		},
 		extra: extra as Record<string, unknown> | undefined,
 	};
