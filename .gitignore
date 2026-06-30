@@ -30,6 +30,8 @@ TODO-INTERNAL.md
 HANDOFF*.md
 _HANDOFF_*.md
 PROGRESS.md
+PLAN-*.md
+DOCS-AUDIT-TRACKER.md
 
 # Test coverage
 coverage/
@@ -41,9 +43,8 @@ npm-debug.log*
 # Binary artifacts
 *.tgz
 bin/
-bin/snscoder*
+bin/snsagent*
 !bin/.gitkeep
-DOCS-AUDIT-TRACKER.md
 
 # Migration artifacts
 package.json.orig
