@@ -21,7 +21,7 @@ export default class Read extends Command {
 		"omp read src/foo.ts:50-100",
 		"omp read src/foo.ts:raw",
 		"omp read https://example.com",
-		"omp read omp://",
+		"omp read snsagent://",
 		"omp read issue://123",
 		"omp read path/to/archive.zip:dir/file.ts",
 		"omp read path/to/db.sqlite:users:42",

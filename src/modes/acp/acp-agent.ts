@@ -479,7 +479,7 @@ export class AcpAgent implements Agent {
 			protocolVersion: PROTOCOL_VERSION,
 			agentInfo: {
 				name: "sns-myagent",
-				title: "Oh My Pi",
+				title: "SNS-MyAgent",
 				version: VERSION,
 			},
 			authMethods,

@@ -1,5 +1,5 @@
 /**
- * Harness documentation index for the `omp://` protocol.
+ * Harness documentation index for the `snsagent://` protocol.
  *
  * Compiled binaries and the prepacked npm bundle inline a compressed index from
  * `docs-index.generated.txt` (populated by `scripts/generate-docs-index.ts

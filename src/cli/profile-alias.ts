@@ -20,10 +20,10 @@ export interface ProfileAliasCommand {
 }
 
 const DEFAULT_ALIAS_COMMAND: ProfileAliasCommand = {
-	display: "omp",
-	posix: "omp",
-	fish: "omp",
-	powerShell: "omp",
+	display: "snsagent",
+	posix: "snsagent",
+	fish: "snsagent",
+	powerShell: "snsagent",
 };
 
 export interface ProfileAliasInstallOptions {
@@ -147,8 +147,8 @@ function validateAliasName(aliasName: string, shell: ProfileAliasShell): string 
 	if (!ALIAS_NAME_RE.test(normalized)) {
 		throw new Error(`Invalid alias "${aliasName}". Alias names must match ${ALIAS_NAME_RE.source}.`);
 	}
-	if (normalized.toLowerCase() === "omp") {
-		throw new Error('Invalid alias "omp". Refusing to shadow the base omp command.');
+	if (normalized.toLowerCase() === "snsagent") {
+		throw new Error('Invalid alias "snsagent". Refusing to shadow the base snsagent command.');
 	}
 	if (getReservedAliasNames(shell).has(normalized.toLowerCase())) {
 		throw new Error(`Invalid alias "${aliasName}". Refusing to create a ${shell} reserved word.`);
