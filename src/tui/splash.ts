@@ -1,13 +1,12 @@
 /**
- * SNS-MyAgent splash — minimal banner + info block.
- * Single accent (cyan) for brand, default terminal text everywhere else.
+ * SNS-MyAgent splash — flat list, no boxes.
+ * Single line brand + `●` prefixed info rows. No rounded borders, no
+ * gradient, no separator boxes. Reads like a status line.
  */
 import chalk from "chalk";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const SUBTITLE = "snsagent — coding agent CLI";
 
 function readVersion(): string {
 	try {
@@ -49,38 +48,39 @@ export interface SplashInfo {
 	nodeVersion?: string;
 }
 
+/**
+ * One-line prefix used throughout the TUI.
+ * `●` = present, default text. No rounded boxes.
+ */
+const BULLET = chalk.cyan("●");
+
 export function renderSplash(info: SplashInfo = {}): string {
-	const cols = process.stdout.columns ?? 80;
-	const width = Math.min(cols - 4, 72);
+	const ver = readVersion();
+	const lines: string[] = [];
 
-	// Single brand mark, no rainbow
-	const brandLine = `\n  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")}  ${chalk.dim(`v${readVersion()}`)}\n`;
-	const subLine = `  ${chalk.dim(SUBTITLE)}\n`;
+	// Brand line: MY · snsagent · v0.3.6
+	lines.push(`  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")}  ${chalk.dim(`v${ver}`)}`);
+	lines.push(`  ${chalk.dim("coding agent CLI")}`);
+	lines.push("");
 
-	// Separator
-	const sep = chalk.dim("─".repeat(Math.min(width - 4, 60)));
-
-	// Info rows: key dim, value default
-	const rows: string[] = [sep];
-	const kv = (k: string, v: string) =>
-		`  ${chalk.dim(k.padEnd(12))}${v}`;
-	if (info.model) rows.push(kv("Model", `${info.provider ?? "unknown"}/${info.model}`));
-	if (info.cwd) rows.push(kv("Working Dir", info.cwd));
-	if (info.platform) rows.push(kv("Platform", info.platform));
-	rows.push(kv("Version", readVersion()));
-	rows.push(sep);
+	// Status lines — flat, one per line, ● prefix
+	const row = (label: string, value: string) => `  ${BULLET} ${chalk.dim(label.padEnd(13))}${value}`;
+	if (info.model) lines.push(row("model", `${info.provider ?? "unknown"}/${info.model}`));
+	if (info.cwd) lines.push(row("dir", info.cwd));
+	if (info.platform) lines.push(row("platform", info.platform));
+	lines.push(row("version", ver));
 
 	// Hints
-	rows.push(`  ${chalk.dim("Type your message to start chatting.")}`);
-	rows.push(`  ${chalk.dim("/exit or Ctrl+C to quit.")}`);
+	lines.push("");
+	lines.push(`  ${chalk.dim("type to chat · /exit to quit")}`);
 
-	return brandLine + subLine + "\n" + rows.join("\n") + "\n";
+	return lines.join("\n") + "\n";
 }
 
 export function renderInlineHeader(info: SplashInfo = {}): string {
+	const ver = readVersion();
 	const model = info.model
 		? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
 		: chalk.dim("no model");
-	const ver = chalk.dim(`v${readVersion()}`);
-	return `\n  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${ver}  ${chalk.dim("│")}  ${model}\n`;
+	return `  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
 }

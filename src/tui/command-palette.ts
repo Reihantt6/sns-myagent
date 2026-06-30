@@ -1,6 +1,6 @@
 /**
- * Command palette — fuzzy command overlay.
- * Minimal: cyan highlight, dim for secondary. No gradient.
+ * Command palette — flat list, no box.
+ * Cyan highlight on selected row, dim otherwise.
  */
 
 import chalk from "chalk";
@@ -36,7 +36,7 @@ export const CHAT_COMMANDS: PaletteCommand[] = [
 ];
 
 export function renderCommandPalette(opts: CommandPaletteOptions): string {
-	const { commands, query = "", highlighted = 0, width = 60 } = opts;
+	const { commands, query = "", highlighted = 0 } = opts;
 	const filtered = commands.filter(
 		(c) => c.enabled !== false &&
 			(c.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -44,33 +44,28 @@ export function renderCommandPalette(opts: CommandPaletteOptions): string {
 				c.category.toLowerCase().includes(query.toLowerCase()))
 	);
 
-	const cols = process.stdout.columns ?? 80;
-	const width2 = Math.min(opts.width ?? cols, cols) - 4;
-
 	const lines: string[] = [];
 
-	// Header
-	const search = chalk.cyan("? ") + query + chalk.dim(" (↑↓ navigate, Enter select, Esc cancel)");
-	lines.push(chalk.dim("─".repeat(60)));
-	lines.push(`  ${chalk.cyan("?")} ${query}${chalk.dim(" (↑↓ Enter Esc)")}`);
+	// Search line
+	lines.push(`  ${chalk.cyan("?")} ${query}${chalk.dim("  (↑↓ navigate · Enter select · Esc cancel)")}`);
 	lines.push("");
 
 	if (filtered.length === 0) {
-		lines.push(chalk.dim("  No commands match"));
+		lines.push(`  ${chalk.dim("no commands match")}`);
 	} else {
 		filtered.forEach((cmd, idx) => {
 			const isActive = idx === highlighted;
-			const prefix = isActive ? chalk.cyan("► ") : "  ";
+			const prefix = isActive ? chalk.cyan("●") : " ";
 			const name = isActive ? chalk.cyan.bold(cmd.name) : chalk.cyan(cmd.name);
 			const desc = chalk.dim(cmd.description);
-			const cat = chalk.dim(` [${cmd.category}]`);
-			const shortcut = cmd.shortcut ? chalk.dim(` ${cmd.shortcut}`) : "";
-			lines.push(`${prefix}${name}${cat}${shortcut}`);
+			const cat = chalk.dim(`  [${cmd.category}]`);
+			const shortcut = cmd.shortcut ? chalk.dim(`  ${cmd.shortcut}`) : "";
+			lines.push(`  ${prefix} ${name}${cat}${shortcut}`);
+			if (isActive) {
+				lines.push(`    ${desc}`);
+			}
 		});
 	}
-
-	lines.push("");
-	lines.push(chalk.dim("─".repeat(60)));
 
 	return lines.join("\n");
 }
