@@ -1,130 +1,86 @@
 /**
- * SNS-MyAgent splash screen — branded gradient banner + system info blocks.
- * Premium terminal UI with gradient logo, rounded box, and info panel.
+ * SNS-MyAgent splash — minimal banner + info block.
+ * Single accent (cyan) for brand, default terminal text everywhere else.
  */
 import chalk from "chalk";
-import gradient from "gradient-string";
-import boxen from "boxen";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const BANNER_ART = `
-███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
-████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
-██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
-██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
-██║ ╚████║███████╗██╔╝ ╚██╗╚██████╔╝███████║
-╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝ ╚═════╝ ╚══════╝`;
-
-const SUBTITLE = "My-Agent • SnsAgent CLI";
-
-const SNY_GRADIENT = ["#00d2ff", "#7b2ff7", "#ff6b9d"];
-const ACCENT_GRADIENT = ["#7b2ff7", "#00d2ff"];
+const SUBTITLE = "snsagent — coding agent CLI";
 
 function readVersion(): string {
-  try {
-    // Strategy 1: import.meta.url relative path (works in most bundler/ts-node setups)
-    const here = dirname(fileURLToPath(import.meta.url));
-    const candidates = [
-      resolve(here, "..", "..", "package.json"),       // src/tui/ → root
-      resolve(here, "..", "package.json"),              // dist/tui/ → dist/ (fallback)
-      resolve(here, "..", "..", "dist", "package.json"), // flat dist
-    ];
-
-    for (const pkgPath of candidates) {
-      try {
-        const raw = readFileSync(pkgPath, "utf8");
-        const pkg = JSON.parse(raw) as { version?: string };
-        if (pkg.version && pkg.version !== "0.0.0") return pkg.version;
-      } catch { /* try next */ }
-    }
-
-    // Strategy 2: Walk up from CWD looking for package.json with matching name
-    let dir = process.cwd();
-    for (let i = 0; i < 5; i++) {
-      try {
-        const raw = readFileSync(resolve(dir, "package.json"), "utf8");
-        const pkg = JSON.parse(raw) as { name?: string; version?: string };
-        if (pkg.name === "@sns-myagent/cli" && pkg.version) return pkg.version;
-      } catch { /* continue */ }
-      const parent = dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-
-    return "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
+	try {
+		const here = dirname(fileURLToPath(import.meta.url));
+		const candidates = [
+			resolve(here, "..", "..", "package.json"),
+			resolve(here, "..", "package.json"),
+			resolve(here, "..", "..", "dist", "package.json"),
+		];
+		for (const pkgPath of candidates) {
+			try {
+				const raw = readFileSync(pkgPath, "utf8");
+				const pkg = JSON.parse(raw) as { version?: string };
+				if (pkg.version && pkg.version !== "0.0.0") return pkg.version;
+			} catch {}
+		}
+		let dir = process.cwd();
+		for (let i = 0; i < 5; i++) {
+			try {
+				const raw = readFileSync(resolve(dir, "package.json"), "utf8");
+				const pkg = JSON.parse(raw) as { name?: string; version?: string };
+				if (pkg.name === "@sns-myagent/cli" && pkg.version) return pkg.version;
+			} catch {}
+			const parent = dirname(dir);
+			if (parent === dir) break;
+			dir = parent;
+		}
+		return "0.0.0";
+	} catch {
+		return "0.0.0";
+	}
 }
 
 export interface SplashInfo {
-  model?: string;
-  provider?: string;
-  cwd?: string;
-  platform?: string;
-  nodeVersion?: string;
-}
-
-function makeInfoBlocks(info: SplashInfo, width: number): string {
-  const inner = Math.min(width - 4, 56);
-  const sep = chalk.dim("─".repeat(inner));
-
-  const rows: string[] = [];
-  const kv = (k: string, v: string) =>
-    `  ${chalk.dim(k.padEnd(12))}${chalk.white(v)}`;
-
-  rows.push(sep);
-  if (info.model) rows.push(kv("Model", `${info.provider ?? "unknown"}/${info.model}`));
-  if (info.cwd) rows.push(kv("Working Dir", info.cwd));
-  if (info.platform) rows.push(kv("Platform", info.platform));
-  rows.push(kv("Version", readVersion()));
-  rows.push(sep);
-
-  const hint = chalk.dim("  Type your message to start chatting.");
-  const exit = chalk.dim("  /exit or Ctrl+C to quit.");
-  rows.push(hint);
-  rows.push(exit);
-
-  return rows.join("\n");
+	model?: string;
+	provider?: string;
+	cwd?: string;
+	platform?: string;
+	nodeVersion?: string;
 }
 
 export function renderSplash(info: SplashInfo = {}): string {
-  const cols = process.stdout.columns ?? 80;
-  const bannerWidth = Math.min(cols - 2, 64);
+	const cols = process.stdout.columns ?? 80;
+	const width = Math.min(cols - 4, 72);
 
-  // Gradient banner
-  const bannerLines = BANNER_ART.split("\n").filter(l => l.trim().length > 0);
-  const coloredBanner = bannerLines
-    .map(l => gradient(SNY_GRADIENT).multiline(l))
-    .join("\n");
+	// Single brand mark, no rainbow
+	const brandLine = `\n  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")}  ${chalk.dim(`v${readVersion()}`)}\n`;
+	const subLine = `  ${chalk.dim(SUBTITLE)}\n`;
 
-  // Subtitle
-  const subtitle = gradient(ACCENT_GRADIENT)(SUBTITLE);
+	// Separator
+	const sep = chalk.dim("─".repeat(Math.min(width - 4, 60)));
 
-  // Info block
-  const infoBlock = makeInfoBlocks(info, bannerWidth);
+	// Info rows: key dim, value default
+	const rows: string[] = [sep];
+	const kv = (k: string, v: string) =>
+		`  ${chalk.dim(k.padEnd(12))}${v}`;
+	if (info.model) rows.push(kv("Model", `${info.provider ?? "unknown"}/${info.model}`));
+	if (info.cwd) rows.push(kv("Working Dir", info.cwd));
+	if (info.platform) rows.push(kv("Platform", info.platform));
+	rows.push(kv("Version", readVersion()));
+	rows.push(sep);
 
-  // Wrap in boxen
-  const content = `${coloredBanner}\n${subtitle}\n${infoBlock}`;
+	// Hints
+	rows.push(`  ${chalk.dim("Type your message to start chatting.")}`);
+	rows.push(`  ${chalk.dim("/exit or Ctrl+C to quit.")}`);
 
-  const box = boxen(content, {
-    padding: { top: 1, bottom: 1, left: 2, right: 2 },
-    margin: { top: 0, bottom: 0, left: 1, right: 1 },
-    borderStyle: "round",
-    borderColor: "cyan",
-    width: bannerWidth,
-    textAlignment: "center",
-  });
-
-  return box;
+	return brandLine + subLine + "\n" + rows.join("\n") + "\n";
 }
 
 export function renderInlineHeader(info: SplashInfo = {}): string {
-  const model = info.model
-    ? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
-    : chalk.dim("no model");
-  const ver = chalk.dim(`v${readVersion()}`);
-  return `\n  ${gradient(SNY_GRADIENT)("SnsAgent")} ${ver}  ${chalk.dim("│")}  ${model}\n`;
+	const model = info.model
+		? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
+		: chalk.dim("no model");
+	const ver = chalk.dim(`v${readVersion()}`);
+	return `\n  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${ver}  ${chalk.dim("│")}  ${model}\n`;
 }

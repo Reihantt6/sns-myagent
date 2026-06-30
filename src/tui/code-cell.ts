@@ -3,7 +3,6 @@
  */
 import { Markdown, visibleWidth } from "@oh-my-pi/pi-tui";
 import chalk from "chalk";
-import gradient from "gradient-string";
 import { getMarkdownTheme, highlightCode, type Theme } from "../modes/theme/theme";
 import {
 	formatDuration,
@@ -241,7 +240,6 @@ export function renderCollapsibleOutput(
   theme: Theme,
   maxLines: number = 8,
 ): string[] {
-  const grad = theme.fg;
   const lines: string[] = [];
   const inner = Math.max(20, width - 4);
 
@@ -249,20 +247,22 @@ export function renderCollapsibleOutput(
     // Collapsed: just header + hint
     const lineCount = content.split("\n").length;
     const hint = chalk.dim(` (${lineCount} lines, click to expand)`);
-    lines.push(`  ${grad("accent", "▸")} ${grad("toolTitle", label)}${hint}`);
+    lines.push(`  ${chalk.cyan("▸")} ${chalk.bold(label)}${hint}`);
     return lines;
   }
 
   // Expanded: bordered block
-  const gradColors = ["#00d2ff", "#7b2ff7"] as [string, string];
-  const g = gradient(gradColors);
+  const accent = chalk.cyan;
+
+  	// Expanded: bordered block
+  	const accentFn = (s: string) => chalk.cyan(s);
 
   // Header
   const headerText = ` ${label} `;
   const headerFill = COLLAPSE_BORDER.horizontal.repeat(
     Math.max(0, inner - headerText.length - 2),
   );
-  lines.push(g(COLLAPSE_BORDER.topLeft + COLLAPSE_BORDER.horizontal) + grad("toolTitle", headerText) + g(headerFill + COLLAPSE_BORDER.topRight));
+  lines.push(accent(COLLAPSE_BORDER.topLeft + COLLAPSE_BORDER.horizontal) + chalk.bold(headerText) + accent(headerFill + COLLAPSE_BORDER.topRight));
 
   // Content
   const rawLines = content.split("\n");
@@ -270,7 +270,7 @@ export function renderCollapsibleOutput(
   for (const line of visibleLines) {
     const visLen = visibleWidth(line);
     const fill = " ".repeat(Math.max(0, inner - visLen));
-    lines.push(g(COLLAPSE_BORDER.vertical) + " " + line + fill + " " + g(COLLAPSE_BORDER.vertical));
+    lines.push(accent(COLLAPSE_BORDER.vertical) + " " + line + fill + " " + accent(COLLAPSE_BORDER.vertical));
   }
 
   // Hidden lines hint
@@ -278,11 +278,11 @@ export function renderCollapsibleOutput(
   if (remaining > 0) {
     const moreText = `  ... +${remaining} more lines`;
     const moreFill = " ".repeat(Math.max(0, inner - moreText.length));
-    lines.push(g(COLLAPSE_BORDER.vertical) + chalk.dim(moreText) + moreFill + g(COLLAPSE_BORDER.vertical));
+    lines.push(accent(COLLAPSE_BORDER.vertical) + chalk.dim(moreText) + moreFill + accent(COLLAPSE_BORDER.vertical));
   }
 
   // Footer
-  lines.push(g(COLLAPSE_BORDER.bottomLeft + COLLAPSE_BORDER.horizontal.repeat(inner) + COLLAPSE_BORDER.bottomRight));
+  lines.push(accent(COLLAPSE_BORDER.bottomLeft + COLLAPSE_BORDER.horizontal.repeat(inner) + COLLAPSE_BORDER.bottomRight));
 
   return lines;
 }
