@@ -26,7 +26,7 @@ export const handleCratesIo: SpecialHandler = async (
 		const result = await loadPage(apiUrl, {
 			timeout,
 			signal,
-			headers: { "User-Agent": "omp-web-fetch/1.0 (https://github.com/anthropics)" },
+			headers: { "User-Agent": "snsagent-web-fetch/1.0 (https://github.com/Reihantt6/sns-myagent)" },
 		});
 
 		if (!result.ok) return null;

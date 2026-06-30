@@ -1,8 +1,8 @@
 {
   "type": "module",
   "name": "@sns-myagent/cli",
-  "version": "0.3.4",
-  "description": "SNS-MyAgent \u2014 Pi Agent size, full features. BYOK coding agent CLI.",
+  "version": "0.3.5",
+  "description": "SNS-MyAgent \u2014 BYOK coding agent CLI. Multi-agent + Telegram + self-learning memory. ~120MB binary, zero forced cost.",
   "homepage": "https://github.com/Reihantt6/sns-myagent",
   "author": "Reihantt6",
   "contributors": [],
@@ -23,7 +23,9 @@
     "telegram",
     "multi-agent",
     "tui",
-    "agent"
+    "agent",
+    "snsagent",
+    "sns-myagent"
   ],
   "main": "./src/index.ts",
   "types": "./dist/types/index.d.ts",

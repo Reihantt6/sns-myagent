@@ -303,8 +303,8 @@ function buildCodexHeaders(accessToken: string, accountId: string): Record<strin
 		Authorization: `Bearer ${accessToken}`,
 		"chatgpt-account-id": accountId,
 		"OpenAI-Beta": "responses=experimental",
-		originator: "pi",
-		"User-Agent": `pi/${packageJson.version} (${os.platform()} ${os.release()}; ${os.arch()})`,
+		originator: "snsagent",
+		"User-Agent": `snsagent/${packageJson.version} (${os.platform()} ${os.release()}; ${os.arch()})`,
 		Accept: "text/event-stream",
 		"Content-Type": "application/json",
 	};
