@@ -25,7 +25,6 @@ import chalk from "chalk";
 
 // Inline version — kept in sync with package.json. Read from package.json at
 // runtime so the bin script does not need a second copy.
-import { readFileSync } from "node:fs";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
