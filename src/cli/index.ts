@@ -14,6 +14,7 @@
 import { loadConfig, saveConfig, configPath, ensureConfig } from "../config/loader.js";
 import type { Config } from "../config/schema.js";
 import { defaultConfigFn } from "../config/loader.js";
+import { getAgentDir } from "@oh-my-pi/pi-utils";
 import { startTelegramAdapter, stopTelegramAdapter } from "../adapters/telegram/index.js";
 import { createForwardToAgent, resetChatSession, getBridgeStats } from "../adapters/telegram/bridge.js";
 import { createInterface } from "node:readline/promises";
@@ -185,7 +186,7 @@ async function cmdInit(): Promise<number> {
 		if (apiKey.trim()) {
 			try {
 				const { YAML } = await import("bun");
-				const agentDir = join(homedir(), ".sns-myagent");
+				const agentDir = getAgentDir();
 				const modelsPath = join(agentDir, "models.yml");
 
 				let existing: Record<string, unknown> = {};
@@ -240,7 +241,7 @@ async function cmdInit(): Promise<number> {
 
 				if (!existsSync(agentDir)) mkdirSync(agentDir, { recursive: true });
 				writeFileSync(modelsPath, YAML.stringify(existing), "utf-8");
-				process.stdout.write(`  ${chalk.green("✓")} Provider saved to ~/.sns-myagent/models.yml\n`);
+				process.stdout.write(`  ${chalk.green("✓")} Provider saved to ${modelsPath}\n`);
 			} catch (err) {
 				process.stdout.write(`  ${chalk.dim(`Could not save provider config: ${(err as Error).message}`)}\n`);
 			}

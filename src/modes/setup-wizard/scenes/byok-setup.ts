@@ -8,7 +8,6 @@ import { type Component, type Focusable, Input, type SgrMouseEvent } from "@oh-m
 import { YAML } from "bun";
 import { getAgentDir, logger } from "@oh-my-pi/pi-utils";
 import * as fs from "node:fs";
-import * as os from "node:os";
 import * as path from "node:path";
 import { theme } from "../../theme/theme";
 import type { SetupSceneHost, SetupTab } from "./types";
@@ -168,7 +167,7 @@ export class ByokSetupTab implements SetupTab {
 	render(width: number): readonly string[] {
 		const lines: string[] = [];
 		lines.push(theme.fg("muted", "Enter your provider details. Tab between fields, Enter to connect."));
-		lines.push(theme.fg("dim", "⚠ API Key stored locally in ~/.sns-myagent/models.yml"));
+		lines.push(theme.fg("dim", "⚠ API Key stored in agent config directory"));
 		lines.push("");
 
 		// Base URL field
@@ -280,7 +279,7 @@ export class ByokSetupTab implements SetupTab {
 	}
 
 	async #saveProvider(baseUrl: string, apiKey: string, apiType: ApiType, models: string[]): Promise<void> {
-		const agentDir = path.join(os.homedir(), ".sns-myagent");
+		const agentDir = getAgentDir();
 		const configPath = path.join(agentDir, "models.yml");
 
 		// Read existing config
