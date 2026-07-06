@@ -80,6 +80,16 @@ async function cmdInit(): Promise<number> {
 		const existing = loadConfig();
 		if (existing) {
 			process.stdout.write(`✓ config already exists at ${path}\n`);
+			// Still allow BYOK provider re-configuration
+			process.stdout.write(`  ${chalk.dim("Re-run provider setup? [y/N] ")}`);
+			const rl = createInterface({ input: stdin, output: stdout });
+			const reconfigure = await rl.question("");
+			if (reconfigure.trim().toLowerCase() !== "y") {
+				rl.close();
+				return 0;
+			}
+			await byokProviderSetup(rl);
+			rl.close();
 			return 0;
 		}
 

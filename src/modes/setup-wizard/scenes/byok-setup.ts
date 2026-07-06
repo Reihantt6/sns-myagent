@@ -8,6 +8,7 @@ import { type Component, type Focusable, Input, type SgrMouseEvent } from "@oh-m
 import { YAML } from "bun";
 import { getAgentDir, logger } from "@oh-my-pi/pi-utils";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { theme } from "../../theme/theme";
 import type { SetupSceneHost, SetupTab } from "./types";
@@ -79,7 +80,7 @@ type ByokState = "input" | "detecting" | "success" | "error";
 export class ByokSetupTab implements SetupTab {
 	readonly id = "byok";
 	readonly label = "BYOK";
-	readonly modal = false;
+	get modal(): boolean { return this.#detecting; }
 
 	#baseUrl: FieldInput;
 	#apiKey: FieldInput;
@@ -90,6 +91,7 @@ export class ByokSetupTab implements SetupTab {
 	#statusLines: string[] = [];
 	#modelCount = 0;
 	#disposed = false;
+	#detecting = false;
 
 	constructor(private readonly host: SetupSceneHost) {
 		this.#baseUrl = new FieldInput("Base URL");
@@ -166,6 +168,7 @@ export class ByokSetupTab implements SetupTab {
 	render(width: number): readonly string[] {
 		const lines: string[] = [];
 		lines.push(theme.fg("muted", "Enter your provider details. Tab between fields, Enter to connect."));
+		lines.push(theme.fg("dim", "⚠ API Key stored locally in ~/.sns-myagent/models.yml"));
 		lines.push("");
 
 		// Base URL field
@@ -219,6 +222,7 @@ export class ByokSetupTab implements SetupTab {
 		}
 
 		this.#state = "detecting";
+		this.#detecting = true;
 		this.#statusLines = [theme.fg("dim", "Detecting models…")];
 		this.host.requestRender();
 
@@ -234,6 +238,7 @@ export class ByokSetupTab implements SetupTab {
 			await this.#saveProvider(baseUrl, apiKey, apiType, models);
 
 			this.#state = "success";
+			this.#detecting = false;
 			const modelInfo = models.length > 0
 				? `${models.length} model${models.length !== 1 ? "s" : ""} detected`
 				: "connected (manual model config needed)";
@@ -243,6 +248,7 @@ export class ByokSetupTab implements SetupTab {
 			];
 		} catch (err) {
 			this.#state = "error";
+			this.#detecting = false;
 			const msg = err instanceof Error ? err.message : String(err);
 			this.#statusLines = [
 				theme.fg("error", `${theme.status.error} ${msg}`),
@@ -274,7 +280,7 @@ export class ByokSetupTab implements SetupTab {
 	}
 
 	async #saveProvider(baseUrl: string, apiKey: string, apiType: ApiType, models: string[]): Promise<void> {
-		const agentDir = getAgentDir();
+		const agentDir = path.join(os.homedir(), ".sns-myagent");
 		const configPath = path.join(agentDir, "models.yml");
 
 		// Read existing config
