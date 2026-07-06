@@ -182,7 +182,19 @@ Then tell the agent: *"setup ollama with llama3"*
 
 ### Option 4: Custom provider
 
-Any OpenAI-compatible API (vLLM, llama.cpp server, LM Studio, etc.)
+Any OpenAI-compatible API (vLLM, llama.cpp server, LM Studio, OpenRouter, etc.)
+
+**Fastest way**: Run `snscoder` → Setup Wizard → **BYOK** tab. Enter Base URL + API Key, done.
+
+**Manual**: Create `~/.sns-myagent/models.yml`:
+
+```yaml
+providers:
+  my-provider:
+    baseUrl: https://openrouter.ai/api/v1
+    apiKey: sk-or-...
+    api: openai-completions
+```
 
 ### .env file
 

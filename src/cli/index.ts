@@ -64,6 +64,16 @@ function cmdVersion(): number {
 	return 0;
 }
 
+/** Derive a provider name from base URL for models.yml key. */
+function deriveProviderName(baseUrl: string): string {
+	try {
+		const url = new URL(baseUrl);
+		return url.hostname.replace(/^api\./, "").replace(/\./g, "-") || "custom-provider";
+	} catch {
+		return "custom-provider";
+	}
+}
+
 async function cmdInit(): Promise<number> {
 	const path = configPath();
 	try {
@@ -128,6 +138,104 @@ async function cmdInit(): Promise<number> {
 				process.stdout.write(`  ${chalk.dim("installing mnemosyne... (placeholder)")}\n`);
 				// TODO: actual pip install
 			}
+		}
+
+		// ── BYOK Provider Setup ─────────────────────────────────────
+		process.stdout.write("\n");
+		process.stdout.write(`  ${chalk.cyan("●")} ${chalk.bold("AI Provider Setup")}\n`);
+		process.stdout.write(`  ${chalk.dim("Connect your LLM provider (skip to set via env vars later):")}\n`);
+
+		// Base URL
+		process.stdout.write(`  ${chalk.cyan("●")} Base URL [https://api.openai.com/v1]: `);
+		const baseUrlRaw = await rl.question("");
+		const baseUrl = (baseUrlRaw.trim() || "https://api.openai.com/v1").replace(/\/+$/, "");
+
+		// API Key
+		process.stdout.write(`  ${chalk.cyan("●")} API Key: `);
+		const apiKey = await rl.question("");
+
+		// API type
+		process.stdout.write(`  ${chalk.cyan("●")} API Type:\n`);
+		process.stdout.write(`    ${chalk.cyan("1")} openai-completions (default — OpenAI, OpenRouter, Ollama, vLLM)\n`);
+		process.stdout.write(`    ${chalk.cyan("2")} anthropic-messages\n`);
+		process.stdout.write(`    ${chalk.cyan("3")} google-generative-ai\n`);
+		process.stdout.write(`    ${chalk.cyan("4")} azure-openai-responses\n`);
+		process.stdout.write(`  [1] `);
+		const apiTypeAnswer = await rl.question("");
+
+		const apiTypeMap: Record<string, string> = {
+			"1": "openai-completions",
+			"2": "anthropic-messages",
+			"3": "google-generative-ai",
+			"4": "azure-openai-responses",
+		};
+		const apiType = apiTypeMap[apiTypeAnswer.trim()] || "openai-completions";
+
+		// Save provider to models.yml
+		if (apiKey.trim()) {
+			try {
+				const { YAML } = await import("bun");
+				const agentDir = join(homedir(), ".sns-myagent");
+				const modelsPath = join(agentDir, "models.yml");
+
+				let existing: Record<string, unknown> = {};
+				if (existsSync(modelsPath)) {
+					try {
+						const content = readFileSync(modelsPath, "utf-8");
+						existing = (YAML.parse(content) as Record<string, unknown>) ?? {};
+					} catch { existing = {}; }
+				}
+
+				const providers = (existing.providers ?? {}) as Record<string, unknown>;
+				const providerName = deriveProviderName(baseUrl);
+
+				const providerConfig: Record<string, unknown> = {
+					baseUrl,
+					api: apiType,
+					auth: "apiKey",
+					apiKey: apiKey.trim(),
+				};
+
+				// Auto-detect models for OpenAI-compatible
+				if (apiType === "openai-completions" || apiType === "openai-responses") {
+					process.stdout.write(`  ${chalk.dim("Detecting models…")}\n`);
+					try {
+						const headers: Record<string, string> = {};
+						if (apiKey.trim()) headers["Authorization"] = `Bearer ${apiKey.trim()}`;
+						const res = await fetch(`${baseUrl}/models`, { headers, signal: AbortSignal.timeout(10_000) });
+						if (res.ok) {
+							const data = (await res.json()) as { data?: { id: string }[] };
+							if (data.data?.length) {
+								const models = data.data.map(m => m.id).filter(Boolean).sort();
+								providerConfig.models = models.map(id => ({
+									id,
+									api: apiType,
+									contextWindow: 128000,
+									supportsTools: true,
+								}));
+								process.stdout.write(`  ${chalk.green("✓")} ${models.length} model${models.length !== 1 ? "s" : ""} detected\n`);
+							} else {
+								process.stdout.write(`  ${chalk.dim("No models listed at /models endpoint (provider may not support it)")}\n`);
+							}
+						} else {
+							process.stdout.write(`  ${chalk.dim(`Could not detect models (HTTP ${res.status}) — manual config may be needed`)}\n`);
+						}
+					} catch {
+						process.stdout.write(`  ${chalk.dim("Could not reach /models endpoint — saved without model list")}\n`);
+					}
+				}
+
+				providers[providerName] = providerConfig;
+				existing.providers = providers;
+
+				if (!existsSync(agentDir)) mkdirSync(agentDir, { recursive: true });
+				writeFileSync(modelsPath, YAML.stringify(existing), "utf-8");
+				process.stdout.write(`  ${chalk.green("✓")} Provider saved to ~/.sns-myagent/models.yml\n`);
+			} catch (err) {
+				process.stdout.write(`  ${chalk.dim(`Could not save provider config: ${(err as Error).message}`)}\n`);
+			}
+		} else {
+			process.stdout.write(`  ${chalk.dim("Skipped — set OPENAI_API_KEY or ANTHROPIC_API_KEY env var to connect later")}\n`);
 		}
 
 		rl.close();
@@ -405,7 +513,8 @@ Commands:
   (none)                      start full agent interactive mode (default)
   agent                       alias for default
   version                     print package version
-  init                        create .sns-myagent/config.json (defaults)
+  init                        create .sns-myagent/config.json + connect AI provider
+  setup                       alias for init (BYOK provider setup)
   chat [--stub]               start interactive chat (stub for Phase 2B)
   launch                      alias for default
   config show                 print current config
@@ -434,6 +543,7 @@ export async function runCliAsync(argv: string[]): Promise<number> {
 		case "-v":
 			return cmdVersion();
 		case "init":
+		case "setup":
 			return cmdInit();
 		case "chat":
 			return cmdChat(rest);

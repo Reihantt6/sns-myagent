@@ -1,18 +1,19 @@
 import { type SgrMouseEvent, TabBar } from "@oh-my-pi/pi-tui";
 import { getTabBarTheme } from "../../shared";
+import { ByokSetupTab } from "./byok-setup";
 import { SignInTab } from "./sign-in";
 import type { SetupScene, SetupSceneController, SetupSceneHost, SetupTab } from "./types";
 import { WebSearchTab } from "./web-search";
 
 /**
  * Tabbed "Set up your providers" scene. Composes independent panels (model
- * sign-in, web search) behind a {@link TabBar}; the active panel owns
- * rendering and input, while modal panels (e.g. an in-flight OAuth login)
- * temporarily suppress tab switching.
+ * sign-in, BYOK quick-connect, web search) behind a {@link TabBar}; the active
+ * panel owns rendering and input, while modal panels (e.g. an in-flight OAuth
+ * login) temporarily suppress tab switching.
  */
 class ProvidersSceneController implements SetupSceneController {
 	title = "Set up your providers";
-	subtitle = "Sign in and pick a web search provider. Press Esc when you're done.";
+	subtitle = "Sign in, bring your own key, or pick a web search provider. Press Esc when you're done.";
 
 	#tabs: SetupTab[];
 	#tabBar: TabBar;
@@ -20,7 +21,7 @@ class ProvidersSceneController implements SetupSceneController {
 	#tabRowCount = 1;
 
 	constructor(host: SetupSceneHost) {
-		this.#tabs = [new SignInTab(host), new WebSearchTab(host)];
+		this.#tabs = [new SignInTab(host), new ByokSetupTab(host), new WebSearchTab(host)];
 		this.#tabBar = new TabBar(
 			"Providers",
 			this.#tabs.map(tab => ({ id: tab.id, label: tab.label })),
