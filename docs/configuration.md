@@ -14,6 +14,41 @@ Priority: Project config > User config > Environment variables > Defaults
 
 ## Full Config Reference
 
+### BYOK Quick Setup
+
+The fastest way to connect a provider. Run `snscoder` → Setup Wizard → **BYOK** tab:
+
+1. Enter **Base URL** (e.g. `https://api.openai.com/v1`)
+2. Enter **API Key**
+3. Select **API type** (default: `openai-completions`)
+
+The wizard calls the provider's `/models` endpoint, auto-detects available models, and writes `~/.sns-myagent/models.yml`.
+
+Manual equivalent — create `~/.sns-myagent/models.yml`:
+
+```yaml
+providers:
+  my-provider:
+    baseUrl: https://api.openai.com/v1
+    apiKey: sk-...
+    api: openai-completions
+    models:
+      - id: gpt-4o
+        contextWindow: 128000
+        supportsTools: true
+```
+
+Supported API types:
+| API Type | Use For |
+|----------|---------|
+| `openai-completions` | OpenAI, OpenRouter, Ollama, vLLM, LM Studio, any compatible |
+| `openai-responses` | OpenAI Responses API |
+| `anthropic-messages` | Anthropic Claude |
+| `google-generative-ai` | Google Gemini |
+| `azure-openai-responses` | Azure OpenAI |
+
+---
+
 ```yaml
 # ── LLM Providers ─────────────────────────────────────────────
 providers:

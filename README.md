@@ -41,6 +41,7 @@
 - [Slash Commands](#slash-commands)
 - [Memory Backends](#memory-backends)
 - [Installation](#installation)
+- [Termux (Android)](#termux-android)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [CLI Reference](#cli-reference)
@@ -62,6 +63,7 @@
 | **30 built-in tools** | `src/tools/builtin-names.ts` |
 | **157 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via `@oh-my-pi/pi-ai` |
+| **BYOK Quick Setup** | Setup wizard tab — enter Base URL + API Key, auto-detect models, zero config editing |
 | **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
 | **MCP integration** | 22 source files in `src/mcp/` |
 | **Plan mode** | `src/plan-mode/` — agent plans before executing |
@@ -181,7 +183,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `/switch` | Quick model switch (same as alt+p) |
 | `/fast [on\|off\|status]` | Toggle priority service tier |
 | `/settings` | Open settings menu |
-| `/setup` | Open provider setup wizard |
+| `/setup` | Open provider setup wizard (OAuth + BYOK + Web search) |
 
 ### Goals & Planning
 
@@ -327,15 +329,51 @@ Prebuilt binaries: [GitHub Releases](https://github.com/Reihantt6/sns-myagent/re
 
 ---
 
+## Termux (Android)
+
+Full guide: [`docs/termux.md`](./docs/termux.md)
+
+Quick setup on Android:
+
+```bash
+# 1. Install Termux from F-Droid (NOT Play Store)
+# 2. Update + install deps
+pkg update && pkg upgrade -y
+pkg install -y git nodejs-lts
+# 3. Install Bun
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+# 4. Install SNS-MyAgent
+npm install -g @sns-myagent/cli
+# 5. Setup (BYOK wizard)
+snscoder init
+# 6. Run
+snscoder
+```
+
+---
+
 ## Quick Start
 
 ### 1. Set an API key
+
+**Option A — Environment variable (fastest)**
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 # or
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
+
+**Option B — BYOK Setup Wizard (recommended)**
+
+Run `snscoder` and the setup wizard appears on first launch. Pick the **BYOK** tab, enter:
+
+1. **Base URL** — e.g. `https://api.openai.com/v1`, `https://openrouter.ai/api/v1`, `http://localhost:11434/v1` (Ollama)
+2. **API Key** — your provider key
+3. **API type** — `openai-completions` (default), `anthropic-messages`, `google-generative-ai`
+
+The wizard auto-detects available models from the provider and saves the config to `~/.sns-myagent/models.yml`.
 
 ### 2. Run
 
@@ -442,6 +480,8 @@ Access in TUI via `/settings` or through conversation.
 ```
 snscoder                          # Interactive TUI mode
 snscoder "prompt"                 # Single-prompt mode
+snscoder init                     # First-run setup: memory + BYOK provider
+snscoder setup                    # Alias for init
 snscoder telegram                 # Start Telegram adapter
 snscoder --help                   # Show help
 snscoder --version                # Show version

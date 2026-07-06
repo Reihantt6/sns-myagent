@@ -10,6 +10,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Added
+- **BYOK Quick Setup tab** in setup wizard (`src/modes/setup-wizard/scenes/byok-setup.ts`):
+  - New "BYOK" tab alongside "Sign in" and "Web search" in the providers scene
+  - Enter Base URL + API Key + select API type (openai-completions, anthropic-messages, google-generative-ai, etc.)
+  - Auto-detects available models from the provider's `/models` endpoint
+  - Saves provider config to `~/.sns-myagent/models.yml`
+  - Shows confirmation with detected model count
+  - Setup version bumped to 2
+- **Interactive memory backend selection** (v0.3.8) — choose mnemopi/hindsight/mnemopi/local/off at first run
 - **TBM (Token Budget Manager) fully implemented** — 7 core modules:
   - Context Delta Cache: static/dynamic message splitting, ~40% token savings
   - Context Pyramid: 5 compression levels (L0–L4), auto-demotion based on budget pressure
