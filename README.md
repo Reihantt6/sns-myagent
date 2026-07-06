@@ -61,7 +61,7 @@
 | Feature | Source |
 |---------|--------|
 | **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **157 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **67 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via `@oh-my-pi/pi-ai` |
 | **BYOK Quick Setup** | Setup wizard tab — enter Base URL + API Key, auto-detect models, zero config editing |
 | **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
@@ -160,7 +160,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Slash Commands
 
-61 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
+67 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
 
 ### Session & Navigation
 
@@ -408,7 +408,7 @@ bun run src/cli/entry.ts
 
 ## Configuration
 
-Config lives at `.sns-myagent/config.json` (JSON, not YAML). Source: `src/config/loader.ts`.
+Config lives at `.sns-myagent/config.yaml` (YAML, auto-migrated from old `config.json`). Source: `src/config/config-file.ts`.
 
 ### Key Config Categories
 
@@ -645,9 +645,9 @@ What is actually wired and working in the source tree, verified 2026-06-30:
 
 All 30 tools are real implementations, not stubs.
 
-### Slash Commands (157) — `src/slash-commands/builtin-registry.ts`
+### Slash Commands (67) — `src/slash-commands/builtin-registry.ts`
 
-157 commands registered. All callable via `/<name>` in interactive mode.
+67 unique top-level commands registered. All callable via `/<name>` in interactive mode.
 
 ### Memory Backends (7 / 7) — `src/memory-backend/resolve.ts`
 

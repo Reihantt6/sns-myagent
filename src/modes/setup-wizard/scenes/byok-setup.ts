@@ -108,6 +108,12 @@ export class ByokSetupTab implements SetupTab {
 	handleInput(data: string): void {
 		if (this.#state === "detecting") return; // block input during detection
 
+		// Escape key — finish/exit tab
+		if (data === "\x1b" || data === "\x1b\x1b") {
+			this.host.finish("skipped");
+			return;
+		}
+
 		if (data === "\x1b[A" || data === "\x1b[B") {
 			// Up/Down in api type selector
 			if (this.#focusIndex === 2) {
@@ -220,6 +226,16 @@ export class ByokSetupTab implements SetupTab {
 			return;
 		}
 
+		// Determine auth mode — no API key + localhost = auth "none"
+		const isNoAuth = !apiKey;
+		if (!isNoAuth || baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
+			// proceed
+		} else if (!apiKey && !baseUrl.includes("localhost")) {
+			this.#statusLines = [theme.fg("error", `${theme.status.error} API Key is required (or use localhost for local providers)`)];
+			this.host.requestRender();
+			return;
+		}
+
 		this.#state = "detecting";
 		this.#detecting = true;
 		this.#statusLines = [theme.fg("dim", "Detecting models…")];
@@ -227,14 +243,14 @@ export class ByokSetupTab implements SetupTab {
 
 		try {
 			// Auto-detect models for OpenAI-compatible providers
-			const models = apiType === "openai-completions" || apiType === "openai-responses"
+			const models = (!isNoAuth && (apiType === "openai-completions" || apiType === "openai-responses"))
 				? await this.#detectModels(baseUrl, apiKey)
 				: [];
 
 			this.#modelCount = models.length;
 
 			// Write models.yml
-			await this.#saveProvider(baseUrl, apiKey, apiType, models);
+			await this.#saveProvider(baseUrl, apiKey, apiType, models, isNoAuth);
 
 			this.#state = "success";
 			this.#detecting = false;
@@ -278,7 +294,7 @@ export class ByokSetupTab implements SetupTab {
 		return data.data.map((m) => m.id).filter(Boolean).sort();
 	}
 
-	async #saveProvider(baseUrl: string, apiKey: string, apiType: ApiType, models: string[]): Promise<void> {
+	async #saveProvider(baseUrl: string, apiKey: string, apiType: ApiType, models: string[], isNoAuth = false): Promise<void> {
 		const agentDir = getAgentDir();
 		const configPath = path.join(agentDir, "models.yml");
 
@@ -301,7 +317,7 @@ export class ByokSetupTab implements SetupTab {
 		const providerConfig: Record<string, unknown> = {
 			baseUrl,
 			api: apiType,
-			auth: "apiKey",
+			auth: isNoAuth ? "none" : "apiKey",
 		};
 		if (apiKey) providerConfig.apiKey = apiKey;
 
