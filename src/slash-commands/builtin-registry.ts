@@ -214,14 +214,17 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 		aliases: ["providers"],
 		description: "Open provider setup",
 		allowArgs: true,
-		subcommands: [{ name: "providers", description: "Configure sign-in and web search providers" }],
+		subcommands: [
+			{ name: "providers", description: "Configure sign-in and web search providers" },
+			{ name: "byok", description: "Add custom AI provider (Base URL + API Key)" },
+		],
 		handleTui: async (command, runtime) => {
 			const args = command.args.trim().toLowerCase();
-			const opensProviders = args === "" || args === "providers";
+			const opensProviders = args === "" || args === "providers" || args === "byok";
 			if (opensProviders) {
 				await runtime.ctx.showProviderSetup();
 			} else {
-				runtime.ctx.showWarning(`Usage: /${command.name} [providers]`);
+				runtime.ctx.showWarning(`Usage: /${command.name} [providers|byok]`);
 			}
 			runtime.ctx.editor.setText("");
 		},

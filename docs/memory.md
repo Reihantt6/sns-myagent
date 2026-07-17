@@ -6,7 +6,7 @@ SNS MyAgent supports 7 memory backends (mnemopi, hindsight, mnemosyne, mem0, lcm
 
 ## mnemopi (Default)
 
-Built-in memory backend forked from oh-my-pi. SQLite + vector embeddings + graph. Zero setup, no external services.
+Built-in memory backend with SQLite + vector embeddings + graph. Zero setup, no external services.
 
 ### Architecture
 ```

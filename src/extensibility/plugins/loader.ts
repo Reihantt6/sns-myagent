@@ -107,7 +107,7 @@ export async function getEnabledPlugins(cwd: string, opts: { home?: string } = {
 
 		const manifest: PluginManifest | undefined = pluginPkg.omp || pluginPkg.pi;
 		if (!manifest) {
-			// Not an omp plugin, skip
+			// Not a snscoder plugin, skip
 			continue;
 		}
 		manifest.version = pluginPkg.version;

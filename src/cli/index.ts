@@ -543,7 +543,7 @@ Commands:
   config get <key>            read a dot-path value (e.g. model.provider)
   config set <key> <value>    update a dot-path value
   telegram start|stop|status  manage the Telegram polling adapter
-  orchestrate <prompt>        multi-agent ensemble run (Phase 5)
+  orchestrate <prompt>        multi-agent ensemble run
   help                        print this help
 `;
 
@@ -586,30 +586,55 @@ async function cmdOrchestrate(args: string[]): Promise<number> {
 	if (args.length === 0) {
 		process.stderr.write("✗ orchestrate requires a prompt\n");
 		process.stderr.write("  usage: snsagent orchestrate <prompt>\n");
-		process.stderr.write("  flags:  --strategy consensus|critic|best_of_n\n");
+		process.stderr.write("  flags:  --strategy consensus|critic|best_of_n|single\n");
 		process.stderr.write("          --agents role1,role2\n");
 		process.stderr.write("          --ensemble <name>   (from agents.yaml)\n");
 		return 1;
 	}
-	const prompt = args.join(" ");
-	const opts: Record<string, unknown> = {};
+
+	// Parse flags and build prompt
+	const promptParts: string[] = [];
+	let strategy: string | undefined;
+	let agents: string[] | undefined;
+	let ensemble: string | undefined;
+
 	for (let i = 0; i < args.length; i++) {
 		const a = args[i];
-		if (a === "--strategy") opts.strategy = args[++i];
-		else if (a === "--agents") opts.agents = (args[++i] ?? "").split(",").filter(Boolean);
-		else if (a === "--ensemble") opts.ensemble = args[++i];
+		if (a === "--strategy") { strategy = args[++i]; }
+		else if (a === "--agents") { agents = (args[++i] ?? "").split(",").filter(Boolean); }
+		else if (a === "--ensemble") { ensemble = args[++i]; }
+		else { promptParts.push(a); }
 	}
-	void prompt; void opts; // parsed for future executor wiring (Task 5.1d)
+
+	const prompt = promptParts.join(" ");
+	if (!prompt) {
+		process.stderr.write("✗ orchestrate requires a prompt\n");
+		return 1;
+	}
+
 	try {
-		// CLI wrapper: no real LLM executor yet (Phase 5 stub).
-		// Until agent invocation is wired, surface a clear message instead of silently failing.
-		process.stderr.write(
-			"✗ orchestrate: agent executor not wired in CLI yet.\n" +
-				"  Phase 5 ships the orchestrator module; the CLI integration lands once\n" +
-				"  the LLM agent executor (src/agents/executor.ts) is implemented.\n" +
-				"  For now use the ensemble module directly: import { executeEnsemble } from \"../agents/ensemble.js\".\n",
-		);
-		return 2;
+		const { executeEnsemble } = await import("../agents/ensemble.js");
+		const { executeAgentForEnsemble } = await import("../agents/executor.js");
+
+		const result = await executeEnsemble(prompt, executeAgentForEnsemble, {
+			strategy: strategy as "consensus" | "critic" | "best_of_n" | undefined,
+			agents,
+			ensemble,
+		});
+
+		// Output result
+		console.log(result.final);
+
+		// Cost summary to stderr
+		if (result.costBreakdown.length > 0) {
+			process.stderr.write(`\n── ensemble: ${result.strategy} | ${result.rounds} round(s) | ${result.totalTimeMs}ms ──\n`);
+			for (const row of result.costBreakdown) {
+				const tokens = row.inputTokens + row.outputTokens;
+				process.stderr.write(`  ${row.role}: ${row.model} (${tokens} tokens)\n`);
+			}
+		}
+
+		return 0;
 	} catch (err) {
 		process.stderr.write(`✗ orchestrate failed: ${(err as Error).message}\n`);
 		return 1;
