@@ -63,7 +63,7 @@ Error: SQLITE_BUSY: database is locked
 
 Fix: another instance running:
 ```bash
-pkill -f snscoder
+pkill -f snsagent
 rm ~/.sns-myagent/memory.db-wal ~/.sns-myagent/memory.db-shm
 ```
 
@@ -88,7 +88,7 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
 # Option 2: install to a writable prefix
-bun add -g --trust snscoder
+bun add -g --trust snsagent
 ```
 
 ---

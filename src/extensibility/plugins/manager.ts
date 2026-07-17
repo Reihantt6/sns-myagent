@@ -430,7 +430,7 @@ export class PluginManager {
 			// Step 2: refresh the git lockfile pin when re-installing an existing
 			// git plugin. `bun install <spec>` is a no-op when the spec matches the
 			// lockfile entry — it never re-resolves the remote ref — so re-running
-			// `snscoder plugin install github:owner/repo` would silently keep the user on
+			// `snsagent plugin install github:owner/repo` would silently keep the user on
 			// the original resolved commit even after upstream moved (#3063).
 			// `bun update <name>` re-resolves the ref against the remote and
 			// rewrites the pin; SHA-pinned refs stay put because the commit can't
@@ -866,7 +866,7 @@ export class PluginManager {
 				status: hasManifest ? "ok" : "warning",
 				message: hasManifest
 					? `v${pluginPkg.version}${pluginPkg.description ? ` - ${pluginPkg.description}` : ""}`
-					: `v${pluginPkg.version} - No omp/pi manifest (not an snscoder plugin)`,
+					: `v${pluginPkg.version} - No omp/pi manifest (not an snsagent plugin)`,
 			});
 
 			// Check tools path exists if specified

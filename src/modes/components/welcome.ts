@@ -11,7 +11,7 @@ import { theme } from "../../modes/theme/theme";
 import tipsText from "./tips.txt" with { type: "text" };
 
 // Local override — upstream APP_NAME still reports "omp"/"pi-utils" identity.
-const APP_NAME = "snscoder";
+const APP_NAME = "snsagent";
 
 /** Tips embedded at build time, one per line; blanks dropped. */
 const TIPS: readonly string[] = tipsText

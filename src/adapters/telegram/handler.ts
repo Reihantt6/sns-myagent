@@ -122,7 +122,7 @@ export function parseMessage(msg: Message): ParsedMessage {
  */
 export const COMMAND_REPLIES: Record<TelegramCommand, string> = {
 	start:
-		"*Welcome to snscoder* 🤖\n\n" +
+		"*Welcome to snsagent* 🤖\n\n" +
 		"I'm a Telegram front-end for the SNS-MyAgent coding agent. " +
 		"Send me any task or question; I'll route it to the agent and reply here.\n\n" +
 		"Type /help for the full command list.",

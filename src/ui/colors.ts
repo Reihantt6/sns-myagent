@@ -1,22 +1,25 @@
 /**
  * Brand color palette for SNS-MyAgent terminal UI.
  *
- * Uses picocolors for zero-dependency color output.
- * Brand gradient: #F97316 → #EA580C (orange)
+ * Orange (#F97316) is the primary brand color.
+ * Uses chalk for hex colors, picocolors for basic colors.
  */
 
 import pc from "picocolors";
+import chalk from "chalk";
 
 // ── Brand identity colors ──
 
+const ORANGE = "#F97316";
+
 /** Primary brand color — used for headers and highlights. */
-export const primary = pc.yellow;
+export const primary = chalk.hex(ORANGE);
 
 /** Accent color — used for prompts and decorative elements. */
-export const accent = pc.yellow;
+export const accent = chalk.hex(ORANGE);
 
 /** User input text color. */
-export const user = pc.yellow;
+export const user = pc.white;
 
 /** Agent output text color. */
 export const agent = pc.white;

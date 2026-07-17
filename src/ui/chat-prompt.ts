@@ -1,7 +1,7 @@
 /**
  * Styled chat input prompt for SNS-MyAgent.
  *
- * Provides the `snscoder >` prompt with accent coloring.
+ * Provides the `snsagent >` prompt with accent coloring.
  * Uses Node's readline for cross-platform input.
  */
 
@@ -20,7 +20,7 @@ export function createPrompt(): {
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
-		prompt: accent("snscoder") + muted(" > "),
+		prompt: accent("snsagent") + muted(" > "),
 	});
 
 	return {

@@ -50,14 +50,14 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 ```bash
 npm install -g @sns-myagent/cli
-snscoder --version
+snsagent --version
 ```
 
 **Option B — Bun global**
 
 ```bash
 bun add -g @sns-myagent/cli
-snscoder --version
+snsagent --version
 ```
 
 **Option C — Source build**
@@ -72,7 +72,7 @@ bun run src/cli/entry.ts --version
 ### 6. First-run setup (BYOK)
 
 ```bash
-snscoder init
+snsagent init
 ```
 
 This interactive wizard asks:
@@ -103,7 +103,7 @@ Example for local Ollama (requires a server):
 ### 7. Run
 
 ```bash
-snscoder
+snsagent
 ```
 
 ## Termux-specific Tips
@@ -133,13 +133,13 @@ sshd
 
 ### Background sessions
 
-Termux kills background processes. To keep snscoder running:
+Termux kills background processes. To keep snsagent running:
 
 ```bash
 # Use Termux:Boot (install from F-Droid)
 # Create boot script:
 mkdir -p ~/.termux/boot
-echo 'snscoder telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
+echo 'snsagent telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
 ```
 
 ## Troubleshooting
@@ -149,7 +149,7 @@ echo 'snscoder telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
 | `bun: command not found` | `source ~/.bashrc` or restart Termux |
 | `npm install fails` | `pkg install nodejs-lts` then retry |
 | `Cannot find module` | `cd sns-myagent && bun install` |
-| `Permission denied` | `chmod +x bin/snscoder-linux-x64` or use `bun run src/cli/entry.ts` |
+| `Permission denied` | `chmod +x bin/snsagent-linux-x64` or use `bun run src/cli/entry.ts` |
 | `Out of memory` | Use cloud LLM, avoid local models |
 | `Keyboard lacks Esc` | Install Hacker's Keyboard, or use Ctrl+[ as Esc |
 | `Termux crashes` | Update from F-Droid, NOT Play Store |

@@ -1,7 +1,7 @@
 /**
- * `snscoder chat` — interactive chat subcommand.
+ * `snsagent chat` — interactive chat subcommand.
  *
- * Shows the snscoder banner, then delegates to the existing launch/agent
+ * Shows the snsagent banner, then delegates to the existing launch/agent
  * infrastructure for the actual LLM interaction loop.
  */
 
@@ -12,7 +12,7 @@ import { parseArgs } from "../cli/args.js";
 import { runRootCommand } from "../main.js";
 
 export default class Chat extends Command {
-	static description = "Interactive chat with the snscoder agent";
+	static description = "Interactive chat with the snsagent agent";
 	static strict = false;
 
 	async run(): Promise<void> {

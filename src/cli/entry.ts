@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // Single-file CLI entry for `bun build --compile`.
-// Mirrors bin/snscoder (Node dev shim) but is a TS module so Bun can bundle
+// Mirrors bin/snsagent (Node dev shim) but is a TS module so Bun can bundle
 // all transitive imports into the binary.
 
 import { ensureConfig } from "../config/loader.js";
@@ -34,7 +34,7 @@ try {
 } catch (err) {
 	const e = err as Error;
 	const msg = e.message ? e.message : String(err);
-	process.stderr.write(`\u2717 snscoder crashed: ${msg}\n`);
+	process.stderr.write(`\u2717 snsagent crashed: ${msg}\n`);
 	if (process.env.SNS_DEBUG) {
 		process.stderr.write("\n" + (e.stack ?? "") + "\n");
 	}

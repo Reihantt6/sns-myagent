@@ -30,7 +30,7 @@
 
 ---
 
-**snscoder** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself — MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
+**snsagent** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself — MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
 
 ---
 
@@ -296,7 +296,7 @@ Works on Linux, macOS, Windows, WSL. Requires Node.js 18+. Prebuilt binary downl
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 bun install        # requires Bun >= 1.3.14
-bun run build      # produces bin/snscoder-linux-x64
+bun run build      # produces bin/snsagent-linux-x64
 ```
 
 ### Option 4: Windows PowerShell
@@ -345,9 +345,9 @@ source ~/.bashrc
 # 4. Install SNS-MyAgent
 npm install -g @sns-myagent/cli
 # 5. Setup (BYOK wizard)
-snscoder init
+snsagent init
 # 6. Run
-snscoder
+snsagent
 ```
 
 ---
@@ -366,7 +366,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 **Option B — BYOK Setup Wizard (recommended)**
 
-Run `snscoder` and the setup wizard appears on first launch. Pick the **BYOK** tab, enter:
+Run `snsagent` and the setup wizard appears on first launch. Pick the **BYOK** tab, enter:
 
 1. **Base URL** — e.g. `https://api.openai.com/v1`, `https://openrouter.ai/api/v1`, `http://localhost:11434/v1` (Ollama)
 2. **API Key** — your provider key
@@ -377,7 +377,7 @@ The wizard auto-detects available models from the provider and saves the config 
 ### 2. Run
 
 ```bash
-snscoder
+snsagent
 ```
 
 Or from source:
@@ -477,13 +477,13 @@ Access in TUI via `/settings` or through conversation.
 ## CLI Reference
 
 ```
-snscoder                          # Interactive TUI mode
-snscoder "prompt"                 # Single-prompt mode
-snscoder init                     # First-run setup: memory + BYOK provider
-snscoder setup                    # Alias for init
-snscoder telegram                 # Start Telegram adapter
-snscoder --help                   # Show help
-snscoder --version                # Show version
+snsagent                          # Interactive TUI mode
+snsagent "prompt"                 # Single-prompt mode
+snsagent init                     # First-run setup: memory + BYOK provider
+snsagent setup                    # Alias for init
+snsagent telegram                 # Start Telegram adapter
+snsagent --help                   # Show help
+snsagent --version                # Show version
 ```
 
 ---
@@ -526,10 +526,10 @@ Telegram bot adapter in `src/adapters/telegram/` (4 files). Built on [grammY](ht
 export SNS_TELEGRAM_BOT_TOKEN="your-bot-token-here"
 ```
 
-3. Run snscoder — the bot auto-starts polling:
+3. Run snsagent — the bot auto-starts polling:
 
 ```bash
-snscoder
+snsagent
 ```
 
 The adapter starts automatically when `SNS_TELEGRAM_BOT_TOKEN` is set. Disable auto-start with:
@@ -541,7 +541,7 @@ export SNS_TELEGRAM_AUTOSTART=0
 Or start the Telegram adapter explicitly:
 
 ```bash
-snscoder telegram
+snsagent telegram
 ```
 
 ---

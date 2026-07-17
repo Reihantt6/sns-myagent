@@ -1,7 +1,6 @@
 /**
- * SNS-MyAgent splash — flat list, no boxes.
- * Single line brand + `●` prefixed info rows. No rounded borders, no
- * gradient, no separator boxes. Reads like a status line.
+ * SNS Agent splash — clean, minimal, no boxes.
+ * Orange accent dot + flat info rows. Zero OMP/Pi Agent visual language.
  */
 import chalk from "chalk";
 import { readFileSync } from "node:fs";
@@ -48,31 +47,26 @@ export interface SplashInfo {
 	nodeVersion?: string;
 }
 
-/**
- * One-line prefix used throughout the TUI.
- * `●` = present, default text. No rounded boxes.
- */
-const BULLET = chalk.cyan("●");
+const DOT = chalk.hex("#F97316")("●");
 
 export function renderSplash(info: SplashInfo = {}): string {
 	const ver = readVersion();
 	const lines: string[] = [];
 
-	// Brand line: snscoder · v0.3.8
-	lines.push(`  ${chalk.yellow.bold("snscoder")}  ${chalk.dim(`v${ver}`)}`);
-	lines.push(`  ${chalk.dim("coding agent CLI")}`);
+	// Brand — orange dot + bold name + dim version
+	lines.push(`  ${DOT} ${chalk.bold("SNS")}  ${chalk.dim(`v${ver}`)}`);
 	lines.push("");
 
-	// Status lines — flat, one per line, ● prefix
-	const row = (label: string, value: string) => `  ${BULLET} ${chalk.dim(label.padEnd(13))}${value}`;
+	// Status rows
+	const row = (label: string, value: string) =>
+		`  ${chalk.dim("·")} ${chalk.dim(label.padEnd(12))}${value}`;
 	if (info.model) lines.push(row("model", `${info.provider ?? "unknown"}/${info.model}`));
 	if (info.cwd) lines.push(row("dir", info.cwd));
 	if (info.platform) lines.push(row("platform", info.platform));
-	lines.push(row("version", ver));
 
-	// Hints
+	// Footer
 	lines.push("");
-	lines.push(`  ${chalk.dim("type to chat · /exit to quit")}`);
+	lines.push(`  ${chalk.dim("chat to configure · /help for commands")}`);
 
 	return lines.join("\n") + "\n";
 }
@@ -82,5 +76,5 @@ export function renderInlineHeader(info: SplashInfo = {}): string {
 	const model = info.model
 		? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
 		: chalk.dim("no model");
-	return `  ${chalk.yellow.bold("snscoder")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
+	return `  ${DOT} ${chalk.bold("SNS")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
 }

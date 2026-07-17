@@ -853,7 +853,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		// Load initial todos
 		await this.#loadTodoList();
 
-		// Start the UI. Cold `snscoder` launch opts into clearing on the first paint so
+		// Start the UI. Cold `snsagent` launch opts into clearing on the first paint so
 		// the initial welcome frame does not append over the previous run's scrollback.
 		this.ui.start({ clearScrollback: options.clearInitialTerminalHistory === true });
 		pushTerminalTitle();
@@ -876,7 +876,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		// custom messages, branch summaries, and compaction summaries) and the user
 		// set no explicit `mode_change` (which #reconcileModeFromSession just
 		// restored). SDK startup metadata and extension `custom` state entries are
-		// ignored. This way `snscoder --continue` (or auto-resume) that finds no recent
+		// ignored. This way `snsagent --continue` (or auto-resume) that finds no recent
 		// session and creates a fresh one still honors the default, while a session
 		// with restored context or an explicit mode keeps its reconciled mode. Scoped
 		// to launch (not the switch reconciler above) so /new and the plan-approval →

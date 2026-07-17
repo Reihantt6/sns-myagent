@@ -1426,7 +1426,7 @@ export const SETTINGS_SCHEMA = {
 			tab: "interaction",
 			group: "Startup & Updates",
 			label: "Check for Updates",
-			description: "Check for snscoder updates on startup",
+			description: "Check for snsagent updates on startup",
 		},
 	},
 
