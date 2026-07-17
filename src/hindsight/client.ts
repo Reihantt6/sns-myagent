@@ -10,7 +10,7 @@
 
 import type { HindsightConfig } from "./config";
 
-const USER_AGENT = "snscoder";
+const USER_AGENT = "snsagent";
 const DEFAULT_USER_AGENT = USER_AGENT;
 
 export type Budget = "low" | "mid" | "high" | string;

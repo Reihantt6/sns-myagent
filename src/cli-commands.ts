@@ -47,24 +47,24 @@ export const commands: CommandEntry[] = [
 ];
 
 // Documented-looking plugin-management verbs that are NOT registered top-level
-// commands. Without a guard `resolveCliArgv` rewrites e.g. `snscoder list` to
-// `snscoder launch list`, silently forwarding the bare verb to the model as a prompt
+// commands. Without a guard `resolveCliArgv` rewrites e.g. `snsagent list` to
+// `snsagent launch list`, silently forwarding the bare verb to the model as a prompt
 // instead of managing plugins (#2935; same class as the `install` leak fixed in
 // #1496/#1498). A bare (single-arg) use gets a hint pointing at the real
-// `snscoder plugin <action>` command; multi-word invocations still fall through to
+// `snsagent plugin <action>` command; multi-word invocations still fall through to
 // `launch`, so genuine prompts that merely begin with one of these words work.
 const RESERVED_TOP_LEVEL_WORDS = new Map<string, string>([
 	[
 		"extensions",
-		'`snscoder extensions` is not a management command. Use `snscoder plugin list` / `snscoder plugin install`, or run `snscoder launch extensions` if you meant to send "extensions" as a prompt.',
+		'`snsagent extensions` is not a management command. Use `snsagent plugin list` / `snsagent plugin install`, or run `snsagent launch extensions` if you meant to send "extensions" as a prompt.',
 	],
 	[
 		"list",
-		'`snscoder list` is not a top-level command. Use `snscoder plugin list` to list installed plugins, or run `snscoder launch list` if you meant to send "list" as a prompt.',
+		'`snsagent list` is not a top-level command. Use `snsagent plugin list` to list installed plugins, or run `snsagent launch list` if you meant to send "list" as a prompt.',
 	],
 	[
 		"remove",
-		'`snscoder remove` is not a top-level command. Use `snscoder plugin uninstall <name>` to remove a plugin, or run `snscoder launch remove` if you meant to send "remove" as a prompt.',
+		'`snsagent remove` is not a top-level command. Use `snsagent plugin uninstall <name>` to remove a plugin, or run `snsagent launch remove` if you meant to send "remove" as a prompt.',
 	],
 ]);
 

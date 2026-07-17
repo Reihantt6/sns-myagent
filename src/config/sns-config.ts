@@ -15,7 +15,7 @@ import * as os from "node:os";
 
 export const SNS_CONFIG_DIR_NAME = ".sns-myagent";
 export const SNS_CONFIG_FILE = "config.yaml";
-export const SNS_APP_NAME = "snscoder";
+export const SNS_APP_NAME = "snsagent";
 
 export interface SnsConfig {
 	apiKey?: string;

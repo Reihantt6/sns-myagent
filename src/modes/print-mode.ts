@@ -2,8 +2,8 @@
  * Print mode (single-shot): Send prompts, output result, exit.
  *
  * Used for:
- * - `snscoder -p "prompt"` - text output
- * - `snscoder --mode json "prompt"` - JSON event stream
+ * - `snsagent -p "prompt"` - text output
+ * - `snsagent --mode json "prompt"` - JSON event stream
  */
 import type { AssistantMessage, ImageContent } from "@oh-my-pi/pi-ai";
 import { logger, sanitizeText } from "@oh-my-pi/pi-utils";

@@ -1,7 +1,7 @@
 /**
  * Update CLI command handler.
  *
- * Handles `snscoder update` to check for and install updates.
+ * Handles `snsagent update` to check for and install updates.
  * Uses the installer that owns the active omp executable when it can be detected.
  */
 import * as fs from "node:fs";
@@ -468,7 +468,7 @@ export async function replaceBinaryForUpdate(options: BinaryReplacementOptions):
  * - `--no-cache` tells bun to ignore its on-disk manifest snapshot so it
  *   re-fetches metadata from that registry on every invocation.
  *
- * Together these two flags make `snscoder update` produce exactly the registry
+ * Together these two flags make `snsagent update` produce exactly the registry
  * lookup the version check just performed. See #1686.
  *
  * Also pins {@link NATIVES_PACKAGE} and the platform-specific

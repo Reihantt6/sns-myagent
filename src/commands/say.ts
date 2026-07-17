@@ -29,9 +29,9 @@ export default class Say extends Command {
 	};
 
 	static examples = [
-		'snscoder say "hello world"',
-		'snscoder say "hello world" --out /tmp/hello.wav',
-		'snscoder say "bonjour" --voice af_heart --model kokoro',
+		'snsagent say "hello world"',
+		'snsagent say "hello world" --out /tmp/hello.wav',
+		'snsagent say "bonjour" --voice af_heart --model kokoro',
 	];
 
 	async run(): Promise<void> {
@@ -60,7 +60,7 @@ export default class Say extends Command {
 				process.stderr.write(
 					chalk.red(
 						`error: could not synthesize with local TTS model "${model}". ` +
-							"Run `snscoder setup speech` to install it.\n",
+							"Run `snsagent setup speech` to install it.\n",
 					),
 				);
 				exitCode = 1;

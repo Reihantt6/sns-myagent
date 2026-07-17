@@ -470,7 +470,7 @@ export class AcpAgent implements Agent {
 			authMethods.push({
 				type: "terminal",
 				id: "terminal",
-				name: "Set up snscoder in terminal",
+				name: "Set up snsagent in terminal",
 				description: "Launch the TUI to add provider keys and select models.",
 				args: [ACP_TERMINAL_AUTH_FLAG],
 			});

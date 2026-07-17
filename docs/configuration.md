@@ -16,7 +16,7 @@ Priority: Project config > User config > Environment variables > Defaults
 
 ### BYOK Quick Setup
 
-The fastest way to connect a provider. Run `snscoder` → Setup Wizard → **BYOK** tab:
+The fastest way to connect a provider. Run `snsagent` → Setup Wizard → **BYOK** tab:
 
 1. Enter **Base URL** (e.g. `https://api.openai.com/v1`)
 2. Enter **API Key**

@@ -1,10 +1,10 @@
-# Terminal UI Design — snscoder
+# Terminal UI Design — snsagent
 
 > Custom branded terminal experience for SNS-MyAgent
 
 ## Philosophy
 
-snscoder terminal MUST feel premium, not generic. User opens terminal → immediately knows this is snscoder, not another npm CLI tool.
+snsagent terminal MUST feel premium, not generic. User opens terminal → immediately knows this is snsagent, not another npm CLI tool.
 
 ## Visual Identity
 
@@ -25,13 +25,13 @@ snscoder terminal MUST feel premium, not generic. User opens terminal → immedi
 ### Typography
 
 ```
-snscoder v0.1.0                    ← Header (bold, primary color)
+snsagent v0.1.0                    ← Header (bold, primary color)
 ┌─ Provider: OpenRouter             ← Boxed status (boxen)
 │  Model: claude-sonnet-4
 │  Memory: SQLite (42 entries)
 └─ Ready.
 
-snscoder >                         ← User prompt (accent color)
+snsagent >                         ← User prompt (accent color)
 ```
 
 ## UI Components
@@ -56,7 +56,7 @@ snscoder >                         ← User prompt (accent color)
 ### 2. Chat Interface
 
 ```
-snscoder > refactor auth module to use JWT
+snsagent > refactor auth module to use JWT
            ↑ accent color, branded prompt
 
 ✦ Agent                              ← agent name tag (primary color)
@@ -70,7 +70,7 @@ snscoder > refactor auth module to use JWT
 
   [memory] stored: user prefers JWT over session cookies  ← subtle memory note
 
-snscoder > _
+snsagent > _
 ```
 
 ### 3. Tool Output (Collapsible)
@@ -153,9 +153,9 @@ snscoder > _
 ### 8. Command Output
 
 ```
-snscoder > /status
+snsagent > /status
 
-┌─ snscoder status ────────────────────┐
+┌─ snsagent status ────────────────────┐
 │ Version    │ 0.1.0                   │
 │ Provider   │ OpenRouter              │
 │ Model      │ claude-sonnet-4         │

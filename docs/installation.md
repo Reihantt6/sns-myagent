@@ -1,6 +1,6 @@
 # Installation Guide
 
-> **Dual-runtime supported.** Pick the path that matches your stack. Both paths end with the same `snscoder` binary on your `$PATH`.
+> **Dual-runtime supported.** Pick the path that matches your stack. Both paths end with the same `snsagent` binary on your `$PATH`.
 
 | Path | Best for | Prerequisite |
 |------|----------|--------------|
@@ -16,7 +16,7 @@ Works on Linux, macOS, Windows, and WSL2 without any Bun dependency.
 npm install -g @sns-myagent/cli
 ```
 
-The `postinstall` hook (`scripts/fetch-binary.mjs`) downloads the matching platform prebuilt binary into the package's `bin/` directory and chmods it executable. The shim `bin/snscoder.js` (which `npm link` exposes as `snscoder`) spawns the binary and forwards stdio + exit code.
+The `postinstall` hook (`scripts/fetch-binary.mjs`) downloads the matching platform prebuilt binary into the package's `bin/` directory and chmods it executable. The shim `bin/snsagent.js` (which `npm link` exposes as `snsagent`) spawns the binary and forwards stdio + exit code.
 
 If GitHub release `v0.1.0` hasn't been published yet, the postinstall prints a warning and exits 0 — your `npm install` still succeeds. Re-run `npm rebuild` once the maintainer publishes.
 
@@ -34,24 +34,24 @@ npm rebuild @sns-myagent/cli    # or: npm run fetch-binary
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-Installs Bun (>= 1.3.14) if needed + `snscoder` globally.
+Installs Bun (>= 1.3.14) if needed + `snsagent` globally.
 
 ### Bun Global Install
 
 ```bash
-bun add -g snscoder
+bun add -g snsagent
 ```
 
 Then run:
 
 ```bash
-snscoder
+snsagent
 ```
 
 ### bunx (Run without installing)
 
 ```bash
-bunx snscoder
+bunx snsagent
 ```
 
 ---
@@ -67,7 +67,7 @@ bunx snscoder
 | **Git** | 2.0 | Latest | `git --version` |
 | **TypeScript** | 5.x | 6.x | bundled via `devDependencies` |
 
-At runtime you need **either** Bun **or** Node.js — not both. Use Bun for `bun add -g @sns-myagent/cli`, use Node for `npm install -g @sns-myagent/cli`. Both paths produce the same `snscoder` command.
+At runtime you need **either** Bun **or** Node.js — not both. Use Bun for `bun add -g @sns-myagent/cli`, use Node for `npm install -g @sns-myagent/cli`. Both paths produce the same `snsagent` command.
 
 ### Install Bun
 
@@ -116,7 +116,7 @@ The recommended Windows experience uses npm + the postinstall binary fetch — n
 irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex
 ```
 
-The script verifies Node.js 18+, runs `npm install -g @sns-myagent/cli`, and prints a `snscoder --version` verification. Pass `-UseBun` if you already have Bun installed and want the Bun path instead.
+The script verifies Node.js 18+, runs `npm install -g @sns-myagent/cli`, and prints a `snsagent --version` verification. Pass `-UseBun` if you already have Bun installed and want the Bun path instead.
 
 ### Clone & Build
 
@@ -124,8 +124,8 @@ The script verifies Node.js 18+, runs `npm install -g @sns-myagent/cli`, and pri
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 bun install
-bun run build          # produces dist/cli.js (the snscoder binary)
-snscoder               # or: bun dist/cli.js
+bun run build          # produces dist/cli.js (the snsagent binary)
+snsagent               # or: bun dist/cli.js
 ```
 
 ### Development Mode
@@ -184,7 +184,7 @@ Then tell the agent: *"setup ollama with llama3"*
 
 Any OpenAI-compatible API (vLLM, llama.cpp server, LM Studio, OpenRouter, etc.)
 
-**Fastest way**: Run `snscoder` → Setup Wizard → **BYOK** tab. Enter Base URL + API Key, done.
+**Fastest way**: Run `snsagent` → Setup Wizard → **BYOK** tab. Enter Base URL + API Key, done.
 
 **Manual**: Create `~/.sns-myagent/models.yml`:
 
@@ -212,10 +212,10 @@ ANTHROPIC_API_KEY=<your-anthropic-key>
 ```bash
 # Check versions
 bun --version      # >= 1.3.14
-snscoder --version # 0.1.0
+snsagent --version # 0.1.0
 
 # Test run
-snscoder
+snsagent
 # Type: "hello" → agent should respond
 ```
 
@@ -224,7 +224,7 @@ snscoder
 ## Uninstall
 
 ```bash
-bun remove -g snscoder
+bun remove -g snsagent
 
 # Remove data
 rm -rf ~/.sns-myagent
