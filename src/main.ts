@@ -392,6 +392,7 @@ async function runInteractiveMode(
 	resuming: boolean,
 	forceSetupWizard: boolean,
 	showStartupSplash: boolean,
+	modelRegistry: ModelRegistry,
 	eventBus?: EventBus,
 	initialMessage?: string,
 	initialImages?: ImageContent[],
@@ -440,6 +441,8 @@ async function runInteractiveMode(
 
 	if (setupWizard && setupScenes.length > 0) {
 		await setupWizard.runSetupWizard(mode, setupScenes);
+		// Reload models.yml after wizard — BYOK tab may have written new provider config
+		await modelRegistry.refresh();
 	}
 
 	versionCheckPromise
@@ -1396,6 +1399,7 @@ export async function runRootCommand(
 				Boolean(parsedArgs.continue || parsedArgs.resume || parsedArgs.fork),
 				deps.forceSetupWizard === true,
 				showStartupSplash,
+				modelRegistry,
 				eventBus,
 				initialMessage,
 				initialImages,

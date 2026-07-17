@@ -259,7 +259,7 @@ export class ByokSetupTab implements SetupTab {
 				: "connected (manual model config needed)";
 			this.#statusLines = [
 				theme.fg("success", `${theme.status.success} ${modelInfo}`),
-				theme.fg("dim", `Provider saved to ~/.sns-myagent/models.yml`),
+				theme.fg("dim", `Provider saved to ${path.join(getAgentDir(), "models.yml")}`),
 			];
 		} catch (err) {
 			this.#state = "error";

@@ -18,19 +18,19 @@
 </p>
 
 <p align="center">
-  <strong>BYOK coding agent CLI — 30 built-in tools, 61 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
+  <strong>BYOK coding agent CLI — 30 built-in tools, 68 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
 </p>
 
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/version-0.2.0-yellow?style=flat-square" alt="Version 0.2.0">
+  <img src="https://img.shields.io/badge/version-0.3.8-yellow?style=flat-square" alt="Version 0.3.8">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
   <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
 </p>
 
 ---
 
-**snscoder** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself — MCP servers, memory backends, model switching, all through conversation. Forked from [Pi Agent / oh-my-pi](https://github.com/can1357/oh-my-pi) and stripped to a focused, local-first, terminal-first agent.
+**snscoder** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself — MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
 
 ---
 
@@ -60,9 +60,9 @@
 
 | Feature | Source |
 |---------|--------|
-| **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **67 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
-| **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via `@oh-my-pi/pi-ai` |
+**30 built-in tools** | `src/tools/builtin-names.ts` |
+| **68 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via built-in provider system |
 | **BYOK Quick Setup** | Setup wizard tab — enter Base URL + API Key, auto-detect models, zero config editing |
 | **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
 | **MCP integration** | 22 source files in `src/mcp/` |
@@ -119,7 +119,6 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `debug` | Debugging assistance |
 
 ### Web & Browser
-### Web & Browser
 | Tool | Description |
 |------|-------------|
 | `web_search` | Web search via configured provider |
@@ -160,7 +159,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Slash Commands
 
-67 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
+68 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
 
 ### Session & Navigation
 
@@ -645,9 +644,9 @@ What is actually wired and working in the source tree, verified 2026-06-30:
 
 All 30 tools are real implementations, not stubs.
 
-### Slash Commands (67) — `src/slash-commands/builtin-registry.ts`
+### Slash Commands (68) — `src/slash-commands/builtin-registry.ts`
 
-67 unique top-level commands registered. All callable via `/<name>` in interactive mode.
+68 unique top-level commands registered. All callable via `/<name>` in interactive mode.
 
 ### Memory Backends (7 / 7) — `src/memory-backend/resolve.ts`
 
@@ -669,7 +668,7 @@ Set via `memory.backend` in `~/.sns-myagent/config.yaml`. Default is `mnemopi`.
 
 ### Multi-Agent Orchestration — `src/agents/`
 
-7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout), 21 tests pass. CLI `orchestrate <prompt>` is wired but executor is stubbed (returns clear "not wired yet" message).
+7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout), 21 tests pass. CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts`.
 
 ### Terminal UI — `src/tui/` + `src/ui/`
 
@@ -689,4 +688,4 @@ GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, sm
 
 ## Credits
 
-Forked from [Pi Agent / oh-my-pi](https://github.com/can1357/oh-my-pi) by can1357. Stripped to a focused, single-user terminal agent with conversational configuration.
+Built with dedication for single-user terminal coding workflows.

@@ -11,7 +11,7 @@ import { theme } from "../../modes/theme/theme";
 import tipsText from "./tips.txt" with { type: "text" };
 
 // Local override — upstream APP_NAME still reports "omp"/"pi-utils" identity.
-const APP_NAME = "SnsAgent";
+const APP_NAME = "snscoder";
 
 /** Tips embedded at build time, one per line; blanks dropped. */
 const TIPS: readonly string[] = tipsText
@@ -455,26 +455,26 @@ export class WelcomeComponent implements Component {
 	}
 }
 
-export const PI_LOGO = [
-	"██████╗███╗   ██╗███████╗ █████╗  ██████╗ ███████╗███╗   ██╗████████╗",
-	"██╔════╝████╗  ██║██╔════╝██╔══██╗██╔═══██╗██╔════╝████╗  ██║╚══██╔══╝",
-	"██████╗ ██╔██╗ ██║███████╗███████║██║   ██║█████╗  ██╔██╗ ██║   ██║   ",
-	"╚════██║██║╚██╗██║╚════██║██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ",
-	"██████║██║ ╚████║███████║██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ",
-	"╚═════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ",
+export const SNS_LOGO = [
+	"████████╗███████╗██████╗ ███╗   ███╗",
+	"╚══██╔══╝██╔════╝██╔══██╗████╗ ████║",
+	"   ██║   █████╗  ██████╔╝██╔████╔██║",
+	"   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║",
+	"   ██║   ███████╗██║  ██║██║ ╚═╝ ██║",
+	"   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝",
 ];
 
 /** Multi-stop palette for the diagonal gradient. */
 const GRADIENT_STOPS: ReadonlyArray<readonly [number, number, number]> = [
-	[0, 210, 255],    // #00d2ff — SNS cyan
-	[80, 150, 255],   // transitional blue
-	[123, 47, 247],   // #7b2ff7 — SNS purple
-	[200, 70, 180],   // transitional pink-purple
-	[255, 107, 157],  // #ff6b9d — SNS pink
+	[249, 115, 22],   // #F97316 — orange-500
+	[234, 88, 12],    // #EA580C — orange-600
+	[255, 140, 50],   // transitional warm orange
+	[220, 100, 20],   // transitional deep orange
+	[245, 130, 30],   // transitional amber
 ];
 
 /** 256-color ramp fallback when truecolor isn't available. */
-const GRADIENT_RAMP_256 = [199, 171, 135, 99, 75, 51, 87];
+const GRADIENT_RAMP_256 = [208, 209, 214, 172, 166, 130, 178];
 
 /** Half-width of the shine highlight band, expressed in gradient-t units. */
 const SHINE_HALF_WIDTH = 0.18;
@@ -583,8 +583,8 @@ function introLogoFrame(progress: number): string[] {
 	const phase = ((((1 - eased) * INTRO_SWEEPS) % 1) + 1) % 1;
 	const shinePos = (((progress * INTRO_SHINE_TRAVERSALS) % 1) + 1) % 1;
 	const shineStrength = (1 - eased) ** 1.5;
-	return gradientLogo(PI_LOGO, phase, { strength: shineStrength, pos: shinePos });
+	return gradientLogo(SNS_LOGO, phase, { strength: shineStrength, pos: shinePos });
 }
 
 /** Resting gradient frame, cached for re-renders outside of the intro. */
-const REST_FRAME = gradientLogo(PI_LOGO, 0);
+const REST_FRAME = gradientLogo(SNS_LOGO, 0);

@@ -2,7 +2,7 @@
  * Brand color palette for SNS-MyAgent terminal UI.
  *
  * Uses picocolors for zero-dependency color output.
- * Brand gradient: #00d2ff → #7b2ff7 → #ff6b9d
+ * Brand gradient: #F97316 → #EA580C (orange)
  */
 
 import pc from "picocolors";
@@ -10,13 +10,13 @@ import pc from "picocolors";
 // ── Brand identity colors ──
 
 /** Primary brand color — used for headers and highlights. */
-export const primary = pc.cyan;
+export const primary = pc.yellow;
 
 /** Accent color — used for prompts and decorative elements. */
-export const accent = pc.magenta;
+export const accent = pc.yellow;
 
 /** User input text color. */
-export const user = pc.blue;
+export const user = pc.yellow;
 
 /** Agent output text color. */
 export const agent = pc.white;
@@ -41,21 +41,21 @@ export const bold = pc.bold;
 
 // ── Brand gradient constants (for gradient-string) ──
 
-/** Full brand gradient: cyan → purple → pink. */
-export const BRAND_GRADIENT = ["#00d2ff", "#7b2ff7", "#ff6b9d"];
+/** Full brand gradient: orange shades. */
+export const BRAND_GRADIENT = ["#F97316", "#EA580C", "#FF8C32"];
 
-/** Accent gradient: purple → cyan. */
-export const ACCENT_GRADIENT = ["#7b2ff7", "#00d2ff"];
+/** Accent gradient: dark orange → light orange. */
+export const ACCENT_GRADIENT = ["#EA580C", "#F97316"];
 
-/** Subtle gradient: cyan → purple. */
-export const SUBTLE_GRADIENT = ["#00d2ff", "#7b2ff7"];
+/** Subtle gradient: orange → amber. */
+export const SUBTLE_GRADIENT = ["#F97316", "#F59E0B"];
 
 // ── Role-specific border colors (hex for gradient-string) ──
 
 export const ROLE_HEX = {
-  user: "#00d2ff",
-  assistant: "#7b2ff7",
-  tool: "#ffd700",
+  user: "#F97316",
+  assistant: "#EA580C",
+  tool: "#FFD700",
   system: "#666666",
   error: "#ff4444",
 } as const;

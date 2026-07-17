@@ -58,8 +58,8 @@ export function renderSplash(info: SplashInfo = {}): string {
 	const ver = readVersion();
 	const lines: string[] = [];
 
-	// Brand line: MY · snsagent · v0.3.6
-	lines.push(`  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")}  ${chalk.dim(`v${ver}`)}`);
+	// Brand line: snscoder · v0.3.8
+	lines.push(`  ${chalk.yellow.bold("snscoder")}  ${chalk.dim(`v${ver}`)}`);
 	lines.push(`  ${chalk.dim("coding agent CLI")}`);
 	lines.push("");
 
@@ -82,5 +82,5 @@ export function renderInlineHeader(info: SplashInfo = {}): string {
 	const model = info.model
 		? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
 		: chalk.dim("no model");
-	return `  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
+	return `  ${chalk.yellow.bold("snscoder")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
 }
