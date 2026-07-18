@@ -21,7 +21,7 @@ class ProvidersSceneController implements SetupSceneController {
 	#tabRowCount = 1;
 
 	constructor(host: SetupSceneHost) {
-		this.#tabs = [new SignInTab(host), new ByokSetupTab(host), new WebSearchTab(host)];
+		this.#tabs = [new ByokSetupTab(host), new SignInTab(host), new WebSearchTab(host)];
 		this.#tabBar = new TabBar(
 			"Providers",
 			this.#tabs.map(tab => ({ id: tab.id, label: tab.label })),
