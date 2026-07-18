@@ -35,7 +35,7 @@
   "scripts": {
     "fetch-binary": "node scripts/fetch-binary.mjs",
     "postinstall": "node scripts/fetch-binary.mjs && node scripts/apply-pi-natives-patch.js",
-    "build": "bun build --compile --define process.env.PI_COMPILED='\"true\"' --define process.env.PKG_VERSION='\"0.3.8\"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names --outfile bin/snsagent-linux-x64 ./src/cli/entry.ts && cp bin/snsagent-linux-x64 bin/snsagent",
+    "build": "bun build --compile --define process.env.PI_COMPILED='\"true\"' --define process.env.PKG_VERSION='\"0.3.9\"' --no-compile-autoload-bunfig --no-compile-autoload-dotenv --no-compile-autoload-tsconfig --no-compile-autoload-package-json --keep-names --outfile bin/snsagent-linux-x64 ./src/cli/entry.ts && cp bin/snsagent-linux-x64 bin/snsagent",
     "check": "biome check . && bun run check:types",
     "check:types": "tsgo -p tsconfig.json --noEmit",
     "lint": "biome lint .",
