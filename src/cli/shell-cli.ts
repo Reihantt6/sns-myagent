@@ -59,7 +59,7 @@ export async function runShellCommand(cmd: ShellCommandArgs): Promise<void> {
 	let lastChar: string | null = null;
 
 	const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
-	const prompt = chalk.cyan(`${APP_NAME} shell> `);
+	const prompt = chalk.hex("#F97316")(`${APP_NAME} shell> `);
 
 	const printHelp = () => {
 		process.stdout.write(

@@ -30,7 +30,7 @@ function createSyncProgressReporter(): {
 			lastRender = now;
 			const label = chalk.dim(shortenSessionFile(event.sessionFile));
 			const pct = ((event.current / event.total) * 100).toFixed(0).padStart(3, " ");
-			const counter = chalk.cyan(`[${event.current}/${event.total}]`);
+			const counter = chalk.hex("#F97316")(`[${event.current}/${event.total}]`);
 			const line = `${counter} ${pct}%  ${label}`;
 			const columns = stream.columns ?? 120;
 			const trimmed = truncateToWidth(line, columns - 1);

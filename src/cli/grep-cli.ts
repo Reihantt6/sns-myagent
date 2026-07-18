@@ -111,7 +111,7 @@ export async function runGrepCommand(cmd: GrepCommandArgs): Promise<void> {
 						console.log(chalk.dim(`${displayPath}-${ctx.lineNumber}- ${ctx.line}`));
 					}
 				}
-				console.log(`${chalk.cyan(displayPath)}:${chalk.yellow(String(match.lineNumber))}: ${match.line}`);
+				console.log(`${chalk.hex("#F97316")(displayPath)}:${chalk.yellow(String(match.lineNumber))}: ${match.line}`);
 				if (match.contextAfter) {
 					for (const ctx of match.contextAfter) {
 						console.log(chalk.dim(`${displayPath}-${ctx.lineNumber}- ${ctx.line}`));
@@ -119,9 +119,9 @@ export async function runGrepCommand(cmd: GrepCommandArgs): Promise<void> {
 				}
 				console.log("");
 			} else if (cmd.mode === GrepOutputMode.Count) {
-				console.log(`${chalk.cyan(displayPath)}: ${match.matchCount ?? 0} matches`);
+				console.log(`${chalk.hex("#F97316")(displayPath)}: ${match.matchCount ?? 0} matches`);
 			} else {
-				console.log(chalk.cyan(displayPath));
+				console.log(chalk.hex("#F97316")(displayPath));
 			}
 		}
 	} catch (err) {

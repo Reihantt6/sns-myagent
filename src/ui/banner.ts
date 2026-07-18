@@ -32,8 +32,8 @@ export function showBanner(config: FullConfig): void {
 	const width = Math.min(cols, 80);
 
 	const version = chalk.bold(`v${config.version}`);
-	const provider = chalk.cyan(config.provider);
-	const model = chalk.cyan(config.model);
+	const provider = chalk.hex("#F97316")(config.provider);
+	const model = chalk.hex("#F97316")(config.model);
 	const hasKey = Boolean(loadSnsConfig().apiKey);
 	const memStatus = hasKey
 		? chalk.green("connected")

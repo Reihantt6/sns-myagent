@@ -24,7 +24,7 @@ function getSeverityMeta(severity: ErrorSeverity) {
 		case "warning":
 			return { icon: chalk.yellow("●"), label: "WARNING" };
 		case "info":
-			return { icon: chalk.cyan("●"), label: "INFO" };
+			return { icon: chalk.hex("#F97316")("●"), label: "INFO" };
 	}
 }
 
@@ -61,7 +61,7 @@ export function renderErrorDisplay(opts: ErrorDisplayOptions): string {
 	// Suggestion
 	if (opts.suggestion) {
 		lines.push("");
-		lines.push(`    ${chalk.cyan("→")} ${chalk.bold("suggestion:")}`);
+		lines.push(`    ${chalk.hex("#F97316")("→")} ${chalk.bold("suggestion:")}`);
 		lines.push(`      ${opts.suggestion}`);
 	}
 

@@ -62,7 +62,7 @@ export async function executeEnsemble(
 
   // Execute with resilience if enabled
   const executeWithResilience = options.resilient !== false
-    ? createResilientExecutor(config, options)
+    ? createResilientExecutor(config, options, executeAgent)
     : executeAgent;
 
   const result = await strategy.execute(prompt, agentRoles, executeWithResilience);
@@ -147,6 +147,7 @@ function createStrategy(name: string, options: Record<string, unknown>): Ensembl
 function createResilientExecutor(
 	config: ReturnType<typeof getAgentsConfig>["config"],
 	options: EnsembleOptions,
+	executeAgent: (role: string, prompt: string) => Promise<AgentResponse>,
 ) {
 	return async (role: string, prompt: string): Promise<AgentResponse> => {
 		const agentConfig = config.agents[role];
@@ -158,8 +159,7 @@ function createResilientExecutor(
 			async () => {
 				return resilience.withTimeout(
 					async () => {
-						// This will be replaced by actual agent execution via the wrapper
-						throw new Error("executeAgent must be provided by caller");
+						return executeAgent(role, prompt);
 					},
 					options.taskTimeoutMs ?? config.task_timeout_ms ?? 120_000,
 					`ensemble:${role}`,
@@ -171,7 +171,6 @@ function createResilientExecutor(
 			},
 		);
 		if (!result.success) throw result.error ?? new Error("resilient executor failed");
-		// Type guard: caller must inject a real AgentResponse executor.
 		return result.result as unknown as AgentResponse;
 	};
 }

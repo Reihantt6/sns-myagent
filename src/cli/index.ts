@@ -79,25 +79,25 @@ function deriveProviderName(baseUrl: string): string {
 /** BYOK provider setup — reusable for first-run and re-init. */
 async function byokProviderSetup(rl: ReturnType<typeof createInterface>): Promise<void> {
 	process.stdout.write("\n");
-	process.stdout.write(`  ${chalk.cyan("●")} ${chalk.bold("AI Provider Setup")}\n`);
+	process.stdout.write(`  ${chalk.hex("#F97316")("●")} ${chalk.bold("AI Provider Setup")}\n`);
 	process.stdout.write(`  ${chalk.dim("Connect your LLM provider (skip to set via env vars later):")}\n`);
 
 	// Base URL
-	process.stdout.write(`  ${chalk.cyan("●")} Base URL [https://api.openai.com/v1]: `);
+	process.stdout.write(`  ${chalk.hex("#F97316")("●")} Base URL [https://api.openai.com/v1]: `);
 	const baseUrlRaw = await rl.question("");
 	const baseUrl = (baseUrlRaw.trim() || "https://api.openai.com/v1").replace(/\/+$/, "");
 
 	// API Key
-	process.stdout.write(`  ${chalk.cyan("●")} API Key: `);
+	process.stdout.write(`  ${chalk.hex("#F97316")("●")} API Key: `);
 	const apiKey = await rl.question("");
 
 	// API type
-	process.stdout.write(`  ${chalk.cyan("●")} API Type:\n`);
-	process.stdout.write(`    ${chalk.cyan("1")} openai-completions (default — OpenAI, OpenRouter, Ollama, vLLM)\n`);
-	process.stdout.write(`    ${chalk.cyan("2")} openai-responses\n`);
-	process.stdout.write(`    ${chalk.cyan("3")} anthropic-messages\n`);
-	process.stdout.write(`    ${chalk.cyan("4")} google-generative-ai\n`);
-	process.stdout.write(`    ${chalk.cyan("5")} azure-openai-responses\n`);
+	process.stdout.write(`  ${chalk.hex("#F97316")("●")} API Type:\n`);
+	process.stdout.write(`    ${chalk.hex("#F97316")("1")} openai-completions (default — OpenAI, OpenRouter, Ollama, vLLM)\n`);
+	process.stdout.write(`    ${chalk.hex("#F97316")("2")} openai-responses\n`);
+	process.stdout.write(`    ${chalk.hex("#F97316")("3")} anthropic-messages\n`);
+	process.stdout.write(`    ${chalk.hex("#F97316")("4")} google-generative-ai\n`);
+	process.stdout.write(`    ${chalk.hex("#F97316")("5")} azure-openai-responses\n`);
 	process.stdout.write(`  [1] `);
 	const apiTypeAnswer = await rl.question("");
 
@@ -204,15 +204,15 @@ async function cmdInit(): Promise<number> {
 		const rl = createInterface({ input: stdin, output: stdout });
 
 		process.stdout.write("\n");
-		process.stdout.write(`  ${chalk.cyan("●")} ${chalk.bold("Memory Backend Selection")}\n`);
+		process.stdout.write(`  ${chalk.hex("#F97316")("●")} ${chalk.bold("Memory Backend Selection")}\n`);
 		process.stdout.write(`  ${chalk.dim("Select memory backend (default: mnemopi):")}\n`);
-		process.stdout.write(`    ${chalk.cyan("1")} mnemopi (default) — SQLite + vector + graph, offline, no config\n`);
-		process.stdout.write(`    ${chalk.cyan("2")} local — rollout summary only\n`);
-		process.stdout.write(`    ${chalk.cyan("3")} mnemosyne — advanced local (Python daemon)\n`);
-		process.stdout.write(`    ${chalk.cyan("4")} mem0 — cloud API (needs MEM0_API_KEY)\n`);
-		process.stdout.write(`    ${chalk.cyan("5")} lcm — local server (needs LCM_HOST)\n`);
-		process.stdout.write(`    ${chalk.cyan("6")} hindsight — cloud (needs HINDSIGHT_API_KEY)\n`);
-		process.stdout.write(`    ${chalk.cyan("7")} off — disabled\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("1")} mnemopi (default) — SQLite + vector + graph, offline, no config\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("2")} local — rollout summary only\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("3")} mnemosyne — advanced local (Python daemon)\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("4")} mem0 — cloud API (needs MEM0_API_KEY)\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("5")} lcm — local server (needs LCM_HOST)\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("6")} hindsight — cloud (needs HINDSIGHT_API_KEY)\n`);
+		process.stdout.write(`    ${chalk.hex("#F97316")("7")} off — disabled\n`);
 		process.stdout.write(`  [1] `);
 
 		const answer = await rl.question("");
@@ -248,7 +248,7 @@ async function cmdInit(): Promise<number> {
 
 		// Mnemosyne needs Python daemon
 		if (backend === "mnemosyne") {
-			process.stdout.write(`\n  ${chalk.cyan("●")} mnemosyne requires Python daemon.\n`);
+			process.stdout.write(`\n  ${chalk.hex("#F97316")("●")} mnemosyne requires Python daemon.\n`);
 			process.stdout.write(`  ${chalk.dim("Install now? (pip install mnemosyne) [Y/n] ")}`);
 			const yn = await rl.question("");
 			if (!yn || yn.toLowerCase() === "y") {

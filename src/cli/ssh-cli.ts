@@ -169,7 +169,7 @@ async function handleList(cmd: SSHCommandArgs): Promise<void> {
 
 function printHosts(hosts: Record<string, SSHHostConfig>): void {
 	for (const [name, config] of Object.entries(hosts)) {
-		const parts = [chalk.cyan(name), config.host];
+		const parts = [chalk.hex("#F97316")(name), config.host];
 		if (config.username) parts.push(chalk.dim(config.username));
 		if (config.port && config.port !== 22) parts.push(chalk.dim(`port:${config.port}`));
 		if (config.keyPath) parts.push(chalk.dim(config.keyPath));

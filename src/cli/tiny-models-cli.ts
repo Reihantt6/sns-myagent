@@ -56,8 +56,8 @@ function listModels(json: boolean | undefined): void {
 	}
 	writeLine(chalk.bold("Tiny local models"));
 	for (const spec of TINY_LOCAL_MODELS) {
-		const defaultMark = spec.key === DEFAULT_TINY_TITLE_LOCAL_MODEL_KEY ? chalk.cyan(" default") : "";
-		writeLine(`${chalk.cyan(spec.key)}${defaultMark}`);
+		const defaultMark = spec.key === DEFAULT_TINY_TITLE_LOCAL_MODEL_KEY ? chalk.hex("#F97316")(" default") : "";
+		writeLine(`${chalk.hex("#F97316")(spec.key)}${defaultMark}`);
 		writeLine(`  ${spec.label} — ${spec.description}`);
 	}
 }
@@ -81,7 +81,7 @@ function makeProgressReporter(modelKey: TinyLocalModelKey, json: boolean | undef
 		const bytes = event.loaded && event.total ? ` ${formatBytes(event.loaded)}/${formatBytes(event.total)}` : "";
 		const file = event.file ? ` ${event.file.split("/").at(-1) ?? event.file}` : "";
 		const statusLabel = event.status === "ready" ? "Ready" : "Downloading";
-		const line = `${chalk.cyan(statusLabel)} ${label} [${bar}] ${pct}${bytes}${file}`;
+		const line = `${chalk.hex("#F97316")(statusLabel)} ${label} [${bar}] ${pct}${bytes}${file}`;
 		process.stdout.write(`\r${line.padEnd(lastWidth)}`);
 		lastWidth = line.length;
 	};

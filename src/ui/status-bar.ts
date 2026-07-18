@@ -27,7 +27,7 @@ export function renderStatusBar(state: StatusBarState): void {
 		: String(state.tokensUsed);
 
 	const k = (s: string) => chalk.dim(s);
-	const v = (s: string) => chalk.cyan(s);
+	const v = (s: string) => chalk.hex("#F97316")(s);
 	const sep = chalk.dim(" · ");
 
 	const bar = `  ${k("model")} ${v(state.model)}${sep}${k("tokens")} ${v(tokens)}${sep}${k("time")} ${v(elapsed)}${sep}${k("mem")} ${v(String(state.memoryHits))}`;

@@ -22,7 +22,7 @@ const TOAST_LABEL: Record<ToastType, string> = {
 };
 
 export function renderMemoryToast(opts: MemoryToastOptions): string {
-	const label = chalk.cyan(`● ${TOAST_LABEL[opts.type]}`);
+	const label = chalk.hex("#F97316")(`● ${TOAST_LABEL[opts.type]}`);
 	const msg = opts.message;
 	const parts = [label, msg];
 
@@ -32,20 +32,20 @@ export function renderMemoryToast(opts: MemoryToastOptions): string {
 
 	if (opts.relevance !== undefined) {
 		const score = Math.round(opts.relevance * 100);
-		parts.push(chalk.cyan(`(${score}%)`));
+		parts.push(chalk.hex("#F97316")(`(${score}%)`));
 	}
 
 	return `  ${parts.join("  ")}`;
 }
 
 export function renderMemoryRecall(query: string, snippet: string, relevance?: number): string {
-	const queryStr = chalk.cyan(`"${query}"`);
+	const queryStr = chalk.hex("#F97316")(`"${query}"`);
 	const scoreStr = relevance !== undefined
 		? chalk.dim(`  ${Math.round(relevance * 100)}% match`)
 		: "";
 
 	const lines = [
-		`  ${chalk.cyan("● memory")}  ${queryStr}${scoreStr}`,
+		`  ${chalk.hex("#F97316")("● memory")}  ${queryStr}${scoreStr}`,
 		`    ${chalk.dim(snippet.slice(0, 120))}${snippet.length > 120 ? chalk.dim("...") : ""}`,
 	];
 
@@ -55,7 +55,7 @@ export function renderMemoryRecall(query: string, snippet: string, relevance?: n
 export function renderMemorySave(content: string, scope?: string): string {
 	const scopeStr = scope ? chalk.dim(`  [${scope}]`) : "";
 	const preview = content.length > 80 ? content.slice(0, 80) + "..." : content;
-	return `  ${chalk.cyan("● saved")}${scopeStr}  ${chalk.dim(preview)}`;
+	return `  ${chalk.hex("#F97316")("● saved")}${scopeStr}  ${chalk.dim(preview)}`;
 }
 
 export function clearToastLine(): void {
