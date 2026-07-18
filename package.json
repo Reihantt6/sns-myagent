@@ -1,8 +1,8 @@
 {
   "type": "module",
   "name": "@sns-myagent/cli",
-  "version": "0.3.8",
-  "description": "SNS-MyAgent \u2014 BYOK coding agent CLI. Multi-agent + Telegram + self-learning memory. ~120MB binary, zero forced cost.",
+  "version": "0.3.9",
+  "description": "SNS-MyAgent — BYOK coding agent CLI. Multi-agent + Telegram + self-learning memory. ~120MB binary, zero forced cost.",
   "homepage": "https://github.com/Reihantt6/sns-myagent",
   "author": "Reihantt6",
   "contributors": [],
