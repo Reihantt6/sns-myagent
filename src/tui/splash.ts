@@ -74,7 +74,7 @@ export function renderSplash(info: SplashInfo = {}): string {
 export function renderInlineHeader(info: SplashInfo = {}): string {
 	const ver = readVersion();
 	const model = info.model
-		? chalk.cyan(`${info.provider ?? "?"}/${info.model}`)
+		? chalk.hex("#F97316")(`${info.provider ?? "?"}/${info.model}`)
 		: chalk.dim("no model");
 	return `  ${DOT} ${chalk.bold("SNS")} ${chalk.dim(`v${ver}`)}  ${chalk.dim("·")}  ${model}\n`;
 }

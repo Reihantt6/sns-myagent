@@ -247,15 +247,15 @@ export function renderCollapsibleOutput(
     // Collapsed: just header + hint
     const lineCount = content.split("\n").length;
     const hint = chalk.dim(` (${lineCount} lines, click to expand)`);
-    lines.push(`  ${chalk.cyan("▸")} ${chalk.bold(label)}${hint}`);
+    lines.push(`  ${chalk.hex("#F97316")("▸")} ${chalk.bold(label)}${hint}`);
     return lines;
   }
 
   // Expanded: bordered block
-  const accent = chalk.cyan;
+  const accent = chalk.hex("#F97316");
 
   	// Expanded: bordered block
-  	const accentFn = (s: string) => chalk.cyan(s);
+  	const accentFn = (s: string) => chalk.hex("#F97316")(s);
 
   // Header
   const headerText = ` ${label} `;
