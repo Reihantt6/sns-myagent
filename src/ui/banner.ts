@@ -28,7 +28,8 @@ const LOGO_TEXT = [
 const SUBTITLE = "SNS · coding agent";
 
 export function showBanner(config: FullConfig): void {
-	const cols = process.stdout.columns ?? 80;
+	const cols = process.stdout.columns || 80;
+	const width = Math.min(cols, 80);
 
 	const version = chalk.bold(`v${config.version}`);
 	const provider = chalk.cyan(config.provider);
@@ -38,7 +39,7 @@ export function showBanner(config: FullConfig): void {
 		? chalk.green("connected")
 		: chalk.yellow("no API key");
 
-	const inner = Math.min(cols - 4, 56);
+	const inner = Math.min(width - 4, 56);
 	const sep = chalk.dim("─".repeat(inner));
 	const kv = (k: string, v: string) =>
 		`  ${chalk.dim(k.padEnd(12))}${v}`;
