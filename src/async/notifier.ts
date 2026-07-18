@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, (text: string) => string> = {
   completed: (t) => chalk.green(t),
   failed: (t) => chalk.red(t),
   cancelled: (t) => chalk.yellow(t),
-  running: (t) => chalk.cyan(t),
+  running: (t) => chalk.hex("#F97316")(t),
   pending: (t) => chalk.dim(t),
 };
 

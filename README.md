@@ -372,7 +372,7 @@ Run `snsagent` and the setup wizard appears on first launch. Pick the **BYOK** t
 2. **API Key** — your provider key
 3. **API type** — `openai-completions` (default), `anthropic-messages`, `google-generative-ai`
 
-The wizard auto-detects available models from the provider and saves the config to `~/.sns-myagent/models.yml`.
+The wizard auto-detects available models from the provider and saves the config to the agent config directory.
 
 ### 2. Run
 

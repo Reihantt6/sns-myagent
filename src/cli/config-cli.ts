@@ -132,7 +132,7 @@ function formatValue(value: unknown): string {
 		return value ? chalk.green("true") : chalk.red("false");
 	}
 	if (typeof value === "number") {
-		return chalk.cyan(String(value));
+		return chalk.hex("#F97316")(String(value));
 	}
 	if (typeof value === "string") {
 		return chalk.yellow(value);

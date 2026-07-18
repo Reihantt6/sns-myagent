@@ -270,7 +270,7 @@ async function handleMarketplace(args: string[], _flags: PluginCommandArgs["flag
 				}
 				console.log(chalk.bold("Configured Marketplaces:\n"));
 				for (const mp of marketplaces) {
-					console.log(`  ${chalk.cyan(mp.name)}  ${chalk.dim(mp.sourceUri)}`);
+					console.log(`  ${chalk.hex("#F97316")(mp.name)}  ${chalk.dim(mp.sourceUri)}`);
 				}
 			} catch (err) {
 				console.error(chalk.red(`${theme.status.error} Failed to list marketplaces: ${err}`));
@@ -294,7 +294,7 @@ async function handleDiscover(args: string[], _flags: PluginCommandArgs["flags"]
 
 		console.log(chalk.bold(`Available Plugins${marketplace ? ` (${marketplace})` : ""}:\n`));
 		for (const plugin of plugins) {
-			console.log(`  ${chalk.cyan(plugin.name)}${plugin.version ? `@${plugin.version}` : ""}`);
+			console.log(`  ${chalk.hex("#F97316")(plugin.name)}${plugin.version ? `@${plugin.version}` : ""}`);
 			if (plugin.description) {
 				console.log(chalk.dim(`    ${plugin.description}`));
 			}

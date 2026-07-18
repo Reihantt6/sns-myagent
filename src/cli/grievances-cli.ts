@@ -71,7 +71,7 @@ export async function listGrievances(options: ListGrievancesOptions): Promise<vo
 
 		for (const row of rows) {
 			console.log(
-				`${chalk.dim(`#${row.id}`)} ${chalk.cyan(row.tool)} ${chalk.dim(`(${row.model} v${row.version})`)}`,
+				`${chalk.dim(`#${row.id}`)} ${chalk.hex("#F97316")(row.tool)} ${chalk.dim(`(${row.model} v${row.version})`)}`,
 			);
 			console.log(`  ${row.report}`);
 			console.log();
@@ -181,7 +181,7 @@ function makeProgressBar(total: number, width = 30): ProgressBar {
 		const pct = `${Math.floor(ratio * 100)
 			.toString()
 			.padStart(3, " ")}%`;
-		process.stdout.write(`\r${chalk.cyan("Pushing")} [${bar}] ${pct} ${done}/${total}`);
+		process.stdout.write(`\r${chalk.hex("#F97316")("Pushing")} [${bar}] ${pct} ${done}/${total}`);
 	};
 	render(0);
 	return {

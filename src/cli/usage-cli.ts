@@ -326,7 +326,7 @@ function formatAccountHeader(
 	const planType = report.metadata?.planType;
 	if (typeof planType === "string" && planType) header += chalk.dim(` · plan: ${planType}`);
 	const savedResets = report.resetCredits?.availableCount ?? 0;
-	if (savedResets > 0) header += chalk.cyan(` · ✦ ${savedResets} saved reset${savedResets === 1 ? "" : "s"}`);
+	if (savedResets > 0) header += chalk.hex("#F97316")(` · ✦ ${savedResets} saved reset${savedResets === 1 ? "" : "s"}`);
 	if (report.fetchedAt && nowMs - report.fetchedAt > 90_000) {
 		header += chalk.dim(` · fetched ${formatDuration(nowMs - report.fetchedAt)} ago`);
 	}

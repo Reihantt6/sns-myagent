@@ -622,7 +622,7 @@ export async function runUpdateCommand(opts: { force: boolean; check: boolean })
 	}
 
 	if (comparison > 0) {
-		console.log(chalk.cyan(`New version available: ${release.version}`));
+		console.log(chalk.hex("#F97316")(`New version available: ${release.version}`));
 	} else {
 		console.log(chalk.yellow(`Forcing reinstall of ${release.version}`));
 	}

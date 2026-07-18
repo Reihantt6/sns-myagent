@@ -9,10 +9,10 @@
 import chalk from "chalk";
 
 /** Single accent for prompts, brand, and focus. */
-export const accent = chalk.cyan;
+export const accent = chalk.hex("#F97316");
 
 /** Brand text — bold cyan, no rainbow. */
-export const brand = (s: string) => chalk.cyan.bold(s);
+export const brand = (s: string) => chalk.hex("#F97316").bold(s);
 
 /** Subtle / dimmed text. */
 export const subtle = chalk.dim;
@@ -21,4 +21,4 @@ export const subtle = chalk.dim;
 export const muted = chalk.gray;
 
 /** Accent for inline emphasis (e.g. file paths, ids). */
-export const inline = chalk.cyan;
+export const inline = chalk.hex("#F97316");
