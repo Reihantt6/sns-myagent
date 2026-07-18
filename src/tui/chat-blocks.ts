@@ -16,7 +16,7 @@ const ROLE_LABEL: Record<MessageRole, string> = {
 	error: "error",
 };
 
-const BULLET = chalk.cyan("●");
+const BULLET = chalk.hex("#F97316")("●");
 
 export interface ChatBlockOptions {
 	role: MessageRole;
@@ -73,7 +73,7 @@ export function renderChatBlock(opts: ChatBlockOptions): string {
 	const parts: string[] = [header, ...indented];
 
 	if (opts.streaming) {
-		parts.push(`  ${chalk.dim("│")} ${chalk.cyan("…")} ${chalk.dim("thinking")}`);
+		parts.push(`  ${chalk.dim("│")} ${chalk.hex("#F97316")("…")} ${chalk.dim("thinking")}`);
 	}
 
 	return parts.join("\n");
@@ -99,7 +99,7 @@ export function renderToolBlock(
 	status: "running" | "done" | "error",
 	detail?: string,
 ): string {
-	const icon = status === "running" ? chalk.cyan("●") : status === "done" ? chalk.green("●") : chalk.red("●");
+	const icon = status === "running" ? chalk.hex("#F97316")("●") : status === "done" ? chalk.green("●") : chalk.red("●");
 	const label = ` ${icon} tool:${toolName} `;
 	const detailText = detail ? chalk.dim(` ${detail}`) : "";
 	return label + detailText;
@@ -107,5 +107,5 @@ export function renderToolBlock(
 
 /** Session header — single line. */
 export function renderSessionHeader(model: string, version: string): string {
-	return `  ${chalk.cyan.bold("MY")}  ${chalk.bold("snsagent")} ${chalk.dim(`v${version}`)}  ${chalk.dim("·")}  ${chalk.cyan(model)}\n`;
+	return `  ${chalk.hex("#F97316")("SNS")}  ${chalk.bold("snsagent")} ${chalk.dim(`v${version}`)}  ${chalk.dim("·")}  ${chalk.hex("#F97316")(model)}\n`;
 }

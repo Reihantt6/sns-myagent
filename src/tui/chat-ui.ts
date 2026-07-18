@@ -98,7 +98,7 @@ const BUILTIN_COMMANDS: SlashCommand[] = [
     description: "Show available commands",
     handler: (_args, ctx) => {
       const lines = BUILTIN_COMMANDS.map(
-        c => `  ${chalk.cyan(c.name.padEnd(14))}${chalk.dim(c.description)}`
+        c => `  ${chalk.hex("#F97316")(c.name.padEnd(14))}${chalk.dim(c.description)}`
       ).join("\n");
       ctx.print(renderChatBlock({
         role: "system",
@@ -176,7 +176,7 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
 
   // Readline loop
   while (true) {
-    const promptStr = chalk.cyan("you") + chalk.dim(" › ");
+    const promptStr = chalk.hex("#F97316")("you") + chalk.dim(" › ");
     let line: string;
     try {
       const rl = createInterface({ input: stdin, output: stdout });
@@ -224,7 +224,7 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
       const spinner = ora({
         text: chalk.dim("thinking..."),
         spinner: "dots",
-        color: "cyan",
+        color: "yellow",
       }).start();
 
       try {

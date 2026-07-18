@@ -47,7 +47,7 @@ export function renderCommandPalette(opts: CommandPaletteOptions): string {
 	const lines: string[] = [];
 
 	// Search line
-	lines.push(`  ${chalk.cyan("?")} ${query}${chalk.dim("  (↑↓ navigate · Enter select · Esc cancel)")}`);
+	lines.push(`  ${chalk.hex("#F97316")("?")} ${query}${chalk.dim("  (↑↓ navigate · Enter select · Esc cancel)")}`);
 	lines.push("");
 
 	if (filtered.length === 0) {
@@ -55,8 +55,8 @@ export function renderCommandPalette(opts: CommandPaletteOptions): string {
 	} else {
 		filtered.forEach((cmd, idx) => {
 			const isActive = idx === highlighted;
-			const prefix = isActive ? chalk.cyan("●") : " ";
-			const name = isActive ? chalk.cyan.bold(cmd.name) : chalk.cyan(cmd.name);
+			const prefix = isActive ? chalk.hex("#F97316")("●") : " ";
+			const name = isActive ? chalk.hex("#F97316").bold(cmd.name) : chalk.hex("#F97316")(cmd.name);
 			const desc = chalk.dim(cmd.description);
 			const cat = chalk.dim(`  [${cmd.category}]`);
 			const shortcut = cmd.shortcut ? chalk.dim(`  ${cmd.shortcut}`) : "";
