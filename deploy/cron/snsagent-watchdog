@@ -1,0 +1,6 @@
+# sns-myagent auto-restart watchdog
+# Every 5 min: check service, restart if crashed
+SHELL=/bin/bash
+PATH=/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+*/5 * * * * root systemctl is-active --quiet snsagent || systemctl restart snsagent >> /var/log/snsagent-watchdog.log 2>&1

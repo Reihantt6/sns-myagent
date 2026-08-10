@@ -1,0 +1,33 @@
+# 9router (LiteLLM proxy) health check
+# Every 1 min: ping /v1/models, restart on 3 consecutive fails
+# Requires: NINE_ROUTER_KEY env in /etc/cron.d/nine-router.env (chmod 600)
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Load API key
+NINE_ROUTER_KEY=__SET_VIA_INSTALL__
+
+# Health check state file
+STATE=/var/lib/nine-router-watchdog/state
+mkdir -p "$(dirname "$STATE")" 2>/dev/null
+
+* * * * * root bash -c '
+  fail=0
+  curl -fsS -m 5 -o /dev/null \
+    -H "Authorization: Bearer ${NINE_ROUTER_KEY}" \
+    http://127.0.0.1:20128/v1/models || fail=1
+  if [ "$fail" -eq 1 ]; then
+    count=$(cat "$STATE" 2>/dev/null || echo 0)
+    count=$((count + 1))
+    echo "$count" > "$STATE"
+    if [ "$count" -ge 3 ]; then
+      echo "0" > "$STATE"
+      # restart 9router (path varies by install)
+      systemctl restart nine-router 2>/dev/null || /root/.9router/start.sh 2>/dev/null || true
+      # alert via telegram (if configured)
+      [ -f /root/.9router/alert.sh ] && bash /root/.9router/alert.sh "9router restarted (3 fails)" 2>/dev/null || true
+    fi
+  else
+    echo "0" > "$STATE"
+  fi
+' >> /var/log/nine-router-watchdog.log 2>&1
