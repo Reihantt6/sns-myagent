@@ -23,7 +23,7 @@
 
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/version-0.3.8-yellow?style=flat-square" alt="Version 0.3.8">
+  <img src="https://img.shields.io/badge/version-0.3.9-yellow?style=flat-square" alt="Version 0.3.9">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
   <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
 </p>
@@ -636,7 +636,7 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-## Implementation Status (v0.3.7)
+## Implementation Status (v0.3.9)
 
 What is actually wired and working in the source tree, verified 2026-06-30:
 

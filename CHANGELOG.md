@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- Telegram MarkdownV2 formatting now preserves literal `*` and `~` markers while escaping underscores safely.
+
 ### Added
 - **BYOK Quick Setup tab** in setup wizard (`src/modes/setup-wizard/scenes/byok-setup.ts`):
   - New "BYOK" tab alongside "Sign in" and "Web search" in the providers scene

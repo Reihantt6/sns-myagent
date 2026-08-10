@@ -154,7 +154,7 @@ export function markdownToTelegram(input: string): string {
 		// # heading → *heading* (no native heading in MarkdownV2)
 		t = t.replace(/^#{1,6}\s+(.+)$/gm, "*$1*");
 
-		out.push(escapeSpan(t, new Set(["*", "_", "~"])));
+		out.push(escapeSpan(t, new Set(["*", "~"])));
 	}
 
 	// --- 3. Final safety net: if the result is suspiciously unbalanced
