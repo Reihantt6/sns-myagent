@@ -201,7 +201,7 @@ export const ProviderDiscoverySchema = type({
 	type: '"ollama" | "llama.cpp" | "lm-studio" | "openai-models-list" | "proxy"',
 });
 
-export const ProviderAuthSchema = type('"apiKey" | "none" | "oauth"');
+export const ProviderAuthSchema = type('"apiKey" | "bearer" | "none" | "oauth"');
 
 export type ProviderAuthMode = typeof ProviderAuthSchema.infer;
 export type ProviderDiscovery = typeof ProviderDiscoverySchema.infer;

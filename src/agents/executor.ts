@@ -40,11 +40,11 @@ const DEFAULT_AGENT: AgentDefinition = {
 export async function executeAgentForEnsemble(
   role: string,
   prompt: string,
+  settings?: import("../config/settings.js").Settings,
 ): Promise<AgentResponse> {
   const startTime = Date.now();
   const config = getAgentsConfig();
   const roleConfig = config.resolveRole(role);
-
   // Build AgentDefinition from config (or use default)
   const agentDef = buildAgentDefinition(role, roleConfig);
 
@@ -63,9 +63,10 @@ export async function executeAgentForEnsemble(
     index: 0,
     id: execId,
     role,
-    // Use model override from agents.yaml if specified
-    modelOverride: roleConfig?.model,
+    // Prefer an explicit agents.yaml model, then the persisted default role.
+    modelOverride: roleConfig?.model?.trim() || settings?.getModelRole("default"),
     thinkingLevel: resolveThinkingLevel(roleConfig?.thinking_level),
+    settings,
   };
 
   try {
