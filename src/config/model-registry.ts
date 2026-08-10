@@ -1607,6 +1607,10 @@ export class ModelRegistry {
 	 * the `??=` short-circuit and keeps a provider that declared no credentials
 	 * free of a bogus bearer token. Providers with a stored credential are left
 	 * untouched so the real key still authenticates.
+	 *
+	 * This is a build-time snapshot of `authStorage.hasAuth`: a credential
+	 * added later (e.g. via `/login`) is picked up on the next `refresh()`,
+	 * which rebuilds the registry and re-applies this suppression.
 	 */
 	#applyKeylessAuthSuppression(models: Model<Api>[]): Model<Api>[] {
 		if (this.#authNoneProviders.size === 0) return models;
