@@ -1,0 +1,29 @@
+[Unit]
+Description=sns-myagent coding agent (interactive + Telegram)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/projects/sns-myagent
+Environment="PI_COMPILED=true"
+Environment="HOME=/root"
+Environment="PATH=/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=-/etc/snsagent/secrets.env
+ExecStart=/root/projects/sns-myagent/bin/snsagent-linux-x64
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=snsagent
+
+# Hardening (relaxed for single-user dev VPS)
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/root/projects/sns-myagent /root/.omp /root/.cache /tmp
+
+[Install]
+WantedBy=multi-user.target

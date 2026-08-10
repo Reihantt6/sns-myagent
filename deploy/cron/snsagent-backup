@@ -1,0 +1,22 @@
+# Daily backup of agent state (sqlite DBs)
+# Runs 02:30, keeps last 30 daily snapshots in gdrive:snsagent-backup/db/
+# Requires: rclone configured with remote named "gdrive"
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+30 2 * * * root bash -c '
+  set -e
+  DATE=$(date +%Y-%m-%d)
+  DEST="gdrive:snsagent-backup/db/$DATE"
+  # Snapshot local sqlite (avoid lock corruption)
+  mkdir -p /tmp/snsagent-backup/$DATE
+  sqlite3 /root/.omp/agent/agent.db ".backup /tmp/snsagent-backup/$DATE/agent.db" 2>/dev/null || cp /root/.omp/agent/agent.db /tmp/snsagent-backup/$DATE/
+  sqlite3 /root/.omp/agent/models.db ".backup /tmp/snsagent-backup/$DATE/models.db" 2>/dev/null || cp /root/.omp/agent/models.db /tmp/snsagent-backup/$DATE/
+  cp /root/projects/sns-myagent/.sns-myagent/config.json /tmp/snsagent-backup/$DATE/snsagent-config.json 2>/dev/null || true
+  rclone copy /tmp/snsagent-backup/$DATE/ "$DEST/" --transfers=4 --quiet
+  rm -rf /tmp/snsagent-backup/$DATE
+  # Retention: delete > 30 days
+  for old in $(rclone lsf gdrive:snsagent-backup/db/ 2>/dev/null | head -n -30); do
+    rclone purge "gdrive:snsagent-backup/db/$old" 2>/dev/null || true
+  done
+' >> /var/log/snsagent-backup.log 2>&1

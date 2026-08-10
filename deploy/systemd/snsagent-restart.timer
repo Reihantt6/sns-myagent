@@ -1,0 +1,9 @@
+[Unit]
+Description=sns-myagent daily restart (pick up config / token refresh)
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

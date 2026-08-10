@@ -1,0 +1,7 @@
+[Unit]
+Description=sns-myagent daily restart trigger
+After=snsagent.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart snsagent.service

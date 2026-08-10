@@ -1,0 +1,6 @@
+# Weekly log rotation
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+0 3 * * 0 root find /root/projects/sns-myagent -type f -name "*.log" -mtime +14 -delete >> /var/log/snsagent-logs.log 2>&1
+0 3 * * 0 root find /var/log -name "snsagent-*.log" -mtime +30 -delete >> /var/log/snsagent-logs.log 2>&1
