@@ -631,6 +631,11 @@ export class ModelRegistry {
 	#canonicalIndexDirty: boolean = true;
 	#customProviderApiKeys: Map<string, string> = new Map();
 	#keylessProviders: Set<string> = new Set();
+	// Custom providers declared `auth: none` without a pinned apiKey — the only
+	// keyless providers that must suppress the request-layer Authorization
+	// header (vs. implicit local providers like ollama/llama.cpp which keep
+	// their harmless placeholder bearer). Populated in #loadCustomModels.
+	#authNoneProviders: Set<string> = new Set();
 	#discoverableProviders: DiscoveryProviderConfig[] = [];
 	#customModelOverlays: CustomModelOverlay[] = [];
 	#providerOverrides: Map<string, ProviderOverride> = new Map();
@@ -789,6 +794,7 @@ export class ModelRegistry {
 		this.#modelsConfigFile.invalidate();
 		this.#customProviderApiKeys.clear();
 		this.#keylessProviders.clear();
+		this.#authNoneProviders.clear();
 		this.#discoverableProviders = [];
 		// Drop config-sourced apiKeys from AuthStorage before reload; entries
 		// removed from models.yml must actually disappear from the resolver, not
@@ -868,7 +874,7 @@ export class ModelRegistry {
 		// Custom/config providers bypass the model-manager merge point —
 		// collapse effort-tier variants here so X/X-thinking twins fold.
 		const withModelOverrides = this.#applyModelOverrides(collapseBuiltModelVariants(combined), this.#modelOverrides);
-		this.#models = this.#applyRuntimeProviderOverrides(withModelOverrides);
+		this.#models = this.#applyKeylessAuthSuppression(this.#applyRuntimeProviderOverrides(withModelOverrides));
 		this.#rebuildCanonicalIndex();
 		this.#lastStaticLoadMtime = this.#modelsConfigFile.getMtimeMs();
 	}
@@ -1153,7 +1159,17 @@ export class ModelRegistry {
 
 			const authMode = (providerConfig.auth ?? "apiKey") as ProviderAuthMode;
 			if (authMode === "none") {
-				keylessProviders.add(providerName);
+				// `auth: none` declares a credential-less endpoint. Only treat it as
+				// keyless when no apiKey is pinned — an explicitly configured key
+				// must keep flowing (discovery auth + request bearer) instead of
+				// being skipped as if the provider needed no credentials (B5).
+				// Keyless-without-key providers get an Authorization-header
+				// suppression in #applyKeylessAuthSuppression so the request layer
+				// never stamps a bogus `Bearer N/A` on the wire.
+				if (!providerConfig.apiKey) {
+					keylessProviders.add(providerName);
+					this.#authNoneProviders.add(providerName);
+				}
 			}
 
 			if (providerConfig.discovery && (providerConfig.api || providerConfig.discovery.type === "proxy")) {
@@ -1249,7 +1265,7 @@ export class ModelRegistry {
 		// Merge runtime extension models so they survive online discovery completion
 		const combined = this.#mergeCustomModels(withConfigModels, this.#runtimeModelOverlays);
 		const withModelOverrides = this.#applyModelOverrides(collapseBuiltModelVariants(combined), this.#modelOverrides);
-		this.#models = this.#applyRuntimeProviderOverrides(withModelOverrides);
+		this.#models = this.#applyKeylessAuthSuppression(this.#applyRuntimeProviderOverrides(withModelOverrides));
 		this.#rebuildCanonicalIndex();
 	}
 
@@ -1273,7 +1289,12 @@ export class ModelRegistry {
 		const cached = readModelCache<Api>(cacheProviderId, 24 * 60 * 60 * 1000, Date.now, this.#cacheDbPath);
 		const cacheOlderThanConfig = cached !== null && this.#isDiscoveryCacheOlderThanModelsConfig(cached.updatedAt);
 		const effectiveStrategy = strategy === "online-if-uncached" && cacheOlderThanConfig ? "online" : strategy;
-		const requiresAuth = !this.#keylessProviders.has(providerConfig.provider);
+		const requiresAuth =
+			!this.#keylessProviders.has(providerConfig.provider) ||
+			// A keyless provider may still carry a stored credential (models.yml
+			// apiKey or auth_credentials); when one exists, discovery should use it
+			// rather than hitting an unauthenticated /v1/models endpoint (B5).
+			this.authStorage.hasAuth(providerConfig.provider);
 		if (requiresAuth) {
 			const apiKey = await this.#peekApiKeyForProvider(providerConfig.provider);
 			if (!isAuthenticated(apiKey)) {
@@ -1572,6 +1593,27 @@ export class ModelRegistry {
 			const override = this.#runtimeProviderOverrides.get(model.provider);
 			if (!override) return model;
 			return this.#applyProviderTransportOverride(model, override);
+		});
+	}
+
+	/**
+	 * Suppress the request-layer Authorization header for custom providers
+	 * declared `auth: none` with no credential configured (B5).
+	 *
+	 * `getApiKey` returns the `kNoAuth` sentinel for keyless providers, and the
+	 * OpenAI-completions request setup stamps `Authorization: Bearer ${apiKey}`
+	 * whenever the model headers lack the key — so keyless requests used to go
+	 * out as `Bearer N/A`. Baking an explicit empty `Authorization` header makes
+	 * the `??=` short-circuit and keeps a provider that declared no credentials
+	 * free of a bogus bearer token. Providers with a stored credential are left
+	 * untouched so the real key still authenticates.
+	 */
+	#applyKeylessAuthSuppression(models: Model<Api>[]): Model<Api>[] {
+		if (this.#authNoneProviders.size === 0) return models;
+		return models.map(model => {
+			if (!this.#authNoneProviders.has(model.provider)) return model;
+			if (this.authStorage.hasAuth(model.provider)) return model;
+			return { ...model, headers: { ...model.headers, Authorization: "" } };
 		});
 	}
 	#applyModelOverrides(models: Model<Api>[], overrides: Map<string, Map<string, ModelOverride>>): Model<Api>[] {
