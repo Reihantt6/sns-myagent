@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { getAgentDir, isEnoent, logger } from "@oh-my-pi/pi-utils";
-import type { Type } from "arktype";
+import { ArkErrors, type Type } from "arktype";
 import { JSONC, YAML } from "bun";
 
 /** Minimal subset of the AJV ConfigSchemaError shape this module actually relies on. */
@@ -220,11 +220,18 @@ export class ConfigFile<T> implements IConfigFile<T> {
 			}
 
 			const checked = this.schema(parsed);
-			if (checked instanceof Error) {
+			if (checked instanceof Error || checked instanceof ArkErrors) {
 				const schemaErrors: ConfigSchemaError[] = [];
-				// arktype errors are Error instances with a message property
-				// Extract the error message as a single schema error
-				schemaErrors.push({ instancePath: "root", message: checked.message });
+				// arktype failures surface as Error instances in jit mode, but the
+				// jitless scope used by config schemas returns an `ArkErrors` problem
+				// array. Without this check the problems array would be mistaken for
+				// a successful parse, silently yielding an empty/garbage config (e.g.
+				// an invalid `auth:` value in models.yml dropping every provider).
+				// ArkErrors exposes its rendered report via String()/toString() rather
+				// than a typed `message` field, so read it defensively.
+				const rawMessage = (checked as { message?: unknown }).message;
+				const message = typeof rawMessage === "string" && rawMessage.length > 0 ? rawMessage : String(checked);
+				schemaErrors.push({ instancePath: "root", message });
 				const error = new ConfigError(this.id, schemaErrors);
 				logger.warn("Failed to parse config file", { path: this.path(), error });
 				return this.#storeCache({ error, status: "error" });

@@ -20,6 +20,7 @@ import { createForwardToAgent, resetChatSession, getBridgeStats } from "../adapt
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import chalk from "chalk";
+import { Settings } from "../config/settings.js";
 
 // ---------- package version (single source of truth) ----------
 
@@ -615,12 +616,19 @@ async function cmdOrchestrate(args: string[]): Promise<number> {
 	try {
 		const { executeEnsemble } = await import("../agents/ensemble.js");
 		const { executeAgentForEnsemble } = await import("../agents/executor.js");
+		// Standalone orchestrate bypasses the normal interactive startup path;
+		// initialize persisted settings once so subagents inherit modelRoles.default.
+		const settings = await Settings.init({ cwd: process.cwd() });
 
-		const result = await executeEnsemble(prompt, executeAgentForEnsemble, {
-			strategy: strategy as "consensus" | "critic" | "best_of_n" | undefined,
-			agents,
-			ensemble,
-		});
+		const result = await executeEnsemble(
+			prompt,
+			(role, agentPrompt) => executeAgentForEnsemble(role, agentPrompt, settings),
+			{
+				strategy: strategy as "consensus" | "critic" | "best_of_n" | undefined,
+				agents,
+				ensemble,
+			},
+		);
 
 		// Output result
 		console.log(result.final);
