@@ -8,7 +8,7 @@ Thanks for your interest. This is a personal project, but contributions are welc
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 bun install
-bun run dev
+bun run src/cli/entry.ts
 ```
 
 ## Development Setup
@@ -16,16 +16,18 @@ bun run dev
 ### Prerequisites
 - Bun >= 1.3.14
 - Git >= 2.0
-- TypeScript 5.x
 
 ### Commands
 ```bash
-bun run dev          # Watch mode (hot reload)
-bun run build        # Build TypeScript → dist/
-bun test             # Run tests
-bun run lint         # Biome lint check
-bun run typecheck    # TypeScript type check
+bun run src/cli/entry.ts   # Run from source (no build step)
+bun run build              # Compile standalone binary to bin/snsagent
+bun test                   # Run tests (tests + src unit tests)
+bun run check              # Biome check + TypeScript type check
+bun run lint               # Biome lint
+bun run fix                # Auto-fix lint + format
 ```
+
+There is no watch/hot-reload script (`dev`) — for iteration, rerun `bun run src/cli/entry.ts`.
 
 ## How to Contribute
 
@@ -43,7 +45,7 @@ git checkout -b feature/my-change
 ```bash
 bun test
 bun run lint
-bun run typecheck
+bun run check
 ```
 
 ### 4. Commit

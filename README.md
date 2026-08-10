@@ -25,7 +25,6 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/version-0.3.9-yellow?style=flat-square" alt="Version 0.3.9">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
-  <img src="https://img.shields.io/badge/typescript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.x">
 </p>
 
 ---
@@ -40,10 +39,14 @@
 - [Tools](#tools-30-built-in)
 - [Slash Commands](#slash-commands)
 - [Memory Backends](#memory-backends)
+- [Which command do I run?](#which-command-do-i-run)
 - [Installation](#installation)
 - [Termux (Android)](#termux-android)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
+- [Run as a Systemd Service](#run-as-a-systemd-service)
+- [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
 - [CLI Reference](#cli-reference)
 - [MCP Integration](#mcp-integration)
 - [Telegram](#telegram)
@@ -272,59 +275,66 @@ Example: `/cron add backup "0 2 * * *" shell "git push"` runs `git push` daily a
 
 ---
 
-## Installation
+## Which command do I run?
 
-### Option 1: One-liner (Linux / macOS / WSL)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
+```text
+Installed globally: snsagent
+From source:       bun run src/cli/entry.ts
+Built binary:      ./bin/snsagent
+Repository:        sns-myagent
 ```
 
-Multi-arch: detects Linux x64, Linux ARM64 (Termux/Android), macOS.
+`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build.
 
-### Option 2: npm (all platforms)
+## Installation
+
+### Normal user path: npm
 
 ```bash
 npm install -g @sns-myagent/cli
+snsagent
 ```
 
-Works on Linux, macOS, Windows, WSL. Requires Node.js 18+. Prebuilt binary downloaded on install.
+The package downloads the platform binary during installation. Requires Node.js 18+ and works on Linux, macOS, Windows, and WSL.
 
-### Option 3: Build from source
+### First launch
+
+On the first launch, follow the setup wizard:
+
+1. Choose a provider or enter a custom Base URL.
+2. Enter an API key when the provider requires one.
+3. Choose a model and start chatting.
+
+You can run `snsagent init` or `snsagent setup` later to reopen provider setup.
+
+### Alternative: run from source
 
 ```bash
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
-bun install        # requires Bun >= 1.3.14
-bun run build      # produces bin/snsagent-linux-x64
-```
-
-### Option 4: Windows PowerShell
-
-```powershell
-irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex
-```
-
-Uses npm under the hood. WSL also supported via Option 1 or 2.
-
-### Run from source (development)
-
-```bash
+bun install
 bun run src/cli/entry.ts
 ```
 
-### Platform Support
+This requires Bun >= 1.3.14. To build a standalone Linux binary instead:
 
-| Platform | Method |
-|----------|--------|
-| Linux x64 | Binary, npm, curl, source |
-| Linux ARM64 (Termux/Android) | Binary, npm, curl, source |
-| macOS x64 | Binary (CI), npm, source |
-| macOS ARM64 (M1/M2/M3) | Binary (CI), npm, source |
-| Windows x64 | Binary (CI), npm, PowerShell installer, WSL |
-| Android (Termux) | Binary, curl installer |
+```bash
+bun run build
+./bin/snsagent
+```
 
-Prebuilt binaries: [GitHub Releases](https://github.com/Reihantt6/sns-myagent/releases). Auto-built for all platforms on every `v*` tag via `.github/workflows/build-release.yml`.
+Other supported installers:
+
+- Linux, macOS, and WSL: `curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash`
+- Windows PowerShell: `irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex`
+- Android/Termux: see [the Termux guide](./docs/termux.md)
+
+## Verify the installation
+
+```bash
+snsagent --version
+snsagent --help
+```
 
 ---
 
@@ -354,60 +364,57 @@ snsagent
 
 ## Quick Start
 
-### 1. Set an API key
-
-**Option A — Environment variable (fastest)**
-
-```bash
-export OPENAI_API_KEY="sk-..."
-# or
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-**Option B — BYOK Setup Wizard (recommended)**
-
-Run `snsagent` and the setup wizard appears on first launch. Pick the **BYOK** tab, enter:
-
-1. **Base URL** — e.g. `https://api.openai.com/v1`, `https://openrouter.ai/api/v1`, `http://localhost:11434/v1` (Ollama)
-2. **API Key** — your provider key
-3. **API type** — `openai-completions` (default), `anthropic-messages`, `google-generative-ai`
-
-The wizard auto-detects available models from the provider and saves the config to the agent config directory.
-
-### 2. Run
+### 1. Run
 
 ```bash
 snsagent
 ```
 
-Or from source:
+The first launch opens the setup wizard — choose a provider or custom Base URL, enter an API key, pick a model, and start chatting.
 
-```bash
-bun run src/cli/entry.ts
-```
+### 2. Use it
 
-### 3. Use it
-
-```
+```text
 > what files are in the current directory?
 > search the web for "bun runtime benchmarks"
 > create a TypeScript module that parses CSV files
 > refactor src/utils.ts to use async/await
 ```
 
-### 4. Configure through conversation
+### 3. Configure through conversation
 
-```
+```text
 > add MCP filesystem for /home/user/projects
 > switch to anthropic with claude-sonnet
 > load coding skill
 ```
 
+### Alternative: environment variables
+
+You can also set the provider key directly instead of using the wizard — the agent picks it up on launch:
+
+```bash
+export OPENAI_API_KEY="your-key-here"      # or ANTHROPIC_API_KEY, etc.
+snsagent
+```
+
+The setup wizard (`snsagent init` / `snsagent setup`) is available any time to reconfigure provider, Base URL, and model.
+
 ---
 
 ## Configuration
 
-Config lives at `.sns-myagent/config.yaml` (YAML, auto-migrated from old `config.json`). Source: `src/config/config-file.ts`.
+Config lives at `~/.sns-myagent/config.yaml` (YAML, auto-migrated from old `config.json`). Source: `src/config/config-file.ts`.
+
+### Where things are stored
+
+| What | Location |
+|------|----------|
+| Config | `~/.sns-myagent/config.yaml` (created by `snsagent init` or the first-run wizard) |
+| Secrets | `~/.sns-myagent/` config + supported `*_API_KEY` environment variables |
+| Memory & sessions | `~/.sns-myagent/` (mnemopi SQLite database, session/state files) |
+| Service secrets (systemd daemon) | `/etc/snsagent/secrets.env` — see [deploy/README.md](./deploy/README.md) |
+| Logs (systemd daemon) | `journalctl -u snsagent` |
 
 ### Key Config Categories
 
@@ -485,6 +492,61 @@ snsagent telegram                 # Start Telegram adapter
 snsagent --help                   # Show help
 snsagent --version                # Show version
 ```
+
+---
+
+## Run as a Systemd Service
+
+For a persistent daemon on a Linux server (e.g. a Telegram bot running 24/7), use the deployment scripts in [deploy/README.md](./deploy/README.md). This is separate from the interactive `snsagent` CLI session above.
+
+```bash
+cd /root/projects/sns-myagent
+bun install
+bun run build
+sudo bash deploy/install.sh
+sudo systemctl status snsagent
+```
+
+Note: `deploy/install.sh` only stages systemd units and cron jobs — it does **not** enable or start anything unless you pass `--enable`. Secrets for the daemon live in `/etc/snsagent/secrets.env` (chmod 600), e.g. `SNS_TELEGRAM_BOT_TOKEN`.
+
+### Operations
+
+```bash
+sudo systemctl start snsagent
+sudo systemctl restart snsagent
+sudo systemctl status snsagent
+journalctl -u snsagent -f
+```
+
+---
+
+## Documentation
+
+Detailed guides live in [`docs/`](./docs/):
+
+| Guide | Covers |
+|-------|--------|
+| [Installation](./docs/installation.md) | Install options per platform |
+| [Configuration](./docs/configuration.md) | Config files, providers, models |
+| [Memory](./docs/memory.md) | Memory backends and how to switch |
+| [Termux (Android)](./docs/termux.md) | Running on Android/Termux |
+| [Terminal UI](./docs/terminal-ui.md) | The interactive TUI |
+| [TBM](./docs/tbm.md) | Token budget manager (design doc, planned) |
+| [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
+| [FAQ](./docs/faq.md) | Frequently asked questions |
+
+---
+
+## Troubleshooting
+
+| Symptom | Diagnostic | Fix |
+|---------|-----------|-----|
+| `command not found: snsagent` | `npm ls -g --depth=0` | Install globally: `npm install -g @sns-myagent/cli`, or run from source: `bun run src/cli/entry.ts` |
+| `bun: command not found` | `which bun` | Install Bun: `curl -fsSL https://bun.sh/install \| bash` (or use the npm-installed `snsagent` binary instead) |
+| Provider or model error | Rerun `snsagent init`, verify Base URL, API key, and model choice | Fix the provider settings in the wizard |
+| `Permission denied` running `bin/snsagent` | `ls -l bin/snsagent` | `chmod +x bin/snsagent` (only for a source-built binary) |
+| systemd service failed | `sudo systemctl status snsagent` and `journalctl -u snsagent -e` | Check the error in the logs, fix, then `sudo systemctl restart snsagent` |
+| Telegram not responding | `snsagent telegram status` | Verify `SNS_TELEGRAM_BOT_TOKEN` in `/etc/snsagent/secrets.env` (daemon) or the environment (CLI), then check service logs |
 
 ---
 
@@ -638,7 +700,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Implementation Status (v0.3.9)
 
-What is actually wired and working in the source tree, verified 2026-06-30:
+What is actually wired and working in the source tree, verified 2026-08-10:
 
 ### Tools (30 / 30) — `src/tools/builtin-names.ts`
 
@@ -668,7 +730,7 @@ Set via `memory.backend` in `~/.sns-myagent/config.yaml`. Default is `mnemopi`.
 
 ### Multi-Agent Orchestration — `src/agents/`
 
-7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout), 21 tests pass. CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts`.
+7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout). CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts` and resolves the persisted `modelRoles.default` (v0.3.9).
 
 ### Terminal UI — `src/tui/` + `src/ui/`
 
@@ -680,9 +742,9 @@ GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, sm
 
 ### Published
 
-- npm: `npm install -g @sns-myagent/cli` → v0.3.7
+- npm: `npm install -g @sns-myagent/cli` → v0.3.9
 - GitHub releases: 5 binaries per version
-- Docker: `ghcr.io/reihantt6/sns-myagent:v0.3.7`
+- Docker: `ghcr.io/reihantt6/sns-myagent:v0.3.9`
 
 ---
 
