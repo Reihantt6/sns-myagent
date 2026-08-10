@@ -194,9 +194,9 @@ export class ConfigFile<T> implements IConfigFile<T> {
 
 	createDefault(): T {
 		const parsed = this.schema({});
-		if (!(parsed instanceof Error)) return parsed as T;
+		if (!(parsed instanceof Error) && !(parsed instanceof ArkErrors)) return parsed as T;
 		const fallback = this.schema(undefined);
-		if (!(fallback instanceof Error)) return fallback as T;
+		if (!(fallback instanceof Error) && !(fallback instanceof ArkErrors)) return fallback as T;
 		throw new ConfigError(this.id, undefined, {
 			err: new Error("Schema produced no default value"),
 			stage: "createDefault",

@@ -64,7 +64,15 @@ export async function executeAgentForEnsemble(
     id: execId,
     role,
     // Prefer an explicit agents.yaml model, then the persisted default role.
-    modelOverride: roleConfig?.model?.trim() || settings?.getModelRole("default"),
+    // The literal "default" keyword is not a real selector — the model
+    // resolver short-circuits on it — so treat it as "no override" and fall
+    // through to the persisted modelRoles.default instead.
+    modelOverride: (() => {
+      const configured = roleConfig?.model?.trim();
+      return configured && configured !== "default"
+        ? configured
+        : settings?.getModelRole("default");
+    })(),
     thinkingLevel: resolveThinkingLevel(roleConfig?.thinking_level),
     settings,
   };
