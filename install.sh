@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# SNS MyAgent Installer — Multi-arch, Termux-aware
+# SNS MyAgent Installer - Multi-arch, Termux-aware
 # Usage: curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 #
 # Supports: Linux x64, Linux ARM64 (Termux/Android), macOS x64/arm64, Windows (WSL)
@@ -65,25 +65,25 @@ asset_name() {
     linux)
       if [ "$musl" = true ]; then
         case "$arch" in
-          x64)    echo "snscoder-linux-x64-musl" ;;
-          arm64)  echo "snscoder-linux-arm64-musl" ;;
+          x64)    echo "snsagent-linux-x64-musl" ;;
+          arm64)  echo "snsagent-linux-arm64-musl" ;;
         esac
       else
         case "$arch" in
-          x64)    echo "snscoder-linux-x64" ;;
-          arm64)  echo "snscoder-linux-arm64" ;;
-          armv7l) echo "snscoder-linux-armv7l" ;;
+          x64)    echo "snsagent-linux-x64" ;;
+          arm64)  echo "snsagent-linux-arm64" ;;
+          armv7l) echo "snsagent-linux-armv7l" ;;
         esac
       fi
       ;;
     darwin)
       case "$arch" in
-        x64)   echo "snscoder-darwin-x64" ;;
-        arm64) echo "snscoder-darwin-arm64" ;;
+        x64)   echo "snsagent-darwin-x64" ;;
+        arm64) echo "snsagent-darwin-arm64" ;;
       esac
       ;;
     windows)
-      echo "snscoder-windows-x64.exe"
+      echo "snsagent-windows-x64.exe"
       ;;
   esac
 }
@@ -122,7 +122,7 @@ download_binary() {
 
   # Download to temp file
   local tmpfile
-  tmpfile=$(mktemp /tmp/snscoder.XXXXXX)
+  tmpfile=$(mktemp /tmp/snsagent.XXXXXX)
 
   if [ -n "$auth_header" ]; then
     curl -fsSL -H "$auth_header" -o "$tmpfile" "$download_url" || { rm -f "$tmpfile"; return 1; }
@@ -133,12 +133,12 @@ download_binary() {
   # Check if it's a zip file
   if file "$tmpfile" | grep -qiE "zip|compress"; then
     local tmpdir
-    tmpdir=$(mktemp -d /tmp/snscoder-extract.XXXXXX)
+    tmpdir=$(mktemp -d /tmp/snsagent-extract.XXXXXX)
     unzip -oq "$tmpfile" -d "$tmpdir" 2>/dev/null || { rm -rf "$tmpfile" "$tmpdir"; return 1; }
     # Find the binary inside
     local binary
-    binary=$(find "$tmpdir" -name "snscoder*" -type f -executable 2>/dev/null | head -1)
-    [ -z "$binary" ] && binary=$(find "$tmpdir" -name "snscoder*" -type f 2>/dev/null | head -1)
+    binary=$(find "$tmpdir" -name "snsagent*" -type f -executable 2>/dev/null | head -1)
+    [ -z "$binary" ] && binary=$(find "$tmpdir" -name "snsagent*" -type f 2>/dev/null | head -1)
     if [ -z "$binary" ]; then
       rm -rf "$tmpfile" "$tmpdir"
       return 1
@@ -149,13 +149,13 @@ download_binary() {
 
   # Install
   mkdir -p "$INSTALL_DIR"
-  local dest="${INSTALL_DIR}/snscoder"
+  local dest="${INSTALL_DIR}/snsagent"
   mv "$tmpfile" "$dest"
   chmod 755 "$dest"
 
   # Verify
   if "$dest" --version &>/dev/null; then
-    info "snscoder installed to ${dest}"
+    info "snsagent installed to ${dest}"
     return 0
   else
     warn "Binary downloaded but --version check failed (may need first-run setup)"
@@ -179,7 +179,7 @@ build_from_source() {
   fi
 
   local build_dir
-  build_dir=$(mktemp -d /tmp/snscoder-build.XXXXXX)
+  build_dir=$(mktemp -d /tmp/snsagent-build.XXXXXX)
   step "Cloning repo to ${build_dir}..."
   git clone --depth 1 "https://github.com/${REPO}.git" "$build_dir" 2>/dev/null || error "git clone failed"
   cd "$build_dir"
@@ -191,12 +191,12 @@ build_from_source() {
   bun run build
 
   mkdir -p "$INSTALL_DIR"
-  cp bin/snscoder "${INSTALL_DIR}/snscoder"
-  chmod 755 "${INSTALL_DIR}/snscoder"
+  cp bin/snsagent "${INSTALL_DIR}/snsagent"
+  chmod 755 "${INSTALL_DIR}/snsagent"
   cd /
   rm -rf "$build_dir"
 
-  info "snscoder built and installed to ${INSTALL_DIR}/snscoder"
+  info "snsagent built and installed to ${INSTALL_DIR}/snsagent"
 }
 
 # ── Ensure PATH includes install dir ────────────────────────────────────
@@ -224,7 +224,7 @@ ensure_path() {
 # ── Termux-specific setup ───────────────────────────────────────────────
 termux_setup() {
   if [ "$IS_TERMUX" = true ]; then
-    step "Termux detected — ensuring dependencies..."
+    step "Termux detected - ensuring dependencies..."
     # Core utils needed
     pkg install -y git curl unzip 2>/dev/null || true
 
@@ -241,7 +241,7 @@ main() {
   echo ""
   echo -e "${BOLD}╔══════════════════════════════════════╗${NC}"
   echo -e "${BOLD}║     SNS MyAgent Installer v0.1.0    ║${NC}"
-  echo -e "${BOLD}║     snscoder — BYOK coding agent    ║${NC}"
+  echo -e "${BOLD}║     snsagent - BYOK coding agent    ║${NC}"
   echo -e "${BOLD}╚══════════════════════════════════════╝${NC}"
   echo ""
 
@@ -253,7 +253,7 @@ main() {
     ensure_path
     echo ""
     info "Installation complete!"
-    info "Run: snscoder --help"
+    info "Run: snsagent --help"
     [ "$IS_TERMUX" = true ] && info "Or add to PATH: export PATH=\"\$PATH:${INSTALL_DIR}\""
     echo ""
     return 0
@@ -264,7 +264,7 @@ main() {
   ensure_path
   echo ""
   info "Installation complete!"
-  info "Run: snscoder --help"
+  info "Run: snsagent --help"
   echo ""
 }
 

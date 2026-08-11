@@ -1376,7 +1376,7 @@ export class AgentSession {
 		if (mode === "off") return;
 		try {
 			this.#powerAssertion = MacOSPowerAssertion.start({
-				reason: "SnsCoder agent session",
+				reason: "snsagent agent session",
 				idle: true,
 				display: mode === "display" || mode === "system",
 				system: mode === "system",
