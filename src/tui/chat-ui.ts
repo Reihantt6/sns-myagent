@@ -133,7 +133,7 @@ const BUILTIN_COMMANDS: SlashCommand[] = [
       ctx.print(renderChatBlock({
         role: "system",
         label: "MODEL",
-        content: `Provider: ${provider}\nModel: ${model}\nAgent: ${ctx.config.agentName ?? "SnsCoder"}`,
+        content: `Provider: ${provider}\nModel: ${model}\nAgent: ${ctx.config.agentName ?? "snsagent"}`,
       }));
     },
   },
@@ -252,7 +252,7 @@ export async function runChatSession(config: ChatSessionConfig): Promise<void> {
     print(renderChatBlock({
       role: "assistant",
       content: reply,
-      meta: `${formatTime(assistantMsg.timestamp)} │ ${config.agentName ?? "SnsCoder"}`,
+      meta: `${formatTime(assistantMsg.timestamp)} │ ${config.agentName ?? "snsagent"}`,
     }));
     print(""); // spacing
   }

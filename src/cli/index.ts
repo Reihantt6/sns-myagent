@@ -281,7 +281,7 @@ async function cmdChat(_args: string[]): Promise<number> {
 		model: cfg?.model.model,
 		provider: cfg?.model.provider,
 		version: PKG_VERSION,
-		agentName: cfg?.agentName ?? "SnsCoder",
+		agentName: cfg?.agentName ?? "snsagent",
 	});
 	return 0;
 }

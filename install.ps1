@@ -4,7 +4,7 @@
 #
 # Mirrors install.sh style on Windows. Uses Node.js (npm) as the default path
 # because npm's `postinstall` script (scripts/fetch-binary.mjs) downloads the
-# prebuilt `snscoder` binary. Bun path is offered as a fallback for users who
+# prebuilt `snsagent` binary. Bun path is offered as a fallback for users who
 # already have it installed.
 
 [CmdletBinding()]
@@ -86,10 +86,10 @@ function Ensure-Node {
     info "Node.js $(& node --version) + npm $(& npm --version) ready."
 }
 
-# --- snscoder install -------------------------------------------------------
+# --- snsagent install -------------------------------------------------------
 
 function Install-WithNpm {
-    info "Installing snscoder globally via npm (postinstall fetches the prebuilt binary)..."
+    info "Installing snsagent globally via npm (postinstall fetches the prebuilt binary)..."
     npm install -g @sns-myagent/cli
     if ($LASTEXITCODE -ne 0) {
         error_exit "npm install failed (exit $LASTEXITCODE). See messages above."
@@ -97,7 +97,7 @@ function Install-WithNpm {
 }
 
 function Install-WithBun {
-    info "Installing snscoder globally via Bun..."
+    info "Installing snsagent globally via Bun..."
     bun add -g @sns-myagent/cli
     if ($LASTEXITCODE -ne 0) {
         error_exit "bun add -g failed (exit $LASTEXITCODE). See messages above."
@@ -105,20 +105,20 @@ function Install-WithBun {
 }
 
 function Verify-Install {
-    if (-not (Test-Command "snscoder")) {
-        warn "snscoder command not found on PATH."
-        warn "Open a NEW PowerShell window so PATH updates apply, then run 'snscoder --version'."
+    if (-not (Test-Command "snsagent")) {
+        warn "snsagent command not found on PATH."
+        warn "Open a NEW PowerShell window so PATH updates apply, then run 'snsagent --version'."
         return
     }
     try {
-        $version = (& snscoder --version) 2>$null
+        $version = (& snsagent --version) 2>$null
         if ($LASTEXITCODE -eq 0) {
-            info "snscoder $version installed."
+            info "snsagent $version installed."
         } else {
-            warn "snscoder found but 'snscoder --version' exited $LASTEXITCODE. Try a fresh terminal."
+            warn "snsagent found but 'snsagent --version' exited $LASTEXITCODE. Try a fresh terminal."
         }
     } catch {
-        warn "snscoder --version failed: $_"
+        warn "snsagent --version failed: $_"
     }
 }
 
@@ -141,8 +141,8 @@ try {
     }
 
     Write-Host ""
-    info "Run 'snscoder' to start."
-    info "If 'snscoder' is not recognized, open a NEW PowerShell window so the PATH update applies."
+    info "Run 'snsagent' to start."
+    info "If 'snsagent' is not recognized, open a NEW PowerShell window so the PATH update applies."
     Write-Host ""
 }
 catch {

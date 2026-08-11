@@ -115,7 +115,7 @@ describe("parseMessage", () => {
 	});
 
 	test("recognises /start@botname", () => {
-		const parsed = parseMessage(makeMessage("/start@snscoder_bot"));
+		const parsed = parseMessage(makeMessage("/start@snsagent_bot"));
 		assert.equal(parsed.kind, "command");
 		if (parsed.kind === "command") assert.equal(parsed.command, "start");
 	});
