@@ -9,27 +9,27 @@
   ║    ███████║██║ ╚████║███████║     ╚████╔╝    ██║             ║
   ║    ╚══════╝╚═╝  ╚═══╝╚══════╝      ╚═══╝     ╚═╝             ║
   ║                                                              ║
-  ║            A G E N T                                         ║
+  ║          S N S A G E N T                                     ║
   ║                                                              ║
-  ║    Configure your agent by talking to it.                    ║
+  ║    Configure snsagent by talking to it.                      ║
   ║                                                              ║
   ╚══════════════════════════════════════════════════════════════╝
   </pre>
 </p>
 
 <p align="center">
-  <strong>BYOK coding agent CLI — 30 built-in tools, 68 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
+  <strong>BYOK coding agent CLI - 30 built-in tools, 38 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
 </p>
 
 <p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT">
   <img src="https://img.shields.io/badge/version-0.3.9-yellow?style=flat-square" alt="Version 0.3.9">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
 </p>
 
 ---
 
-**snsagent** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself — MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
+**snsagent** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself - MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
 
 ---
 
@@ -63,26 +63,26 @@
 
 | Feature | Source |
 |---------|--------|
-**30 built-in tools** | `src/tools/builtin-names.ts` |
-| **68 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **30 built-in tools** | `src/tools/builtin-names.ts` |
+| **38 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via built-in provider system |
-| **BYOK Quick Setup** | Setup wizard tab — enter Base URL + API Key, auto-detect models, zero config editing |
-| **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off — `src/memory-backend/resolve.ts` |
+| **BYOK Quick Setup** | Setup wizard tab - enter Base URL + API Key, auto-detect models, zero config editing |
+| **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off - `src/memory-backend/resolve.ts` |
 | **MCP integration** | 22 source files in `src/mcp/` |
-| **Plan mode** | `src/plan-mode/` — agent plans before executing |
+| **Plan mode** | `src/plan-mode/` - agent plans before executing |
 | **Goal mode** | Autonomous objective with token budget and lifecycle |
-| **Subagent delegation** | `src/task/` — spawn child agents for parallel work |
+| **Subagent delegation** | `src/task/` - spawn child agents for parallel work |
 | **Advisor** | Second model reviews each turn and injects notes |
-| **Collaborative sessions** | `src/collab/` — host/join sessions via link or QR code |
-| **Skills & plugins** | `src/extensibility/` — markdown skills + plugin marketplace |
-| **Auto-learning** | `src/autolearn/` — agent learns from interactions |
-| **Browser automation** | Puppeteer-based headless browser — `src/tools/` browser tool |
-| **LSP integration** | Language Server Protocol — `src/lsp/` |
-| **Eval backends** | Python, Ruby, Julia, JavaScript — `src/eval/` |
-| **SSH remote execution** | `src/ssh/` |
-| **Text-to-speech** | 10 files in `src/tts/` |
+| **Collaborative sessions** | `src/collab/` - host/join sessions via link or QR code |
+| **Skills & plugins** | `src/extensibility/` - markdown skills + plugin marketplace |
+| **Auto-learning** | `src/autolearn/` - agent learns from interactions |
+| **Browser automation** | Puppeteer-based headless browser - `src/tools/` browser tool |
+| **LSP integration** | Language Server Protocol - `src/lsp/` |
+| **Eval backends** | Python, Ruby, Julia, JavaScript - `src/eval/` |
+| **SSH remote execution** | `src/tools/ssh.ts`, `src/ssh/` |
+| **Text-to-speech** | 11 files in `src/tts/` |
 | **TinyLLM local inference** | 7 files in `src/tiny/` |
-| **Telegram bot** | `src/adapters/telegram/` — auto-boot with `SNS_TELEGRAM_BOT_TOKEN` |
+| **Telegram bot** | 5 files in `src/adapters/telegram/` - auto-boot with `SNS_TELEGRAM_BOT_TOKEN` |
 | **Debug Adapter Protocol** | `src/dap/` |
 | **Context compaction** | Automatic context window management with multiple strategies |
 | **IRC** | IRC tool for chat protocol interaction |
@@ -162,7 +162,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Slash Commands
 
-68 built-in commands from `src/slash-commands/builtin-registry.ts`. Most useful:
+38 primary commands from `src/slash-commands/builtin-registry.ts`, plus 3 aliases in the lookup map. `/help` is a TUI shortcut, not a registry entry. Most useful registered commands:
 
 ### Session & Navigation
 
@@ -174,8 +174,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `/export` | Export session to file |
 | `/dump` | Dump raw session transcript |
 | `/share` | Share session via collab link |
-| `/reset` | Reset session |
-| `/help` | Show help |
+| `/settings` | Open settings |
 
 ### Model & Provider
 
@@ -184,7 +183,6 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `/model` | Switch model for this session |
 | `/switch` | Quick model switch (same as alt+p) |
 | `/fast [on\|off\|status]` | Toggle priority service tier |
-| `/settings` | Open settings menu |
 | `/setup` | Open provider setup wizard (OAuth + BYOK + Web search) |
 
 ### Goals & Planning
@@ -218,22 +216,19 @@ All tool names come from `src/tools/builtin-names.ts`.
 | `/marketplace` | Open marketplace manager |
 | `/stats [--port]` | Launch stats dashboard |
 | `/usage [show\|reset]` | Token usage / rate-limit reset |
-| `/version` | Show version |
 | `/changelog [full]` | Show changelog entries |
 | `/debug` | Toggle debug logging |
-| `/theme` | Switch UI theme |
-| `/unpin` | Unpin pinned context |
 
 ---
 
 ## Memory Backends
 
-Seven backends, configured via `memory.backend` in settings. Source: `src/memory-backend/resolve.ts`.
+Seven backends, configured via `memory.backend` in `~/.omp/agent/config.yml`. Source: `src/memory-backend/resolve.ts`.
 
 | Backend | Description | Source |
 |---------|-------------|--------|
 | **mnemopi** (default) | SQLite + vector embeddings + graph. Local, zero setup. | `src/mnemopi/` (7 files) |
-| **hindsight** | Remote memory backend | `src/hindsight/` (5 files) |
+| **hindsight** | Remote memory backend | `src/hindsight/` (10 files) |
 | **mnemosyne** | Three-tier memory: episodic → semantic → procedural. Auto-consolidation. | `src/memory-backend/mnemosyne-backend.ts` |
 | **mem0** | Semantic facts with auto-extraction. Relevance + recency scoring. | `src/memory-backend/mem0-backend.ts` |
 | **lcm** | Latent Context Memory. Delta encoding + multi-resolution. | `src/memory-backend/lcm-backend.ts` |
@@ -260,12 +255,12 @@ Example: `/cron add backup "0 2 * * *" shell "git push"` runs `git push` daily a
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `mnemopi.dbPath` | — | SQLite database path |
-| `mnemopi.bank` | — | Memory bank |
-| `mnemopi.scoping` | — | Scoping mode |
-| `mnemopi.embeddingVariant` | — | Embedding model variant |
-| `mnemopi.autoRecall` | — | Auto-recall on context load |
-| `mnemopi.autoRetain` | — | Auto-retain after conversations |
+| `mnemopi.dbPath` | - | SQLite database path |
+| `mnemopi.bank` | - | Memory bank |
+| `mnemopi.scoping` | - | Scoping mode |
+| `mnemopi.embeddingVariant` | - | Embedding model variant |
+| `mnemopi.autoRecall` | - | Auto-recall on context load |
+| `mnemopi.autoRetain` | - | Auto-retain after conversations |
 | `mnemopi.retainEveryNTurns` | `4` | Turns between auto-retains |
 | `mnemopi.recallLimit` | `8` | Max recall results |
 | `mnemopi.recallContextTurns` | `3` | Context turns for recall |
@@ -280,11 +275,11 @@ Example: `/cron add backup "0 2 * * *" shell "git push"` runs `git push` daily a
 ```text
 Installed globally: snsagent
 From source:       bun run src/cli/entry.ts
-Built binary:      ./bin/snsagent
+Built binary:      ./bin/snsagent-linux-x64
 Repository:        sns-myagent
 ```
 
-`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build.
+`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build. In interactive mode, `/help` is a TUI shortcut; 38 primary commands and 3 aliases are registered in `src/slash-commands/builtin-registry.ts`.
 
 ## Installation
 
@@ -316,17 +311,17 @@ bun install
 bun run src/cli/entry.ts
 ```
 
-This requires Bun >= 1.3.14. To build a standalone Linux binary instead:
+This requires Bun >= 1.3.14. To build the standalone Linux x64 binary instead:
 
 ```bash
 bun run build
-./bin/snsagent
+./bin/snsagent-linux-x64
 ```
 
 Other supported installers:
 
 - Linux, macOS, and WSL: `curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash`
-- Windows PowerShell: `irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex`
+- Windows PowerShell: `irm https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex`
 - Android/Termux: see [the Termux guide](./docs/termux.md)
 
 ## Verify the installation
@@ -370,7 +365,7 @@ snsagent
 snsagent
 ```
 
-The first launch opens the setup wizard — choose a provider or custom Base URL, enter an API key, pick a model, and start chatting.
+The first launch opens the setup wizard - choose a provider or custom Base URL, enter an API key, pick a model, and start chatting.
 
 ### 2. Use it
 
@@ -378,7 +373,7 @@ The first launch opens the setup wizard — choose a provider or custom Base URL
 > what files are in the current directory?
 > search the web for "bun runtime benchmarks"
 > create a TypeScript module that parses CSV files
-> refactor src/utils.ts to use async/await
+> refactor src/utils/edit-mode.ts to use async/await
 ```
 
 ### 3. Configure through conversation
@@ -391,7 +386,7 @@ The first launch opens the setup wizard — choose a provider or custom Base URL
 
 ### Alternative: environment variables
 
-You can also set the provider key directly instead of using the wizard — the agent picks it up on launch:
+You can also set the provider key directly instead of using the wizard - the agent picks it up on launch:
 
 ```bash
 export OPENAI_API_KEY="your-key-here"      # or ANTHROPIC_API_KEY, etc.
@@ -404,21 +399,23 @@ The setup wizard (`snsagent init` / `snsagent setup`) is available any time to r
 
 ## Configuration
 
-Config lives at `~/.sns-myagent/config.yaml` (YAML, auto-migrated from old `config.json`). Source: `src/config/config-file.ts`.
+The interactive agent stores settings at `~/.omp/agent/config.yml` and providers at `~/.omp/agent/models.yml`. Existing installs may also have `~/.omp/agent/config.json` with compatibility provider/model values. The legacy `init` router creates `.sns-myagent/config.json` in the current project. Source: `src/config/settings.ts`, `src/config/config-file.ts`, and `src/config/loader.ts`.
 
 ### Where things are stored
 
 | What | Location |
 |------|----------|
-| Config | `~/.sns-myagent/config.yaml` (created by `snsagent init` or the first-run wizard) |
-| Secrets | `~/.sns-myagent/` config + supported `*_API_KEY` environment variables |
-| Memory & sessions | `~/.sns-myagent/` (mnemopi SQLite database, session/state files) |
-| Service secrets (systemd daemon) | `/etc/snsagent/secrets.env` — see [deploy/README.md](./deploy/README.md) |
+| Interactive config | `~/.omp/agent/config.yml` |
+| Provider models | `~/.omp/agent/models.yml` |
+| Legacy router config | `.sns-myagent/config.json` in the current project |
+| Secrets | local provider configuration plus supported `*_API_KEY` environment variables |
+| Memory & sessions | `~/.omp/agent/` (mnemopi data, sessions, and state files) |
+| Service secrets (systemd daemon) | `/etc/snsagent/secrets.env` - see [deploy/README.md](./deploy/README.md) |
 | Logs (systemd daemon) | `journalctl -u snsagent` |
 
 ### Key Config Categories
 
-Settings use dot-separated paths. Full schema in `src/config/settings-schema.ts`.
+Interactive settings use dot-separated paths. Full schema in `src/config/settings-schema.ts`.
 
 ```jsonc
 {
@@ -485,7 +482,6 @@ Access in TUI via `/settings` or through conversation.
 
 ```
 snsagent                          # Interactive TUI mode
-snsagent "prompt"                 # Single-prompt mode
 snsagent init                     # First-run setup: memory + BYOK provider
 snsagent setup                    # Alias for init
 snsagent telegram                 # Start Telegram adapter
@@ -507,7 +503,7 @@ sudo bash deploy/install.sh
 sudo systemctl status snsagent
 ```
 
-Note: `deploy/install.sh` only stages systemd units and cron jobs — it does **not** enable or start anything unless you pass `--enable`. Secrets for the daemon live in `/etc/snsagent/secrets.env` (chmod 600), e.g. `SNS_TELEGRAM_BOT_TOKEN`.
+Note: `deploy/install.sh` only stages systemd units and cron jobs - it does **not** enable or start anything unless you pass `--enable`. Secrets for the daemon live in `/etc/snsagent/secrets.env` (chmod 600), e.g. `SNS_TELEGRAM_BOT_TOKEN`.
 
 ### Operations
 
@@ -544,7 +540,7 @@ Detailed guides live in [`docs/`](./docs/):
 | `command not found: snsagent` | `npm ls -g --depth=0` | Install globally: `npm install -g @sns-myagent/cli`, or run from source: `bun run src/cli/entry.ts` |
 | `bun: command not found` | `which bun` | Install Bun: `curl -fsSL https://bun.sh/install \| bash` (or use the npm-installed `snsagent` binary instead) |
 | Provider or model error | Rerun `snsagent init`, verify Base URL, API key, and model choice | Fix the provider settings in the wizard |
-| `Permission denied` running `bin/snsagent` | `ls -l bin/snsagent` | `chmod +x bin/snsagent` (only for a source-built binary) |
+| `Permission denied` running `bin/snsagent-linux-x64` | `ls -l bin/snsagent-linux-x64` | `chmod +x bin/snsagent-linux-x64` (only for a source-built binary) |
 | systemd service failed | `sudo systemctl status snsagent` and `journalctl -u snsagent -e` | Check the error in the logs, fix, then `sudo systemctl restart snsagent` |
 | Telegram not responding | `snsagent telegram status` | Verify `SNS_TELEGRAM_BOT_TOKEN` in `/etc/snsagent/secrets.env` (daemon) or the environment (CLI), then check service logs |
 
@@ -588,7 +584,7 @@ Telegram bot adapter in `src/adapters/telegram/` (4 files). Built on [grammY](ht
 export SNS_TELEGRAM_BOT_TOKEN="your-bot-token-here"
 ```
 
-3. Run snsagent — the bot auto-starts polling:
+3. Run snsagent - the bot auto-starts polling:
 
 ```bash
 snsagent
@@ -635,11 +631,11 @@ sns-myagent/
 │   ├── autolearn/              # Auto-learning system
 │   ├── adapters/
 │   │   └── telegram/           # Telegram bot adapter
-│   ├── tts/                    # Text-to-speech (10 files)
+│   ├── tts/                    # Text-to-speech (11 files)
 │   ├── tiny/                   # TinyLLM local inference (7 files)
 │   ├── dap/                    # Debug Adapter Protocol
 │   ├── stt/                    # Speech-to-text
-│   ├── thinking/               # Thinking mode support
+│   ├── thinking.ts             # Thinking mode support
 │   ├── ui/                     # Terminal UI components
 │   └── utils/                  # Utilities
 ├── docs/                       # Documentation
@@ -694,7 +690,7 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and security policies
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT license.
 
 ---
 
@@ -702,39 +698,39 @@ MIT — see [LICENSE](LICENSE).
 
 What is actually wired and working in the source tree, verified 2026-08-10:
 
-### Tools (30 / 30) — `src/tools/builtin-names.ts`
+### Tools (30 / 30) - `src/tools/builtin-names.ts`
 
 All 30 tools are real implementations, not stubs.
 
-### Slash Commands (68) — `src/slash-commands/builtin-registry.ts`
+### Slash Commands (38 primary, 41 lookup keys) - `src/slash-commands/builtin-registry.ts`
 
-68 unique top-level commands registered. All callable via `/<name>` in interactive mode.
+38 primary top-level commands are registered, with 3 aliases in the lookup map. All are callable via `/<name>` in interactive mode.
 
-### Memory Backends (7 / 7) — `src/memory-backend/resolve.ts`
+### Memory Backends (7 / 7) - `src/memory-backend/resolve.ts`
 
 | Backend | Status | Requires config |
 |---------|--------|-----------------|
-| `mnemopi` (default) | ✅ Works out of box | None — local SQLite + vector + graph |
-| `local` | ✅ Works out of box | None — rollout summary pipeline |
-| `off` | ✅ Works out of box | None — no-op |
+| `mnemopi` (default) | ✅ Works out of box | None - local SQLite + vector + graph |
+| `local` | ✅ Works out of box | None - rollout summary pipeline |
+| `off` | ✅ Works out of box | None - no-op |
 | `mnemosyne` | ✅ Wired | `mnemosyne` Python daemon running locally |
 | `mem0` | ✅ Wired | `MEM0_API_KEY` (or self-hosted endpoint) |
 | `lcm` | ✅ Wired | `LCM_HOST` (default `127.0.0.1:8500`) |
 | `hindsight` | ✅ Wired | `HINDSIGHT_API_KEY` or remote endpoint |
 
-Set via `memory.backend` in `~/.sns-myagent/config.yaml`. Default is `mnemopi`.
+Set via `memory.backend` in `~/.omp/agent/config.yml`. Default is `mnemopi`.
 
-### Telegram Adapter — `src/adapters/telegram/`
+### Telegram Adapter - `src/adapters/telegram/`
 
 5 files (bot, handler, format, index, bridge). 10 slash commands wired: `/start /help /chat /reset /status /memory /cron /model /code /review`. File upload/download supported. Auto-boot when `SNS_TELEGRAM_BOT_TOKEN` is set.
 
-### Multi-Agent Orchestration — `src/agents/`
+### Multi-Agent Orchestration - `src/agents/`
 
-7 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout). CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts` and resolves the persisted `modelRoles.default` (v0.3.9).
+12 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout). CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts` and resolves the persisted `modelRoles.default` (v0.3.9).
 
-### Terminal UI — `src/tui/` + `src/ui/`
+### Terminal UI - `src/tui/` + `src/ui/`
 
-8 files. `MY snsagent` splash, `●` prefix chat blocks, flat status bar, command palette, error display, memory toast. No gradient, no rounded boxes — flat list style. v0.3.6+ rebrand.
+The SNS splash, `●` prefix chat blocks, flat status bar, command palette, error display, and memory toast are implemented in the terminal UI. The welcome component also supports a gradient logo animation. v0.3.6+ rebrand.
 
 ### CI / CD
 
@@ -749,5 +745,7 @@ GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, sm
 ---
 
 ## Credits
+
+snsagent is a rebranded fork of Pi Agent with implementation lineage from oh-my-pi packages. The project keeps those upstream package names as dependencies while presenting the sns-myagent identity to users.
 
 Built with dedication for single-user terminal coding workflows.
