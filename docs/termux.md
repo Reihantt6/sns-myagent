@@ -1,112 +1,55 @@
 # Termux Installation Guide
 
-> Run SNS-MyAgent on Android via Termux — full coding agent on your phone.
+Run snsagent on Android through Termux.
 
 ## Prerequisites
 
 | Requirement | Install | Verify |
 |---|---|---|
-| **Termux** | [F-Droid](https://f-droid.org/en/packages/com.termux/) (recommended) or [GitHub releases](https://github.com/termux/termux-app/releases) | Open app |
-| **Bun** | Via install script below | `bun --version` |
+| **Termux** | [F-Droid](https://f-droid.org/en/packages/com.termux/) or [GitHub releases](https://github.com/termux/termux-app/releases) | Open the app |
+| **Node.js** | `pkg install nodejs-lts` | `node --version` |
+| **Bun** | Source-build option below | `bun --version` |
 | **Git** | `pkg install git` | `git --version` |
 
-**⚠️ Important**: Use **F-Droid Termux**, NOT the Play Store version. The Play Store version is deprecated and broken.
+Use a current F-Droid or GitHub Termux release. The old Play Store build is not maintained.
 
-## Step-by-Step
-
-### 1. Install Termux
-
-Download from [F-Droid](https://f-droid.org/en/packages/com.termux/) or install the F-Droid app first, then search "Termux".
-
-### 2. Update packages
+## Install the published package
 
 ```bash
 pkg update && pkg upgrade -y
-```
-
-### 3. Install dependencies
-
-```bash
-pkg install -y git nodejs-lts openssh
-```
-
-### 4. Install Bun
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-source ~/.bashrc
-bun --version  # should show >= 1.3.14
-```
-
-If `bun` not found after install, restart Termux or run:
-```bash
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-```
-
-### 5. Install SNS-MyAgent
-
-**Option A — npm (recommended for Termux)**
-
-```bash
+pkg install -y nodejs-lts git curl openssh
 npm install -g @sns-myagent/cli
 snsagent --version
 ```
 
-**Option B — Bun global**
+Expected output:
 
-```bash
-bun add -g @sns-myagent/cli
-snsagent --version
+```text
+snsagent 0.3.9
 ```
 
-**Option C — Source build**
+## Run from source
 
 ```bash
+pkg install -y nodejs-lts git
+curl -fsSL https://bun.sh/install | bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 bun install
 bun run src/cli/entry.ts --version
 ```
 
-### 6. First-run setup (BYOK)
-
-```bash
-snsagent init
-```
-
-This interactive wizard asks:
-1. **Memory backend** — pick `mnemopi` (default, works great on Android)
-2. **AI Provider** — enter Base URL + API Key + API type
-
-Example for OpenAI:
-```
-● Base URL [https://api.openai.com/v1]: ← press Enter
-● API Key: sk-...your-key-here
-● API Type: 1 ← press Enter (openai-completions)
-```
-
-Example for OpenRouter (supports many models):
-```
-● Base URL [https://api.openai.com/v1]: https://openrouter.ai/api/v1
-● API Key: sk-or-...your-key-here
-● API Type: 1
-```
-
-Example for local Ollama (requires a server):
-```
-● Base URL [https://api.openai.com/v1]: http://192.168.1.100:11434/v1
-● API Key: none ← press Enter
-● API Type: 1
-```
-
-### 7. Run
+## First-run setup
 
 ```bash
 snsagent
 ```
 
-## Termux-specific Tips
+Use `/setup` to configure a provider, or edit `~/.omp/agent/models.yml`. For a local Ollama-compatible endpoint, use the endpoint URL and select `openai-completions`. Do not place a real key in this document or in a committed file.
+
+## Termux-specific tips
 
 ### Storage access
 
@@ -114,51 +57,39 @@ snsagent
 termux-setup-storage
 ```
 
-This creates `~/storage/` symlinks to shared, downloads, etc. Required for file operations.
-
-### SSH into your phone
-
-Run an SSH server on your phone for remote access from a laptop:
+### SSH server
 
 ```bash
 sshd
-# Connect from laptop: ssh -p 8022 phone-ip-address
+# Connect from a laptop with: ssh -p 8022 phone-ip-address
 ```
-
-### Performance
-
-- **Keyboard**: Install [Hacker's Keyboard](https://f-droid.org/en/packages/org.pocketworkstation.dict.pocketworkstation/) for Ctrl/Tab/Escape keys
-- **Memory**: mnemopi (SQLite) runs fine on phones. Avoid memory-heavy local models.
-- **Battery**: Use cloud LLM (OpenAI/OpenRouter) — local models drain battery fast
 
 ### Background sessions
 
-Termux kills background processes. To keep snsagent running:
+Termux can stop background processes. For a boot workflow, install Termux:Boot and create a script under `~/.termux/boot/` that starts the command you need, for example:
 
 ```bash
-# Use Termux:Boot (install from F-Droid)
-# Create boot script:
 mkdir -p ~/.termux/boot
 echo 'snsagent telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
+chmod +x ~/.termux/boot/snsagent.sh
 ```
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| `bun: command not found` | `source ~/.bashrc` or restart Termux |
-| `npm install fails` | `pkg install nodejs-lts` then retry |
-| `Cannot find module` | `cd sns-myagent && bun install` |
-| `Permission denied` | `chmod +x bin/snsagent-linux-x64` or use `bun run src/cli/entry.ts` |
-| `Out of memory` | Use cloud LLM, avoid local models |
+| `bun: command not found` | `export PATH="$HOME/.bun/bin:$PATH"` or restart Termux |
+| `npm install fails` | `pkg install nodejs-lts git` and retry |
+| `Permission denied` | Use `snsagent` from npm or run the source entrypoint with Bun |
+| `Out of memory` | Use a hosted LLM and avoid local model inference |
 | `Keyboard lacks Esc` | Install Hacker's Keyboard, or use Ctrl+[ as Esc |
-| `Termux crashes` | Update from F-Droid, NOT Play Store |
+| `Termux crashes` | Update Termux from F-Droid or GitHub |
 
-## Minimum Phone Specs
+## Minimum phone specs
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
 | **Android** | 7.0+ | 10+ |
-| **RAM** | 2GB free | 4GB+ |
-| **Storage** | 500MB free | 2GB+ |
-| **Network** | Required (cloud LLM) | WiFi recommended |
+| **RAM** | 2 GB free | 4 GB+ |
+| **Storage** | 500 MB free | 2 GB+ |
+| **Network** | Required for hosted LLM | WiFi recommended |
