@@ -1,7 +1,7 @@
 /**
  * List, search, and refresh available models.
  */
-import { APP_NAME } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { resolveModelsArgs, runModelsCommand } from "../cli/models-cli";
 

@@ -17,13 +17,13 @@ try {
 import { parentPort } from "node:worker_threads";
 import type { CliConfig } from "@oh-my-pi/pi-utils/cli";
 import {
-	APP_NAME,
 	getActiveProfile,
 	MIN_BUN_VERSION,
 	resolveProfileEnv,
 	setProfile,
 	VERSION,
 } from "@oh-my-pi/pi-utils/dirs";
+import { SNS_APP_NAME as APP_NAME } from "./config/sns-config";
 import { declareWorkerHostEntry, installWorkerInbox } from "@oh-my-pi/pi-utils/worker-host";
 import { installProfileAlias, resolveProfileAliasCommandFromProcess } from "./cli/profile-alias";
 import { extractProfileFlags } from "./cli/profile-bootstrap";

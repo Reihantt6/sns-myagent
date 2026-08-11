@@ -21,10 +21,10 @@ export default class Bench extends Command {
 	};
 
 	static examples = [
-		"# Compare two models\n  omp bench anthropic/claude-opus-4-5 openai/gpt-5.2",
-		"# Fuzzy selectors work\n  omp bench opus sonnet",
-		"# Average over 3 runs each\n  omp bench opus gpt-5.2 --runs 3",
-		"# Machine-readable output\n  omp bench opus --json",
+		"# Compare two models\n  snsagent bench anthropic/claude-opus-4-5 openai/gpt-5.2",
+		"# Fuzzy selectors work\n  snsagent bench opus sonnet",
+		"# Average over 3 runs each\n  snsagent bench opus gpt-5.2 --runs 3",
+		"# Machine-readable output\n  snsagent bench opus --json",
 	];
 
 	async run(): Promise<void> {

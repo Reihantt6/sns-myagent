@@ -6,7 +6,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { WorkProfile } from "@oh-my-pi/pi-natives";
-import { APP_NAME, getLogPath, getLogsDir, getReportsDir, isEnoent } from "@oh-my-pi/pi-utils";
+import { getLogPath, getLogsDir, getReportsDir, isEnoent } from "@oh-my-pi/pi-utils";
 import { writeArchive } from "../utils/zip";
 import type { CpuProfile, HeapSnapshot } from "./profiler";
 import { collectSystemInfo, sanitizeEnv } from "./system-info";
@@ -85,7 +85,7 @@ export async function createReportBundle(options: ReportBundleOptions): Promise<
 	await fs.mkdir(reportsDir, { recursive: true });
 
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-	const outputPath = path.join(reportsDir, `omp-report-${timestamp}.tar.gz`);
+	const outputPath = path.join(reportsDir, `snsagent-report-${timestamp}.tar.gz`);
 
 	const data: Record<string, string> = {};
 	const files: string[] = [];
@@ -241,7 +241,7 @@ export async function getLogText(): Promise<string> {
 	return readLastLines(getLogPath(), MAX_LOG_LINES);
 }
 
-const LOG_FILE_PATTERN = new RegExp(`^${APP_NAME}\\.(\\d{4}-\\d{2}-\\d{2})\\.log$`);
+const LOG_FILE_PATTERN = /^(?:omp|snsagent)\.(\d{4}-\d{2}-\d{2})\.log$/;
 
 export async function createDebugLogSource(): Promise<DebugLogSource> {
 	const logsDir = getLogsDir();

@@ -2,7 +2,8 @@
  * CLI argument parsing and help display
  */
 import { type Effort, THINKING_EFFORTS } from "@oh-my-pi/pi-catalog/effort";
-import { APP_NAME, CONFIG_DIR_NAME, logger } from "@oh-my-pi/pi-utils";
+import { CONFIG_DIR_NAME, logger } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import chalk from "chalk";
 import { parseEffort } from "../thinking";
 import { BUILTIN_TOOL_NAMES } from "../tools/builtin-names";

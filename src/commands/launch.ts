@@ -3,7 +3,7 @@
  */
 
 import { THINKING_EFFORTS } from "@oh-my-pi/pi-catalog/effort";
-import { APP_NAME } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { parseArgs } from "../cli/args";
 import { runRootCommand } from "../main";

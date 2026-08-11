@@ -5,7 +5,8 @@
  */
 
 import { truncateToWidth } from "@oh-my-pi/pi-tui/utils";
-import { APP_NAME, formatDuration, formatNumber, formatPercent } from "@oh-my-pi/pi-utils";
+import { formatDuration, formatNumber, formatPercent } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import chalk from "chalk";
 import { openPath } from "../utils/open";
 
