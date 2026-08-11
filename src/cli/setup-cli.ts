@@ -4,7 +4,8 @@
  * Handles `snsagent setup` for onboarding and `snsagent setup <component>` for optional dependencies.
  */
 import * as path from "node:path";
-import { $which, APP_NAME, getProjectDir, getPythonEnvDir } from "@oh-my-pi/pi-utils";
+import { $which, getProjectDir, getPythonEnvDir } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import { $ } from "bun";
 import chalk from "chalk";
 import { Settings, settings } from "../config/settings";

@@ -1,7 +1,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $which, APP_NAME, getToolsDir, logger, ptree, TempDir } from "@oh-my-pi/pi-utils";
+import { $which, getToolsDir, logger, ptree, TempDir } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import { extractArchive } from "./zip";
 
 const TOOLS_DIR = getToolsDir();

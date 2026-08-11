@@ -37,7 +37,6 @@ import {
 	visibleWidth,
 } from "@oh-my-pi/pi-tui";
 import {
-	APP_NAME,
 	adjustHsv,
 	formatNumber,
 	getProjectDir,
@@ -48,6 +47,7 @@ import {
 	prompt,
 	setProjectDir,
 } from "@oh-my-pi/pi-utils";
+import { SNS_APP_NAME as APP_NAME } from "../config/sns-config";
 import chalk from "chalk";
 import { reset as resetCapabilities } from "../capability";
 import type { CollabGuestLink } from "../collab/guest";
