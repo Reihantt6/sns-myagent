@@ -1,231 +1,110 @@
 # Installation Guide
 
-> **Dual-runtime supported.** Pick the path that matches your stack. Both paths end with the same `snsagent` binary on your `$PATH`.
+snsagent v0.3.9 is available from npm and the GitHub v0.3.9 release.
 
-| Path | Best for | Prerequisite |
-|------|----------|--------------|
-| **Bun** (recommended) | Linux / macOS / WSL contributors | Bun >= 1.3.14 |
-| **Node.js / npm** | Windows users, CI/CD, anyone without Bun | Node.js >= 18 |
-| **Source build** | Maintainers, custom builds | Bun >= 1.3.14 + Git |
+## Recommended install with npm
 
-## Universal Install (npm, all platforms)
-
-Works on Linux, macOS, Windows, and WSL2 without any Bun dependency.
+Requires Node.js 18 or newer.
 
 ```bash
 npm install -g @sns-myagent/cli
+snsagent --version
 ```
 
-The `postinstall` hook (`scripts/fetch-binary.mjs`) downloads the matching platform prebuilt binary into the package's `bin/` directory and chmods it executable. The shim `bin/snsagent.js` (which `npm link` exposes as `snsagent`) spawns the binary and forwards stdio + exit code.
+Expected output:
 
-If GitHub release `v0.1.0` hasn't been published yet, the postinstall prints a warning and exits 0 — your `npm install` still succeeds. Re-run `npm rebuild` once the maintainer publishes.
+```text
+snsagent 0.3.9
+```
 
-**Force-refetch the binary on demand:**
+The npm postinstall script downloads the matching binary from the latest GitHub release. If the binary download is unavailable, npm still completes and you can retry with:
 
 ```bash
-npm rebuild @sns-myagent/cli    # or: npm run fetch-binary
+npm rebuild @sns-myagent/cli
 ```
 
-## Quick Install (Recommended)
+## One-line installer
 
-### One-liner (Linux / macOS / WSL2)
+On Linux, macOS, WSL, and supported Termux environments:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-Installs Bun (>= 1.3.14) if needed + `snsagent` globally.
+The installer downloads the latest `snsagent` release asset when one is available. It falls back to a source build with Bun when needed, installs to `~/.local/bin` by default, and prints the PATH command if your shell needs to be reloaded.
 
-### Bun Global Install
+## Windows PowerShell
 
-```bash
-bun add -g snsagent
-```
-
-Then run:
-
-```bash
-snsagent
-```
-
-### bunx (Run without installing)
-
-```bash
-bunx snsagent
-```
-
----
-
-## Manual Install (Development)
-
-### Prerequisites
-
-| Dependency | Minimum | Recommended | Check |
-|------------|---------|-------------|-------|
-| **Bun** *(for building)* | 1.3.14 | Latest | `bun --version` |
-| **Node.js** *(for npm path)* | 18.0 | 22.x LTS | `node --version` |
-| **Git** | 2.0 | Latest | `git --version` |
-| **TypeScript** | 5.x | 6.x | bundled via `devDependencies` |
-
-At runtime you need **either** Bun **or** Node.js — not both. Use Bun for `bun add -g @sns-myagent/cli`, use Node for `npm install -g @sns-myagent/cli`. Both paths produce the same `snsagent` command.
-
-### Install Bun
-
-Bun is the runtime, package manager, test runner, and bundler. Install once:
-
-**Linux / macOS (official installer):**
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-**macOS (Homebrew):**
-
-```bash
-brew install bun
-```
-
-**Windows (PowerShell):**
+Requires Node.js 18 or newer.
 
 ```powershell
-powershell -c "irm bun.sh/install.ps1 | iex"
+irm https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex
 ```
 
-### Install Node.js *(for the npm path)*
+The script installs `@sns-myagent/cli` with npm and verifies `snsagent --version`. Pass `-UseBun` when you already have Bun and want to use the Bun installer path.
 
-If you don't have Node.js 18+ yet, get it from [nodejs.org](https://nodejs.org/) (LTS recommended) or via a version manager:
+## Install with Bun
 
-**macOS (Homebrew):**
 ```bash
-brew install node@22
+bun add -g @sns-myagent/cli
+snsagent --version
 ```
 
-**Linux (nvm):**
+For a one-off run without a global install, use the package name:
+
 ```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-source ~/.bashrc
-nvm install 22
-nvm use 22
+bunx @sns-myagent/cli --version
 ```
 
-### Windows Installer (`install.ps1`)
+## Run from source
 
-The recommended Windows experience uses npm + the postinstall binary fetch — no Bun required:
-
-```powershell
-irm raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex
-```
-
-The script verifies Node.js 18+, runs `npm install -g @sns-myagent/cli`, and prints a `snsagent --version` verification. Pass `-UseBun` if you already have Bun installed and want the Bun path instead.
-
-### Clone & Build
+Requires Bun 1.3.14 or newer and Git.
 
 ```bash
 git clone https://github.com/Reihantt6/sns-myagent.git
 cd sns-myagent
 bun install
-bun run build          # produces dist/cli.js (the snsagent binary)
-snsagent               # or: bun dist/cli.js
+bun run src/cli/entry.ts --version
 ```
 
-### Development Mode
+Build the standalone Linux x64 binary:
 
 ```bash
-bun run dev    # Watch mode
-bun test       # Run test suite (parallel=4)
+bun run build
+./bin/snsagent-linux-x64 --version
 ```
 
----
+`bun run build` produces `bin/snsagent-linux-x64` and copies it to `bin/snsagent`. Generated binaries are release artifacts and are not required for normal source development.
 
-## Recommended Specs
+## First run
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| **RAM** | 2 GB free | 4 GB+ |
-| **Disk** | 500 MB | 2 GB+ (for skills + memory DB) |
-| **CPU** | Any modern CPU | 2+ cores |
-| **OS** | Linux, macOS, Windows (WSL2) | Ubuntu 22.04+, macOS 14+ |
-| **Network** | Required for cloud LLM | Broadband recommended |
-
-### Notes
-
-- **Memory DB** grows over time. mnemopi (SQLite) typically 10-100 MB for personal use.
-- **Local models** (Ollama) need significantly more RAM (8-16 GB+ depending on model).
-- **Disk** usage depends on skills loaded and conversation history.
-
----
-
-## API Keys
-
-You need at least one LLM provider:
-
-### Option 1: OpenAI
+Start the interactive agent:
 
 ```bash
-export OPENAI_API_KEY="<your-openai-key>"
-```
-
-### Option 2: Anthropic
-
-```bash
-export ANTHROPIC_API_KEY="<your-anthropic-key>"
-```
-
-### Option 3: Local (Ollama) — No API key needed
-
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull llama3
-```
-
-Then tell the agent: *"setup ollama with llama3"*
-
-### Option 4: Custom provider
-
-Any OpenAI-compatible API (vLLM, llama.cpp server, LM Studio, OpenRouter, etc.)
-
-**Fastest way**: Run `snsagent` → Setup Wizard → **BYOK** tab. Enter Base URL + API Key, done.
-
-**Manual**: Create `~/.sns-myagent/models.yml`:
-
-```yaml
-providers:
-  my-provider:
-    baseUrl: https://openrouter.ai/api/v1
-    apiKey: sk-or-...
-    api: openai-completions
-```
-
-### .env file
-
-Create `.env` in project root:
-
-```
-OPENAI_API_KEY=<your-openai-key>
-ANTHROPIC_API_KEY=<your-anthropic-key>
-```
-
----
-
-## Verify Installation
-
-```bash
-# Check versions
-bun --version      # >= 1.3.14
-snsagent --version # 0.1.0
-
-# Test run
 snsagent
-# Type: "hello" → agent should respond
 ```
 
----
+Use `/setup` to configure a provider, or configure a provider in `~/.omp/agent/models.yml`. The setup flow accepts a Base URL, API key when required, API type, and model choice.
+
+## Verify an install
+
+```bash
+snsagent --version
+snsagent --help
+```
 
 ## Uninstall
 
-```bash
-bun remove -g snsagent
+For npm:
 
-# Remove data
-rm -rf ~/.sns-myagent
+```bash
+npm uninstall -g @sns-myagent/cli
 ```
+
+For Bun:
+
+```bash
+bun remove -g @sns-myagent/cli
+```
+
+Runtime settings and sessions are separate from the package. See [configuration.md](configuration.md) before removing `~/.omp/agent` or `.sns-myagent`.

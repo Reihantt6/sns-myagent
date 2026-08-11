@@ -1,115 +1,78 @@
 # Memory System
 
-SNS MyAgent supports 7 memory backends (mnemopi, hindsight, mnemosyne, mem0, lcm, local, off), switchable through conversation. Source: `src/memory-backend/resolve.ts`.
+snsagent supports seven memory backend IDs: `mnemopi`, `hindsight`, `mnemosyne`, `mem0`, `lcm`, `local`, and `off`. The resolver is `src/memory-backend/resolve.ts`.
 
----
+Select the backend with the `memory.backend` setting in `~/.omp/agent/config.yml`, or use `/settings` and `/memory` in the interactive agent.
 
-## mnemopi (Default)
+## mnemopi
 
-Built-in memory backend with SQLite + vector embeddings + graph. Zero setup, no external services.
+mnemopi is the default local backend. It stores memory in SQLite under the agent directory, normally below `~/.omp/agent/memories/mnemopi/` or a scoped bank directory. The backend supports local memory retrieval, embeddings, and graph-related memory features.
 
-### Architecture
-```
-┌─────────────────────────────────────┐
-│           MNEMOPI                   │
-├─────────────────────────────────────┤
-│  Working Memory   │ Session-scoped  │
-│  Episodic Memory  │ Cross-session   │
-│  Semantic Memory  │ Persistent      │
-│  Knowledge Graph  │ Relationships   │
-│  Vector Search    │ Embeddings      │
-└─────────────────────────────────────┘
-```
+Relevant settings include:
 
-### Tiers
-
-| Tier | Scope | Lifetime | Use Case |
-|------|-------|----------|----------|
-| **Working** | Current session | Session ends | Active task state, temp context |
-| **Episodic** | Cross-session | Persistent | Conversation history, past events |
-| **Semantic** | Cross-session | Persistent | Facts, preferences, patterns |
-
-### Commands
-```
-/recall <query>              # Semantic + full-text search
-/memory add <fact>           # Store semantic memory
-/memory list                 # List recent
-/memory list --tier episodic # Filter by tier
-/memory clear                # Clear working memory
-/memory forget <id>          # Remove specific
-```
-
----
-
-## Mem0
-
-Semantic memory with vector embeddings + fact extraction.
-
-### Deployment Modes
-
-| Mode | Requirements | Cost |
-|------|-------------|------|
-| **Cloud** (app.mem0.ai) | Account + API key | Free (10K) → $19-249/mo |
-| **Self-hosted** (Docker) | Docker, PostgreSQL+pgvector | Free (Apache 2.0) |
-| **Library** (`pip install mem0ai`) | Python, vector DB | Free |
-| **Local** (Ollama) | Ollama + ChromaDB | Fully local |
-
-### Self-host Setup
-```bash
-git clone https://github.com/mem0ai/mem0
-cd mem0/server
-docker compose up -d
-make bootstrap  # creates admin + API key
-```
-
-### Capabilities
-- Semantic search across all memories
-- Fact extraction from conversations
-- Entity linking
-- Temporal reasoning
-- 24+ vector store backends
-- Graph memory (Neo4j — Pro+ cloud, or free self-hosted)
-
-### Limitations
-- Memory staleness after 30 days (~49% accuracy at scale)
-- LLM dependency on every `add()` call
-- Graph memory = $249/mo on cloud (free self-hosted)
-
----
-
-## LCM (Latent Context Memory)
-
-Compressed context representation for long-running sessions.
-
-### When to use
-- Very long sessions (100+ turns)
-- Context window is a constraint
-- Don't need precise memory recall
-
----
-
-## Switching Backends
-
-### Through conversation
-```
-> switch memory to Mem0
-> switch memory to mnemopi
-```
-
-### Through config
 ```yaml
 memory:
-  backend: mnemopi  # mnemopi | hindsight | mnemosyne | mem0 | lcm | local | off
+  backend: mnemopi
+mnemopi:
+  autoRecall: true
+  autoRetain: true
+  recallLimit: 8
+  recallContextTurns: 3
+  injectionTokenLimit: 5000
 ```
 
----
+Use these interactive commands where supported:
 
-## Data Location
+```text
+/memory view
+/memory stats
+/memory diagnose
+/memory clear
+/memory enqueue
+```
 
-| Data | Path |
-|------|------|
-| Config | `./config.yaml` |
-| Memory DB | `~/.sns-myagent/memory.db` |
-| Logs | `~/.sns-myagent/logs/` |
+## local
 
-No data sent to external servers except LLM API calls to your configured provider.
+The local backend provides a local rollout summary pipeline without a remote memory service.
+
+## off
+
+The off backend disables memory operations.
+
+## hindsight
+
+Hindsight is a remote memory backend. It requires the endpoint and credentials expected by the Hindsight integration.
+
+## mnemosyne
+
+The mnemosyne backend is available through the resolver for compatibility and specialized local deployments. Check its runtime requirements before selecting it.
+
+## mem0
+
+The mem0 backend integrates with Mem0-compatible services. Configure the service endpoint and credentials required by your deployment.
+
+## lcm
+
+The LCM backend provides a compressed context representation for long-running sessions. Configure its service requirements before selecting it.
+
+## Switching backends
+
+Edit `~/.omp/agent/config.yml`:
+
+```yaml
+memory:
+  backend: mnemopi
+```
+
+Or open `/settings` and change the memory backend. Confirm the selected backend with `/memory stats`.
+
+## Data and backups
+
+| Data | Location |
+|------|----------|
+| Interactive settings | `~/.omp/agent/config.yml` |
+| Provider models | `~/.omp/agent/models.yml` |
+| Agent database | `~/.omp/agent/agent.db` |
+| mnemopi data | `~/.omp/agent/memories/` and scoped bank directories |
+
+Stop snsagent before copying SQLite files so the database and any journal files are consistent. Do not edit `agent.db` directly.

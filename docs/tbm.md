@@ -1,88 +1,62 @@
-# Token Budget Manager (TBM) — Design Document
+# Token Budget Manager (TBM)
 
-> **Status: Planned (Phase 3).** This document describes the design target for TBM. None of the features below are implemented yet.
+## Status
 
-## What Exists Today
+TBM exists as an implementation under `src/tbm/` with unit tests in `src/tbm/__tests__/tbm.test.ts`. The `TbmManager` coordinates these subsystems:
 
-Source code has two budget-related features:
+- context delta processing
+- context pyramid levels
+- lazy skill loading
+- tool output compression
+- communication modes
+- conversation tombstoning
+- response caching
+- token dashboard rendering
 
-1. **Goal token budgets** (`src/goals/runtime.ts`): Each goal can set a `token_budget` integer. When usage exceeds the budget, goal status transitions to `budget-limited` and a budget-limit prompt is injected.
+The broader claim that every TBM subsystem is integrated into every main agent turn is not a release guarantee. The projected savings below are design targets, not measured results.
 
-2. **Subagent request budgets** (`src/task/executor.ts`): Soft per-subagent request limits. Crossing the budget injects a steering notice; at 1.5x the budget the run aborts gracefully, salvaging partial output.
+## Current manager surface
 
-These are the only token-budget features verified in source code.
+`TbmManager` exposes methods for processing a turn, compressing tool output, caching responses, tombstoning messages, registering skills, switching communication mode, rendering the dashboard, and resetting the manager.
 
----
+The source defaults enable the manager and its subsystems when a caller creates `new TbmManager()`.
 
-## Planned Features (Not Implemented)
+## Token budgets that are separately integrated
 
-The following are design targets for Phase 3. They do not exist in the codebase.
+The main source tree also has token budget controls for goals and subagent execution:
 
-### Context Delta Caching
+- Goal token budgets are implemented in `src/goals/runtime.ts`.
+- Soft subagent request budgets are implemented in `src/task/executor.ts`.
 
-Instead of resending full context every turn, send only what changed. Static prefix (system prompt, tools, identity) cached at provider level; dynamic suffix (recent messages, tool output) sent as delta. Target savings: 60-80% input tokens after turn 1.
+These are separate from the `TbmManager` class.
 
-### Multi-Resolution Context Pyramid
+## Planned or not guaranteed
 
-Load context in levels, escalating only when response quality drops:
+The following remain design targets or require further integration and measurement before they should be advertised as automatic behavior of every session:
 
-| Level | Content | Tokens | When |
-|-------|---------|--------|------|
-| 0 | Identity only | ~100 | Simple Q&A |
-| 1 | + Last 3 messages | ~500 | Continuation |
-| 2 | + Relevant memories | ~1,000 | Contextual tasks |
-| 3 | + Relevant skills | ~2,000 | Complex tasks |
-| 4 | + Full history | ~5,000 | Deep research |
+- provider-level prompt delta caching
+- automatic multi-resolution context selection in the primary loop
+- automatic lazy skill loading in every session
+- universal tool-output compression in the primary loop
+- automatic response caching for all requests
+- a measured combined token reduction percentage
 
-### Lazy Skill Loading
+Do not describe TBM as saving a fixed percentage of tokens without benchmark data.
 
-Inject skill names only (~200 tokens) into every prompt. Load full skill content on-demand when relevant. Target: ~700 tokens vs 50,000+ if all loaded.
+## Testing
 
-### Tool Output Auto-Compress
+Run the focused tests with:
 
-| Tool | Max Budget | Strategy |
-|------|-----------|----------|
-| `terminal` | 500 tokens | Truncate + strip ANSI |
-| `read_file` | 800 tokens | Only relevant lines |
-| `web_extract` | 1,000 tokens | Summarize key content |
-| `search_files` | 300 tokens | Top N results only |
+```bash
+bun test src/tbm/__tests__/tbm.test.ts
+```
 
-### Communication Modes
+For the full project test suite, use:
 
-| Mode | Example | Tokens | Use Case |
-|------|---------|--------|----------|
-| Caveman | `Bug auth. Fix: token_exp < not <=.` | ~20 | Debug, quick ops |
-| Normal | `Found bug in auth middleware. Token expiry check uses wrong operator.` | ~60 | Daily work |
-| Verbose | Full explanation with context and alternatives... | ~150 | Learning, docs |
+```bash
+bun test
+```
 
-Switch via `/mode caveman` or auto-detect by task complexity.
+## Configuration note
 
-> **Note:** RTK (`pi-rtk-optimizer`) is a separate theme/UI plugin. It is unrelated to communication modes.
-
-### Conversation Tombstoning
-
-Compress old messages to minimal references. Model can still reference originals if needed. Target: 85% context reduction.
-
-### Response Cache
-
-Exact match (`hash(query)`) and semantic match (embedding similarity > 0.95). Cache hit rate displayed in token dashboard.
-
-### Token Dashboard
-
-`/tokens` command showing session duration, input/output/cached tokens, cost estimate, and cache hit rate.
-
----
-
-## Savings Estimates (Projected)
-
-| Technique | Savings | Complexity |
-|-----------|---------|------------|
-| Context Delta Caching | 60-80% | High |
-| Multi-Resolution Pyramid | 40-60% | Medium |
-| Tool Output Budget | 30-50% | Low |
-| Lazy Skill Loading | 90%+ | Low |
-| Conversation Tombstoning | 50-70% | Medium |
-| Response Cache | 100% (hit) | Low |
-| **Combined** | **60-80%** | — |
-
-> These are projected savings, not measured. None of the above techniques are implemented.
+`src/tbm/config.ts` defines a TBM configuration object. Do not assume that a `tbm:` block in the persisted interactive settings file is consumed by the main agent unless the integration path is explicitly enabled by the running version.

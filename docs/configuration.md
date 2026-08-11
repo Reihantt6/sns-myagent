@@ -1,154 +1,151 @@
 # Configuration Reference
 
-## Location
+snsagent has three configuration surfaces in this repository:
+
+1. The interactive agent uses `~/.omp/agent/config.yml` and `~/.omp/agent/models.yml`.
+2. Existing installs may also have `~/.omp/agent/config.json` with compatibility provider and model values.
+3. The small legacy `init`, `setup`, and `config` router uses `.sns-myagent/config.json` in the current project directory.
+
+Most users should use the interactive agent configuration described first.
+
+## Interactive agent configuration
+
+The agent directory is normally `~/.omp/agent`. It can be relocated by the upstream directory environment settings. The agent stores settings in:
 
 | File | Purpose |
 |------|---------|
-| `./config.yaml` | Project-level config |
-| `~/.sns-myagent/config.yaml` | User-level config (fallback) |
-| `.env` | Environment variables |
+| `~/.omp/agent/config.yml` | Persistent settings such as model roles, memory, tools, and UI preferences |
+| `~/.omp/agent/config.json` | Compatibility configuration, including provider and model values on existing installs |
+| `~/.omp/agent/models.yml` | Provider and model definitions |
+| `~/.omp/agent/agent.db` | SQLite state and migrated settings, managed by the application |
 
-Priority: Project config > User config > Environment variables > Defaults
+Do not edit `agent.db` while the agent is running.
 
----
+## Provider and model setup
 
-## Full Config Reference
+The quickest path is:
 
-### BYOK Quick Setup
+```text
+snsagent
+/setup
+```
 
-The fastest way to connect a provider. Run `snsagent` → Setup Wizard → **BYOK** tab:
-
-1. Enter **Base URL** (e.g. `https://api.openai.com/v1`)
-2. Enter **API Key**
-3. Select **API type** (default: `openai-completions`)
-
-The wizard calls the provider's `/models` endpoint, auto-detects available models, and writes `~/.sns-myagent/models.yml`.
-
-Manual equivalent — create `~/.sns-myagent/models.yml`:
+For a custom provider, use the BYOK setup flow. A hand-written provider entry in `~/.omp/agent/models.yml` looks like this:
 
 ```yaml
 providers:
-  my-provider:
-    baseUrl: https://api.openai.com/v1
-    apiKey: sk-...
+  nine-router:
+    baseUrl: http://127.0.0.1:20128/v1
     api: openai-completions
+    auth: apiKey
+    apiKey: your-local-api-key
     models:
-      - id: gpt-4o
-        contextWindow: 128000
+      - id: combo1
+        contextWindow: 1000000
         supportsTools: true
 ```
 
-Supported API types:
-| API Type | Use For |
-|----------|---------|
-| `openai-completions` | OpenAI, OpenRouter, Ollama, vLLM, LM Studio, any compatible |
+Supported API types include:
+
+| API type | Typical use |
+|----------|-------------|
+| `openai-completions` | OpenAI-compatible endpoints, OpenRouter, Ollama, vLLM, and LM Studio |
 | `openai-responses` | OpenAI Responses API |
 | `anthropic-messages` | Anthropic Claude |
 | `google-generative-ai` | Google Gemini |
 | `azure-openai-responses` | Azure OpenAI |
 
----
+The models loader expects a concrete local API key value when the provider requires one. Keep this file private, or use the credential mechanism supported by your provider setup. Do not commit API keys.
+
+## Model roles
+
+Role assignments are stored under `modelRoles` in `config.yml`. For example:
 
 ```yaml
-# ── LLM Providers ─────────────────────────────────────────────
-providers:
-  openai:
-    api_key: ${OPENAI_API_KEY}
-    model: gpt-4o
-
-  anthropic:
-    api_key: ${ANTHROPIC_API_KEY}
-    model: claude-sonnet-4-20250514
-
-  custom:
-    base_url: http://localhost:11434/v1   # Ollama default
-    model: llama3
-    api_key: none
-
-# ── Default provider ──────────────────────────────────────────
-default_provider: openai
-
-# ── Tools ─────────────────────────────────────────────────────
-tools:
-  terminal:
-    allowed_commands:
-      - ls
-      - cat
-      - git
-      - bun
-      - python3
-      - curl
-    blocked_commands:
-      - rm -rf /
-      - shutdown
-    require_approval: true    # Ask before executing
-
-  browser:
-    headless: true
-
-  web_search:
-    provider: duckduckgo      # or: brave, serpapi
-
-# ── Memory ────────────────────────────────────────────────────
-memory:
-  enabled: true
-  backend: mnemopi            # mnemopi | mnemosyne | mem0 | lcm
-  db_path: ~/.sns-myagent/memory.db
-  max_working_entries: 50
-  auto_summarize: true
-
-# ── Skills ────────────────────────────────────────────────────
-skills:
-  directory: ./skills
-  auto_load: []               # Skills loaded on startup
-
-# ── MCP ───────────────────────────────────────────────────────
-mcp:
-  servers: []
-  # Example:
-  # - name: filesystem
-  #   command: npx
-  #   args: ["-y", "@modelcontextprotocol/server-filesystem", "/path"]
-
-# ── Cron ──────────────────────────────────────────────────────
-cron:
-  enabled: true
-
-# ── UI ────────────────────────────────────────────────────────
-ui:
-  theme: dark                 # dark | light
-  streaming: true
-  code_highlight: true
-  markdown_render: true
-
-# ── Token Budget Manager (Planned — Phase 3) ─────────────────
-# tbm config not yet implemented; see docs/tbm.md for design target
+modelRoles:
+  default: nine-router/combo1
 ```
 
----
+The `orchestrate` command resolves the persisted `modelRoles.default` role for its agent runs.
 
-## Environment Variables
+## Settings
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | `<your-openai-key>` |
-| `ANTHROPIC_API_KEY` | Anthropic API key | `<your-anthropic-key>` |
-| `SNS_MODEL` | Override default model | `claude-sonnet-4-20250514` |
-| `SNS_PROVIDER` | Override default provider | `anthropic` |
-| `SNS_CONFIG_PATH` | Custom config file path | `/etc/sns/config.yaml` |
-| `SNS_MEMORY_DB` | Custom memory database path | `/data/sns/memory.db` |
+The settings schema is defined in `src/config/settings-schema.ts`. Common examples include:
 
----
+```yaml
+modelRoles:
+  default: nine-router/combo1
+memory:
+  backend: mnemopi
+mnemopi:
+  autoRecall: true
+  autoRetain: true
+  recallLimit: 8
+compaction:
+  enabled: true
+  thresholdPercent: 80
+```
 
-## Conversational Configuration
+Supported memory backend IDs are `mnemopi`, `hindsight`, `mnemosyne`, `mem0`, `lcm`, `local`, and `off`. The mnemopi database normally lives below the agent directory, under `memories/mnemopi/` or a scoped bank path.
 
-You don't need to edit config manually. Tell the agent:
+Use `/settings` for interactive settings changes. Use the top-level `snsagent config ...` command when working with the legacy `.sns-myagent/config.json` router. These are separate configuration surfaces.
 
-- *"add MCP filesystem for /home/user/projects"*
-- *"switch memory to Mem0"*
-- *"setup ollama with llama3"*
-- *"add anthropic with claude-sonnet"*
+## Legacy project configuration
 
-- *"switch to gpt-4o"*
+The legacy router creates `.sns-myagent/config.json` in the current directory. Its schema is defined in `src/config/schema.ts` and includes `agentName`, `model`, `telegram`, and `memory` fields. The default identity is `sns-myagent`.
 
-The agent handles: dependency install → config update → connection test → confirmation.
+Example:
+
+```json
+{
+  "version": 1,
+  "agentName": "sns-myagent",
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "temperature": 0.7,
+    "maxTokens": 4096
+  },
+  "telegram": {
+    "token": "",
+    "allowedChatIds": [],
+    "pollIntervalMs": 1000
+  },
+  "memory": {
+    "path": "memory.jsonl",
+    "maxEntries": 1000,
+    "autoSummarize": true,
+    "backend": "mnemopi"
+  }
+}
+```
+
+The legacy router supports:
+
+```bash
+snsagent init
+snsagent setup
+snsagent config show
+snsagent config get model.provider
+snsagent config set model.model gpt-4o
+```
+
+## Environment variables
+
+Provider-specific API key variables are supported by the provider configuration. Common examples are:
+
+```bash
+export OPENAI_API_KEY="your-key-here"
+export ANTHROPIC_API_KEY="your-key-here"
+```
+
+The Telegram adapter uses:
+
+```bash
+export SNS_TELEGRAM_BOT_TOKEN="your-bot-token-here"
+export SNS_TELEGRAM_AUTOSTART=0
+```
+
+## Conversational configuration
+
+The agent can help edit provider and feature settings through the interactive setup flow. Verify the resulting provider, model, and API key configuration before sending a request.
