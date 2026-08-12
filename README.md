@@ -573,7 +573,7 @@ Configure via `/mcp` or the settings panel. Servers are defined in the MCP confi
 
 ## Telegram
 
-Telegram bot adapter in `src/adapters/telegram/` (4 files). Built on [grammY](https://grammy.dev/).
+Telegram bot adapter in `src/adapters/telegram/` (5 files). Built on [grammY](https://grammy.dev/).
 
 ### Setup
 
@@ -722,7 +722,7 @@ Set via `memory.backend` in `~/.omp/agent/config.yml`. Default is `mnemopi`.
 
 ### Telegram Adapter - `src/adapters/telegram/`
 
-5 files (bot, handler, format, index, bridge). 10 slash commands wired: `/start /help /chat /reset /status /memory /cron /model /code /review`. File upload/download supported. Auto-boot when `SNS_TELEGRAM_BOT_TOKEN` is set.
+5 files (bot, handler, format, index, bridge). 11 slash commands wired: `/start /help /chat /reset /status /memory /cron /model /code /review /task`. File upload/download supported. Auto-boot when `SNS_TELEGRAM_BOT_TOKEN` is set.
 
 ### Multi-Agent Orchestration - `src/agents/`
 
