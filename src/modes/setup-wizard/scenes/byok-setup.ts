@@ -139,14 +139,8 @@ export class ByokSetupTab implements SetupTab {
 		}
 
 		if (data === "\r" || data === "\n") {
-			if (this.#focusIndex < 2) {
-				// Move to next field on Enter
-				this.#focusIndex = Math.min(2, this.#focusIndex + 1);
-				this.#focusInput();
-			} else {
-				// Submit on Enter from api type
-				void this.#submit();
-			}
+			// Enter submits from every field. Tab is the explicit navigation key.
+			void this.#submit();
 			this.host.requestRender();
 			return;
 		}
@@ -158,8 +152,19 @@ export class ByokSetupTab implements SetupTab {
 		this.host.requestRender();
 	}
 
-	routeMouse(_event: SgrMouseEvent, _line: number, _col: number): void {
-		// No mouse routing needed for simple fields
+	routeMouse(event: SgrMouseEvent, line: number, _col: number): void {
+		if (!event.leftClick) return;
+		// The rendered field rows are: instruction 0, warning 1, blank 2,
+		// Base URL 3, API Key 4, API Type 5.
+		if (line === 3 || line === 4) {
+			this.#focusIndex = line - 3;
+			this.#focusInput();
+			this.host.requestRender();
+		} else if (line === 5) {
+			this.#focusIndex = 2;
+			this.#focusInput();
+			this.host.requestRender();
+		}
 	}
 
 	invalidate(): void {
@@ -208,10 +213,12 @@ export class ByokSetupTab implements SetupTab {
 		for (const f of this.#fields) f.focused = false;
 		if (this.#focusIndex < 2) {
 			this.#fields[this.#focusIndex].focused = true;
-			this.host.setFocus(this.#fields[this.#focusIndex]);
-		} else {
-			this.host.setFocus(null);
 		}
+		// The tab owns keyboard input so it can handle Tab and Enter before the
+		// wrapped Input component consumes them. The active field is rendered with
+		// its own cursor state above; the overlay still treats this tab as its
+		// focus target, which keeps keyboard and mouse navigation in one path.
+		this.host.setFocus(this);
 	}
 
 	async #submit(): Promise<void> {
