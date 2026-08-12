@@ -86,6 +86,12 @@ snsagent
 
 Use `/setup` to configure a provider, or configure a provider in `~/.omp/agent/models.yml`. The setup flow accepts a Base URL, API key when required, API type, and model choice.
 
+The first step of the setup wizard collects the provider details (Tab moves between fields, Enter connects):
+
+![Provider setup wizard](screenshots/setup-byok.png)
+
+> Note: the screenshot uses a fallback font. In a terminal with a Nerd Font installed, the status bar and icons render with their intended glyphs.
+
 ## Verify an install
 
 ```bash

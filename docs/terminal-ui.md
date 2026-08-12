@@ -24,6 +24,10 @@ snsagent v0.3.9
 
 The startup splash uses the SNS logo, an orange accent, version, model, directory, platform, and a short shortcut hint. Interactive prompts use the snsagent identity and the active model. `/help` is a TUI shortcut for the shortcut list.
 
+![Main chat UI](screenshots/main-tui.png)
+
+The status bar shows the active model, working directory, git branch, and context usage. Glyph icons in the status bar require a Nerd Font; terminals without one show fallback boxes.
+
 Useful interactive entry points include:
 
 ```text
