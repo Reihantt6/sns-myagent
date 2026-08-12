@@ -68,6 +68,9 @@ bin/snsagent.js
 PLAN.md
 plan.md
 
+# Planning docs (internal, never push)
+docs/plans/
+
 # Local logs and runtime artifacts
 logs/
 *.log
