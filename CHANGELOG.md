@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Telegram MarkdownV2 formatting now preserves literal `*` and `~` markers while escaping underscores safely.
+- Restored provider setup keyboard navigation: Tab and Shift+Tab move focus between fields, and Enter submits from any field (commit `d77ec8c`).
 
 ### Added
 - **BYOK Quick Setup tab** in setup wizard (`src/modes/setup-wizard/scenes/byok-setup.ts`):
@@ -33,7 +34,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - `/mode` command: set caveman/normal/verbose/auto communication mode
 - `TbmManager` singleton class coordinating all subsystems
 - Phase 1 scaffold complete: forked from Pi Agent, rebranded as `@sns-myagent/cli` with `snscoder` binary (commit `d1480eb`)
-- GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) with staged verify → install → typecheck → lint → build → diagnose jobs
+- GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) with the full verify → install → typecheck → lint → build → test → diagnose → smoke → all-checks pipeline
 - BYOK provider config system with `.sns-myagent/config.yaml` + env overrides
 - Real source-derived inventory of 62 built-in slash commands and 30 built-in tools documented in README
 - `docs/memory.md` covering mnemopi / mnemosyne / mem0 / lcm backends
@@ -45,6 +46,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Phase 1.5: integration smoke tests (`test/integration/`) covering CLI binary launch + version/help output
 - Phase 1.5: `grammy` dependency added for the Telegram adapter (`src/telegram/` adapter stub)
 - Phase 1.5: default-config YAML writer (`DEFAULT_CONFIG_YAML` in `src/config/defaults.ts`) — first-run writes a real `config.yaml` instead of silently no-op
+
+### Docs
+- Added setup wizard and main chat UI screenshots referenced by `docs/installation.md` and `docs/terminal-ui.md` (commit `4a8a07f`).
+- Corrected repository health counts: the Telegram adapter has 5 files and 11 slash commands, including `/task` (commit `0cb809a`).
+- Corrected the slash command count to 62 primary commands plus 4 aliases (commit `9a4b2e4`).
 
 ### Changed
 - Bumped `@oh-my-pi/*` packages from `16.1.15` → `16.1.18`
