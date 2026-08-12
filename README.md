@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <strong>BYOK coding agent CLI - 30 built-in tools, 38 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
+  <strong>BYOK coding agent CLI - 30 built-in tools, 62 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
 </p>
 
 <p align="center">
@@ -64,7 +64,7 @@
 | Feature | Source |
 |---------|--------|
 | **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **38 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
+| **62 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
 | **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via built-in provider system |
 | **BYOK Quick Setup** | Setup wizard tab - enter Base URL + API Key, auto-detect models, zero config editing |
 | **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off - `src/memory-backend/resolve.ts` |
@@ -162,7 +162,7 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Slash Commands
 
-38 primary commands from `src/slash-commands/builtin-registry.ts`, plus 3 aliases in the lookup map. `/help` is a TUI shortcut, not a registry entry. Most useful registered commands:
+62 primary commands from `src/slash-commands/builtin-registry.ts`, plus 4 aliases in the lookup map. `/help` is a TUI shortcut, not a registry entry. Most useful registered commands:
 
 ### Session & Navigation
 
@@ -279,7 +279,7 @@ Built binary:      ./bin/snsagent-linux-x64
 Repository:        sns-myagent
 ```
 
-`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build. In interactive mode, `/help` is a TUI shortcut; 38 primary commands and 3 aliases are registered in `src/slash-commands/builtin-registry.ts`.
+`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build. In interactive mode, `/help` is a TUI shortcut; 62 primary commands and 4 aliases are registered in `src/slash-commands/builtin-registry.ts`.
 
 ## Installation
 
@@ -702,9 +702,9 @@ What is actually wired and working in the source tree, verified 2026-08-10:
 
 All 30 tools are real implementations, not stubs.
 
-### Slash Commands (38 primary, 41 lookup keys) - `src/slash-commands/builtin-registry.ts`
+### Slash Commands (62 primary, 66 lookup keys) - `src/slash-commands/builtin-registry.ts`
 
-38 primary top-level commands are registered, with 3 aliases in the lookup map. All are callable via `/<name>` in interactive mode.
+62 primary top-level commands are registered, with 4 aliases in the lookup map. All are callable via `/<name>` in interactive mode.
 
 ### Memory Backends (7 / 7) - `src/memory-backend/resolve.ts`
 
