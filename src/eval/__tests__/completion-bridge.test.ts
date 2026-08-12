@@ -105,7 +105,7 @@ async function runPythonCompletionInSubprocess(options: {
 	const repoRoot = path.resolve(import.meta.dir, "../../../..");
 	const scriptPath = path.join(options.tempDir.path(), "run-python-completion.ts");
 	const resultPath = path.join(options.tempDir.path(), "python-completion-result.json");
-	const aiPath = path.resolve(import.meta.dir, "../../../../ai/src/index.ts");
+	const aiPath = import.meta.resolve("@oh-my-pi/pi-ai");
 	const executorPath = path.resolve(import.meta.dir, "../py/executor.ts");
 	const settingsPath = path.resolve(import.meta.dir, "../../config/settings.ts");
 	const code = options.structured
