@@ -44,10 +44,15 @@ export async function execCommand(
 		stderr: "full",
 	});
 
+	const killed = Boolean(result.exitError?.aborted);
 	return {
 		stdout: result.stdout,
 		stderr: result.stderr,
-		code: result.exitCode ?? 0,
-		killed: Boolean(result.exitError?.aborted),
+		// `ptree` leaves exitCode undefined when a process is aborted or cannot
+		// produce a normal exit status. Never turn that into success: all current
+		// callers use code === 0 as the success contract. A generic nonzero code
+		// is intentional here; an AbortSignal does not imply SIGINT specifically.
+		code: result.exitCode ?? 1,
+		killed,
 	};
 }
