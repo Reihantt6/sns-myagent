@@ -5,30 +5,45 @@
 
 import { ensureConfig } from "../config/loader.js";
 import { runCli } from "./index.js";
-import { startTelegramAdapter } from "../adapters/telegram/index.js";
+
 
 const commandsNeedingConfig = new Set(["config", "chat", "telegram"]);
 const argv = process.argv.slice(2);
 const head = argv[0];
 
-// Auto-boot the Telegram polling adapter when a token is present and the
-// user is not explicitly running a different subcommand. Disable with
-// SNS_TELEGRAM_AUTOSTART=0. Skip for "launch" which starts the full agent
-// session and will wire the adapter after the session is ready.
-function maybeAutostartTelegram(): void {
-	if (head === "telegram") return; // explicit start/stop handles its own lifecycle
-	if (head === "launch") return; // defer to runInteractiveMode in main.ts
+// Auto-boot the Telegram polling adapter only for agent entry points. Other
+// commands (especially `version` and `help`) must remain short-lived utilities
+// and must not start a background network client. `launch` is included because
+// it is the explicit form of the default agent command and main.ts does not
+// wire Telegram itself. Disable autostart with SNS_TELEGRAM_AUTOSTART=0.
+async function maybeAutostartTelegram(): Promise<void> {
+	if (head !== undefined && head !== "agent" && head !== "launch") return;
 	if (process.env.SNS_TELEGRAM_AUTOSTART === "0") return;
 	const token = process.env.SNS_TELEGRAM_BOT_TOKEN;
 	if (!token) return;
-	startTelegramAdapter(token, { autostart: true });
+
+	// Keep short-lived commands free of Grammy, the SDK, and extension-runtime
+	// imports. The bridge is only needed for an actual agent launch.
+	const [{ startTelegramAdapter }, { createForwardToAgent, getBridgeStats, resetChatSession }] = await Promise.all([
+		import("../adapters/telegram/index.js"),
+		import("../adapters/telegram/bridge.js"),
+	]);
+	const agentForwarder = createForwardToAgent();
+	const forwardToAgent = (text: string, sessionKey: string) =>
+		agentForwarder(sessionKey, "telegram", text);
+	startTelegramAdapter(token, {
+		autostart: true,
+		forwardToAgent,
+		resetChatSession,
+		getBridgeStats,
+	});
 }
 
 try {
 	if (head !== undefined && commandsNeedingConfig.has(head) && !process.env.SNS_NO_BOOTSTRAP) {
 		ensureConfig();
 	}
-	maybeAutostartTelegram();
+	await maybeAutostartTelegram();
 	const code = await runCli(argv);
 	if (code !== 0) process.exit(code);
 } catch (err) {

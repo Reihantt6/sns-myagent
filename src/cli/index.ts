@@ -15,8 +15,6 @@ import { loadConfig, saveConfig, configPath, ensureConfig } from "../config/load
 import type { Config } from "../config/schema.js";
 import { defaultConfigFn } from "../config/loader.js";
 import { getAgentDir } from "@oh-my-pi/pi-utils";
-import { startTelegramAdapter, stopTelegramAdapter } from "../adapters/telegram/index.js";
-import { createForwardToAgent, resetChatSession, getBridgeStats } from "../adapters/telegram/bridge.js";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import chalk from "chalk";
@@ -425,6 +423,11 @@ async function cmdTelegram(args: string[]): Promise<number> {
 			return 1;
 		}
 
+		// Load Telegram and the agent bridge only for the explicit Telegram command;
+		// version/help and the normal CLI router should not pay this startup cost.
+		const [{ startTelegramAdapter, stopTelegramAdapter }, { createForwardToAgent, resetChatSession, getBridgeStats }] =
+			await Promise.all([import("../adapters/telegram/index.js"), import("../adapters/telegram/bridge.js")]);
+
 		// Wire the agent bridge — per-chat sessions via createAgentSession()
 		const agentForwarder = createForwardToAgent();
 		// Adapt 3-arg bridge to 2-arg handler signature: (text, sessionKey) → string
@@ -449,6 +452,7 @@ async function cmdTelegram(args: string[]): Promise<number> {
 		return 0;
 	}
 	if (sub === "stop") {
+		const { stopTelegramAdapter } = await import("../adapters/telegram/index.js");
 		await stopTelegramAdapter();
 		process.stdout.write("✓ telegram adapter stopped\n");
 		return 0;
