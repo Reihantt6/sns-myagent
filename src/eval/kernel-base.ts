@@ -97,6 +97,8 @@ interface PendingExecution {
 	settled: boolean;
 	escalationTimer?: NodeJS.Timeout;
 	finalize?: () => void;
+	/** Releases per-execution timers/listeners; stored so abnormal paths can clean up too. */
+	cleanup?: () => void;
 }
 
 export function getRemainingTimeMs(deadlineMs?: number): number | undefined {
@@ -245,6 +247,7 @@ export abstract class BaseKernel<TExecuteOptions extends KernelExecuteOptions = 
 			pending.escalationTimer = undefined;
 			options?.signal?.removeEventListener("abort", onAbort);
 		};
+		pending.cleanup = cleanup;
 
 		if (options?.signal) {
 			if (options.signal.aborted) {
@@ -352,6 +355,12 @@ export abstract class BaseKernel<TExecuteOptions extends KernelExecuteOptions = 
 		for (const entry of pending) {
 			if (entry.settled) continue;
 			entry.settled = true;
+			// The normal `done`-frame path runs cleanup inside `finalize`; this
+			// abnormal path (kernel exited / shutdown mid-request) previously
+			// skipped it, leaking the per-execution timeout timer (ref'd) and the
+			// abort listener. The timer in particular kept the event loop alive
+			// for the rest of the cell budget after a kernel crash.
+			entry.cleanup?.();
 			void entry.options?.onChunk?.(`[kernel] ${reason}\n`);
 			entry.resolve({
 				status: "error",
