@@ -21,6 +21,40 @@ import {
 	parseMessage,
 	resolveReply,
 } from "../src/adapters/telegram/index";
+import { resolveTelegramToken } from "../src/cli/telegram-token";
+
+// --- resolveTelegramToken --------------------------------------------------
+
+describe("resolveTelegramToken", () => {
+	test("flag wins over env and config", () => {
+		assert.equal(resolveTelegramToken("flag", "env", "cfg"), "flag");
+	});
+
+	test("env wins over config when flag is absent", () => {
+		assert.equal(resolveTelegramToken(undefined, "env", "cfg"), "env");
+	});
+
+	test("config is used when flag and env are absent", () => {
+		assert.equal(resolveTelegramToken(undefined, undefined, "cfg"), "cfg");
+	});
+
+	test("returns undefined when all sources are absent", () => {
+		assert.equal(resolveTelegramToken(undefined, undefined, undefined), undefined);
+	});
+
+	test("empty-string flag falls through to env", () => {
+		assert.equal(resolveTelegramToken("", "env", "cfg"), "env");
+	});
+
+	test("whitespace-only values are treated as absent", () => {
+		assert.equal(resolveTelegramToken("  ", "env", "cfg"), "env");
+		assert.equal(resolveTelegramToken("  ", "  ", "cfg"), "cfg");
+	});
+
+	test("trims surrounding whitespace from the returned token", () => {
+		assert.equal(resolveTelegramToken("  flag  ", undefined, undefined), "flag");
+	});
+});
 
 // --- markdownToTelegram ---------------------------------------------------
 

@@ -19,6 +19,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import chalk from "chalk";
 import { Settings } from "../config/settings.js";
+import { resolveTelegramToken } from "./telegram-token.js";
 
 // ---------- package version (single source of truth) ----------
 
@@ -406,10 +407,17 @@ async function cmdTelegram(args: string[]): Promise<number> {
 	}
 	if (sub === "start") {
 		const opts = parseTelegramOpts(args.slice(1));
-		const token = opts.token ?? process.env.SNS_TELEGRAM_BOT_TOKEN;
+		// Documented precedence: flag > env > config (see TG_HELP). Empty/blank
+		// values fall through so `--token ""` or an empty config field cannot
+		// shadow a usable env token.
+		const token = resolveTelegramToken(
+			opts.token,
+			process.env.SNS_TELEGRAM_BOT_TOKEN,
+			loadConfig()?.telegram.token,
+		);
 		if (!token) {
 			process.stderr.write(
-				"✗ no token: pass --token <TOKEN> or set SNS_TELEGRAM_BOT_TOKEN\n",
+				"✗ no token: pass --token <TOKEN>, set SNS_TELEGRAM_BOT_TOKEN, or set telegram.token in config\n",
 			);
 			return 2;
 		}
