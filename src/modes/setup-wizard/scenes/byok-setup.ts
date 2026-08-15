@@ -80,6 +80,8 @@ export class ByokSetupTab implements SetupTab {
 	readonly id = "byok";
 	readonly label = "BYOK";
 	get modal(): boolean { return this.#detecting; }
+	/** BYOK uses Tab to move between Base URL, API Key, and API Type fields. */
+	tabKeyOwned(): boolean { return true; }
 
 	#baseUrl: FieldInput;
 	#apiKey: FieldInput;

@@ -11,7 +11,7 @@ import { WebSearchTab } from "./web-search";
  * panel owns rendering and input, while modal panels (e.g. an in-flight OAuth
  * login) temporarily suppress tab switching.
  */
-class ProvidersSceneController implements SetupSceneController {
+export class ProvidersSceneController implements SetupSceneController {
 	title = "Set up your providers";
 	subtitle = "Sign in, bring your own key, or pick a web search provider. Press Esc when you're done.";
 
@@ -20,8 +20,8 @@ class ProvidersSceneController implements SetupSceneController {
 	/** Lines the tab bar occupied in the last render (body starts one blank line below). */
 	#tabRowCount = 1;
 
-	constructor(host: SetupSceneHost) {
-		this.#tabs = [new ByokSetupTab(host), new SignInTab(host), new WebSearchTab(host)];
+	constructor(host: SetupSceneHost, tabs?: SetupTab[]) {
+		this.#tabs = tabs ?? [new ByokSetupTab(host), new SignInTab(host), new WebSearchTab(host)];
 		this.#tabBar = new TabBar(
 			"Providers",
 			this.#tabs.map(tab => ({ id: tab.id, label: tab.label })),
@@ -48,6 +48,16 @@ class ProvidersSceneController implements SetupSceneController {
 	handleInput(data: string): void {
 		const tab = this.#activeTab();
 		if (tab.modal) {
+			tab.handleInput(data);
+			return;
+		}
+		// Route Tab/Shift+Tab to the TAB first so field navigation inside a
+		// panel (e.g. BYOK's Base URL -> API Key -> API Type) wins over
+		// tab-bar switching. The tab bar only handles keybinds the active
+		// panel explicitly declines (its handleInput returns false - e.g. the
+		// Sign in selector and Web search list do use Tab for their own
+		// navigation).
+		if ((data === "	" || data === "\x1b[Z") && tab.tabKeyOwned?.()) {
 			tab.handleInput(data);
 			return;
 		}

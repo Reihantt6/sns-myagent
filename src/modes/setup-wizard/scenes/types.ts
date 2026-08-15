@@ -38,6 +38,12 @@ export interface SetupTab {
 	 * login). The parent scene MUST NOT switch tabs or finish while modal.
 	 */
 	readonly modal: boolean;
+	/**
+	 * When true, this tab wants Tab/Shift+Tab for its own field navigation
+	 * (e.g. BYOK's Base URL -> API Key -> API Type). The parent scene then
+	 * forwards the key to the tab instead of switching tabs.
+	 */
+	tabKeyOwned?(): boolean;
 	render(width: number): readonly string[];
 	handleInput(data: string): void;
 	invalidate(): void;
