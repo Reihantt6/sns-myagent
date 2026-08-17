@@ -1,11 +1,13 @@
 /**
  * TBM benchmark — subsystem-level, OFF vs ON.
  *
- * IMPORTANT SCOPE NOTE: TBM is NOT wired into the main agent loop (see
- * AUDIT-REPORT.md). This benchmark therefore measures the TbmManager
- * subsystem directly on a simulated 20-turn conversation. It does NOT
- * measure an end-to-end agent session; any savings claim must stay scoped
- * to this harness.
+ * SCOPE NOTE: TBM is now wired into the main agent loop (see session-hooks.ts
+ * + sdk.ts), but this benchmark still drives `TbmManager` directly on a
+ * deterministic 20-turn synthetic conversation so the OFF/ON comparison is
+ * reproducible with no network or model. It measures the subsystem's token
+ * accounting, not a real provider round-trip; output tokens and real model
+ * latency are therefore NOT measured here (there is no model). Any savings
+ * claim must stay scoped to this harness.
  *
  * Run: bun scripts/tbm-benchmark.ts
  */
@@ -97,9 +99,11 @@ function summarize(label: string, result: { turns: TurnStats[]; totalMs: number 
 	const tombstones = result.turns.reduce((sum, t) => sum + t.tombstoned, 0);
 
 	console.log(`\n=== ${label} ===`);
-	console.log(`total content tokens sent:        ${contentTokens}`);
-	console.log(`total directive tokens:           ${directiveTokens}`);
+	console.log(`input (content) tokens sent:      ${contentTokens}`);
+	console.log(`directive tokens:                 ${directiveTokens}`);
+	console.log(`total tokens (input + directive): ${contentTokens + directiveTokens}`);
 	console.log(`tokens reported saved by TBM:     ${saved}`);
+	console.log(`simulated model calls (turns):    ${result.turns.length}`);
 	console.log(`context-delta cache hits:         ${deltaHits}/${result.turns.length}`);
 	console.log(`tool outputs compressed:          ${compressed}/${result.turns.length}`);
 	console.log(`response cache hits:              ${cacheHits}/${result.turns.length}`);
