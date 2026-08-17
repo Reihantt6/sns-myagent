@@ -223,6 +223,10 @@ Docs audited against source; corrected where they diverged from reality:
 | `docs/security-model.md` | new: evidence-based attack-surface table + severity ratings |
 | `docs/upstream.md` | new: lineage, dependency-drift table, backport recommendation |
 | `docs/troubleshooting.md` | corrected JS-only-mode/TUI note |
+| `docs/development.md` | new (session 3): custom node_modules postinstall + pi-natives patch + drift table |
+| `docs/memory.md` | rewritten (session 4): correct backend table (default `off`, `mnemosyne` dead, `mem0`/`lcm` local) + template |
+| `docs/architecture.md` | new (session 4): runtime agent-loop integration points |
+| `docs/telegram.md` | new (session 4): Telegram adapter + authorization boundary |
 
 Remaining doc gap: no dedicated deep pages for goals/subagents/MCP/cron/browser/plugins/
 collaboration beyond README coverage (recorded, not created for volume).
