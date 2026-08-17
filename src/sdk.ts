@@ -108,7 +108,7 @@ import {
 import { AgentSession } from "./session/agent-session";
 import { TbmManager } from "./tbm";
 import { resolveTbmConfigFromSettings } from "./tbm/settings-bridge";
-import { applyTbmPreModel } from "./tbm/session-hooks";
+import { composeTransformContext } from "./tbm/session-hooks";
 import { discoverAuthStorage as discoverAuthStorageFromConfig } from "./session/auth-broker-config";
 import type { AuthStorage } from "./session/auth-storage";
 import {
@@ -2421,11 +2421,11 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		const tbmConfig = resolveTbmConfigFromSettings(settings);
 		const tbmManager: TbmManager | undefined = tbmConfig.enabled ? new TbmManager(tbmConfig) : undefined;
 
-		const transformContext = async (messages: AgentMessage[], _signal?: AbortSignal) => {
-			const withContext = await extensionRunner.emitContext(messages);
-			const withTbm = applyTbmPreModel(tbmManager, withContext);
-			return wrapSteeringForModel(withTbm);
-		};
+		const transformContext = composeTransformContext({
+			tbm: tbmManager,
+			emitContext: messages => extensionRunner.emitContext(messages),
+			wrapSteering: wrapSteeringForModel,
+		});
 		// Per-request provider-context transforms. Obfuscate FIRST so secrets are
 		// redacted from text before snapcompact rasterizes it into PNG frames.
 		// Both operate on the transient outgoing Context only — never persisted.
