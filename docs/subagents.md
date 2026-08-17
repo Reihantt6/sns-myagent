@@ -42,6 +42,13 @@ async:
 > /task status <id>
 ```
 
+## Screenshot
+
+![Subagents / task manager](screenshots/task.png)
+
+`/task` command surface in the TUI (usage + async job list) — captured in a
+sandboxed, anonymized workspace from the current build.
+
 ## Expected behavior
 
 - Subagent results are delivered per-item; the caller sees usage + progress.

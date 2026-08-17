@@ -33,6 +33,14 @@ You (Telegram):  /status
 Bot:             Session: active · model: claude-sonnet · backend: mnemopi
 ```
 
+## Screenshot
+
+![Telegram status (sanitized)](screenshots/telegram.png)
+
+`snsagent telegram status` shows the adapter state and **no** secrets: token
+fields display as `unset`/`empty`. A real conversation screenshot is not
+committed because it would contain the configured bot token / chat contents.
+
 ## Expected behavior
 
 - When `SNS_TELEGRAM_ALLOWED_USERS` is set, only the listed user ids (and group chats

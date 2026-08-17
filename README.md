@@ -70,6 +70,17 @@ see the note below about the compiled binary). Click any thumbnail for the full-
 | `/mcp` surface | ![MCP](./docs/screenshots/mcp.png) |
 | `/stats` dashboard | ![Stats](./docs/screenshots/stats.png) |
 | Error state (no model) | ![Error state](./docs/screenshots/error-state.png) |
+| `/goal` (active objective) | ![Goal mode](./docs/screenshots/goal.png) |
+| `/cron list` (scheduled jobs) | ![Cron](./docs/screenshots/cron.png) |
+| `/task` (async subagent jobs) | ![Subagents / tasks](./docs/screenshots/task.png) |
+| `/browser` mode toggle | ![Browser](./docs/screenshots/browser.png) |
+| `/compact` (nothing to compact) | ![Compaction](./docs/screenshots/compact.png) |
+| `telegram status` (sanitized, no token) | ![Telegram status](./docs/screenshots/telegram.png) |
+| `/tools` inspector | ![Tools](./docs/screenshots/tools.png) |
+| Setup-wizard glyphs | ![Setup glyphs](./docs/screenshots/setup-glyphs.png) |
+| TBM dashboard | ![TBM dashboard](./docs/screenshots/tbm-dashboard.png) |
+| `/help` shortcut list | ![Help](./docs/screenshots/help.png) |
+| Collab comm-mode indicator | ![Comm mode](./docs/screenshots/comm-mode.png) |
 
 > **Compiled binary note.** `./bin/snsagent-linux-x64` (and the npm-installed binary) runs in
 > "JS-only mode" — the native pty/grep/shell addon is not embedded, so the *interactive TUI*
