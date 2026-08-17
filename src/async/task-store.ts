@@ -132,7 +132,10 @@ export class TaskStore {
   cleanup(maxAgeMs: number = 7 * 24 * 60 * 60 * 1000): number {
     const cutoff = Date.now() - maxAgeMs;
     const result = this.#db.run(
-      "DELETE FROM async_tasks WHERE status IN ('completed', 'failed', 'cancelled') AND completed_at < ?",
+      // Inclusive boundary: a task completed exactly `maxAgeMs` ago is due for
+      // cleanup. A strict `<` made `cleanup(0)` race millisecond precision
+      // (completed_at === cutoff in the same tick) and intermittently return 0.
+      "DELETE FROM async_tasks WHERE status IN ('completed', 'failed', 'cancelled') AND completed_at <= ?",
       [cutoff],
     );
     return result.changes;
