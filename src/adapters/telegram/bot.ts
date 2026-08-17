@@ -29,6 +29,13 @@ export interface TelegramBotOptions {
 	getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
 	/** Per\\-chat session store. Injectable for tests; defaults to a Map. */
 	sessionStore?: Map<string, number>;
+	/**
+	 * Optional authorization allowlist of numeric Telegram user ids. When set,
+	 * inbound messages from any other user (or any chat) are rejected before
+	 * they reach the agent. When unset, the bot is open to every user who can
+	 * find it — callers should log a warning in that case.
+	 */
+	allowedUserIds?: Set<number>;
 	/** Logger overrides. */
 	logger?: typeof logger;
 }
@@ -174,6 +181,22 @@ export class TelegramBot {
 		const msg = ctx.message;
 		if (!msg) return;
 		const parsed = parseMessage(msg);
+
+		// Authorization gate. This is the ONLY identity check in the adapter:
+		// without an allowlist the bot executes agent actions (with auto-approve)
+		// for any user in any chat. When an allowlist is configured, deny by
+		// default — a missing `from` yields userId 0, which is not in the list.
+		if (this.#opts.allowedUserIds && !this.#opts.allowedUserIds.has(parsed.userId)) {
+			logger.warn("telegram: rejecting unauthorized message", {
+				userId: parsed.userId,
+				chatId: parsed.chatId,
+			});
+			await ctx
+				.reply("⛔ Unauthorized. This bot is restricted to specific users.", { parse_mode: undefined })
+				.catch(() => {});
+			return;
+		}
+
 		const sessionKey = String(parsed.chatId);
 		this.#sessionStore.set(sessionKey, (this.#sessionStore.get(sessionKey) ?? 0) + 1);
 

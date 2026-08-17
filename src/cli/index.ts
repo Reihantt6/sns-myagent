@@ -433,8 +433,10 @@ async function cmdTelegram(args: string[]): Promise<number> {
 
 		// Load Telegram and the agent bridge only for the explicit Telegram command;
 		// version/help and the normal CLI router should not pay this startup cost.
-		const [{ startTelegramAdapter, stopTelegramAdapter }, { createForwardToAgent, resetChatSession, getBridgeStats }] =
-			await Promise.all([import("../adapters/telegram/index.js"), import("../adapters/telegram/bridge.js")]);
+		const [
+			{ startTelegramAdapter, stopTelegramAdapter, resolveTelegramAllowedUsers },
+			{ createForwardToAgent, resetChatSession, getBridgeStats },
+		] = await Promise.all([import("../adapters/telegram/index.js"), import("../adapters/telegram/bridge.js")]);
 
 		// Wire the agent bridge — per-chat sessions via createAgentSession()
 		const agentForwarder = createForwardToAgent();
@@ -447,6 +449,7 @@ async function cmdTelegram(args: string[]): Promise<number> {
 			forwardToAgent,
 			resetChatSession,
 			getBridgeStats,
+			allowedUserIds: resolveTelegramAllowedUsers(),
 		});
 		if (!bot) {
 			process.stderr.write("✗ autostart refused by adapter\n");
