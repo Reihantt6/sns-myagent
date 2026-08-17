@@ -534,7 +534,7 @@ Detailed guides live in [`docs/`](./docs/):
 | [Memory](./docs/memory.md) | Memory backends and how to switch |
 | [Termux (Android)](./docs/termux.md) | Running on Android/Termux |
 | [Terminal UI](./docs/terminal-ui.md) | The interactive TUI |
-| [TBM](./docs/tbm.md) | Token budget manager (design doc, planned) |
+| [TBM](./docs/tbm.md) | Token budget manager (integrated, default OFF) |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
 | [FAQ](./docs/faq.md) | Frequently asked questions |
 
@@ -798,7 +798,7 @@ was demonstrated, not just a green unit test.
 | Setup wizard | ✅ VERIFIED | `src/modes/setup-wizard/` + tests + screenshots |
 | Memory (mnemopi) | ✅ VERIFIED | `src/memory-backend/__tests__/memory-integration.test.ts` (retain→persist→recall→inject) |
 | Memory (mem0/lcm/local) | ⚠️ PARTIAL | manual save/search; no auto-recall |
-| TBM | ⚠️ NOT INTEGRATED | `src/tbm/` has zero runtime consumers — see [docs/tbm.md](./docs/tbm.md) |
+| TBM | ✅ VERIFIED (integrated) | `src/tbm/session-hooks.ts` wired into transformContext + afterToolCall + turn-end; default OFF — see [docs/tbm.md](./docs/tbm.md) |
 | Telegram | ⚠️ PARTIAL | path wired; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` |
 | Goal mode | ⚠️ PARTIAL | `src/goals/` implemented; not deeply audited |
 | Subagents | ⚠️ PARTIAL | `src/task/`, `src/agents/` implemented; not deeply audited |

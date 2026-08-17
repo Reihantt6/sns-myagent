@@ -43,11 +43,15 @@ Classification vocabulary: `VERIFIED`, `PARTIALLY_VERIFIED`, `IMPLEMENTED_UNTEST
 
 **What is missing / not integrated:**
 
-- **TBM (`src/tbm/`)** is **not wired into the main agent loop**. Zero construction sites
-  exist outside `src/tbm/` and its test/benchmark harness; there is no `tbm.*` settings
-  schema key; the `/tbm` slash command is inert. This is the single largest functional gap.
 - `mnemosyne` is dead code (migrated to `mnemopi` at settings load) yet remains a selectable
   enum value.
+
+**Integrated in the follow-up pass (session 2, commit `a59bb93`):**
+
+- **TBM (`src/tbm/`)** is now wired into the main agent turn lifecycle (pre-model
+  comm-mode/tombstone/delta/pyramid/lazy-skills, post-tool compression, post-turn response
+  cache store), with a `tbm.*` settings schema (default OFF) and a unified token counter.
+  See the TBM Audit section.
 
 **Security posture:** one CRITICAL finding (Telegram had no authorization boundary) was
 mitigated with an opt-in allowlist; one HIGH finding (cross-project memory leakage from a
@@ -63,7 +67,7 @@ shared SQLite singleton) was fixed. Remaining risk is recorded in Security Gap A
 | Memory — mnemopi | yes | yes (30 tests, full path) | yes | yes (`memory-stats.png`, `memory-diagnose.png`) | VERIFIED |
 | Memory — mem0/lcm/mnemosyne/local | yes | yes (hermetic save/search/clear) | yes | — | PARTIALLY_VERIFIED (no auto-recall) |
 | Memory — mnemosyne | dead | migrated at load | yes | — | BROKEN (dead code) |
-| TBM | yes (self-contained) | yes (unit + harness) | yes (`docs/tbm.md`) | — | IMPLEMENTED_UNTESTED (not integrated) |
+| TBM | yes | yes (unit + harness + real-turn integration) | yes (`docs/tbm.md`) | — | VERIFIED (integrated) |
 | Telegram | yes | yes (handlers + auth gate) | yes | — | PARTIALLY_VERIFIED (auth opt-in) |
 | Goal mode | yes | partial | partial | — | PARTIALLY_VERIFIED |
 | Subagents / multi-agent | yes | partial | partial | — | PARTIALLY_VERIFIED |
@@ -117,68 +121,80 @@ no auto-recall or injection into agent context. `mnemosyne` is unreachable (migr
 
 ## TBM Audit
 
-**Integration result: NOT INTEGRATED.** Verified by call-graph audit, not assumed:
+**Integration result: INTEGRATED (session 2, commit `a59bb93`).** Previously `TbmManager`
+had zero construction sites; it is now wired into the real agent turn lifecycle:
 
-- No `new TbmManager(...)` anywhere outside `src/tbm/` + its test/benchmark harness.
-- `/tbm` and `/tbm mode` read `session.tbm`, but nothing ever assigns `session.tbm`, so the
-  command always reports "TBM not initialized".
-- No `tbm.*` key in `src/config/settings-schema.ts`; `resolveTbmConfig()` /
-  `DEFAULT_TBM_CONFIG` have zero callers outside `src/tbm/`.
+- `createAgentSession` (`src/sdk.ts`) builds a `TbmManager` from settings and passes it to
+  both the agent's `transformContext` (pre-model) and `AgentSession` (`session.tbm`,
+  post-tool / post-turn).
+- `session.tbm` is assigned, so `/tbm` and `/tbm mode` now render a real dashboard and
+  switch comm mode instead of reporting "TBM not initialized".
+- `tbm.*` keys exist in `src/config/settings-schema.ts` (master switch defaults **OFF**) and
+  are bridged to `TbmConfig` by `resolveTbmConfigFromSettings`.
+- Token counting is unified: `src/tbm/context-delta.ts` `estimateTokens` delegates to
+  `@oh-my-pi/pi-agent-core` `countTokens`.
 
-**Subsystem-by-subsystem** (all: no external callers, do not run on a real agent turn):
+**Subsystem-by-subsystem wiring** (`src/tbm/session-hooks.ts`):
 
-| Subsystem | External callers | Runs on a real turn? |
-|---|---:|---:|
-| `comm-modes.ts` | none | no |
-| `context-delta.ts` | none | no |
-| `context-pyramid.ts` | none | no |
-| `lazy-skills.ts` | none | no |
-| `response-cache.ts` | none | no |
-| `tombstone.ts` | none | no |
-| `tool-compress.ts` | none | no |
-| `dashboard.ts` | none | no |
-| `config.ts` | none | no |
-
-The `estimateTokens` used in `agent-session.ts` is imported from `@oh-my-pi/pi-agent-core`,
-**not** from TBM. The token budgets that *are* wired in (`src/goals/runtime.ts`,
-`src/task/executor.ts`, `src/modes/turn-budget.ts`) are independent of `TbmManager`.
+| Subsystem | Hook | Runs on a real turn? |
+|---|---|---|
+| `comm-modes.ts` | `transformContext` → `applyTbmPreModel` | yes |
+| `context-delta.ts` | `transformContext` → `applyTbmPreModel` (accounting) | yes |
+| `context-pyramid.ts` | `transformContext` → `applyTbmPreModel` | yes |
+| `lazy-skills.ts` | `transformContext` → `applyTbmPreModel` | yes |
+| `tombstone.ts` | `transformContext` → `applyTbmPreModel` | yes |
+| `tool-compress.ts` | `Agent.afterToolCall` → `applyTbmToolCompression` | yes |
+| `response-cache.ts` | `Agent.setOnTurnEnd` → `cacheTbmTurnResponse` (store-only) | yes |
+| `dashboard.ts` | `/tbm` slash command via `session.tbm` | yes |
+| `config.ts` | `resolveTbmConfigFromSettings` at session creation | yes |
 
 **Runtime diagram (actual call paths):**
 
 ```text
 User Turn
   ↓
-Agent Loop (src/session/agent-session.ts, src/sdk.ts)
+Agent Loop (src/sdk.ts transformContext, src/session/agent-session.ts)
   ↓
-TbmManager?          ← NOT WIRED (no construction site)
-  ├─ context delta        ✗
-  ├─ context pyramid      ✗
-  ├─ lazy skills          ✗
-  ├─ tool compression     ✗
-  ├─ response cache       ✗
-  ├─ tombstone            ✗
-  └─ communication mode   ✗
+TbmManager (built in createAgentSession when tbm.enabled)
+  ├─ context delta        ✓ accounting (transformContext)
+  ├─ context pyramid      ✓ (transformContext)
+  ├─ lazy skills          ✓ (transformContext)
+  ├─ tombstone            ✓ (transformContext, plain-text messages only)
+  ├─ communication mode   ✓ directive injection (transformContext)
+  ├─ tool compression     ✓ (afterToolCall)
+  └─ response cache       ✓ store-only (turn end)
   ↓
-model request (unaffected by any TBM subsystem)
+model request (comm directive + tombstoned messages affect the payload)
 ```
+
+**Honest limitations:** the response cache is store-only (a hit does not skip the model),
+context delta is accounting-only (it never drops the provider-cached prefix), and tombstone
+only touches plain-text `user`/`assistant` messages so tool-call pairing survives.
+
+**Integration test** (`src/tbm/__tests__/tbm-session-integration.test.ts`, 12 tests) proves
+observable payload effects on a real turn: comm-mode directive injected, old messages
+replaced by tombstones (originals do not re-enter verbatim; tool-call messages skipped),
+oversized tool output truncated, query/response cached, and `tbm.*` config consumed with a
+schema default of OFF.
 
 **Benchmark (harness-only, NOT end-to-end).** `bun scripts/tbm-benchmark.ts` drives
 `TbmManager` directly on a synthetic 20-turn conversation:
 
 | Metric | TBM OFF | TBM ON |
 |---|---:|---:|
-| content tokens sent | 28,510 | 1,836 |
+| input (content) tokens | 28,510 | 1,836 |
 | directive tokens | 0 | 890 |
+| total tokens (input + directive) | 28,510 | 2,726 |
+| simulated model calls (turns) | 20 | 20 |
 | context-delta cache hits | 0/20 | 19/20 |
 | tool outputs compressed | 0/20 | 20/20 |
 | response cache hits | 0/20 | 10/20 |
 | messages tombstoned | 0 | 700 |
-| latency (subsystem calls only) | 1.6 ms | 9.4 ms |
+| latency (subsystem calls only) | ~1 ms | ~8 ms |
 
 The measured 93.6% on-wire content-token reduction is a **harness** number dominated by the
 context-delta cache dropping a mostly-static synthetic prefix. It is **not** claimed as a
-real-session saving. No unsupported savings claim remains in the repo — `docs/tbm.md` states
-this explicitly.
+real-session saving. No unsupported savings claim remains — `docs/tbm.md` states this.
 
 ---
 
@@ -189,7 +205,7 @@ Docs audited against source; corrected where they diverged from reality:
 | Doc | Action |
 |---|---|
 | `README.md` | rewritten: verification matrix, corrected memory/TBM/Telegram/install claims, screenshot table |
-| `docs/tbm.md` | rewritten from design-intent to the verified "NOT integrated" finding + measured harness numbers |
+| `docs/tbm.md` | rewritten: documents the integrated lifecycle wiring, config, and measured harness numbers |
 | `docs/termux.md` | corrected: npm/prebuilt binary is glibc and does not run on Android; source-run is the viable path |
 | `docs/security-model.md` | new: evidence-based attack-surface table + severity ratings |
 | `docs/upstream.md` | new: lineage, dependency-drift table, backport recommendation |
@@ -294,12 +310,16 @@ Custom `postinstall` (must stay intact, verified clean):
 | `src/adapters/telegram/{bot,index}.ts`, `src/cli/{index,entry}.ts` | add opt-in `SNS_TELEGRAM_ALLOWED_USERS` authorization gate + startup warning |
 | `test/telegram-audit.test.ts` | add auth-gate tests |
 | `src/tbm/__tests__/tbm-audit.test.ts`, `scripts/tbm-benchmark.ts` | integrate/expand TBM unit + harness coverage |
+| `src/tbm/session-hooks.ts`, `src/tbm/settings-bridge.ts`, `src/config/settings-schema.ts`, `src/sdk.ts`, `src/session/agent-session.ts`, `src/tbm/context-delta.ts` | wire TBM into the main turn lifecycle; add `tbm.*` config; unify token counting (session 2) |
+| `src/tbm/__tests__/tbm-session-integration.test.ts` | real-turn integration test (12 tests) |
+| `scripts/tbm-benchmark.ts` | report input/total tokens + model-call count; refresh scope note |
 | `docs/tbm.md`, `docs/security-model.md`, `docs/upstream.md`, `docs/termux.md`, `docs/troubleshooting.md`, `README.md` | align docs with verified reality |
 | `install.sh`, `scripts/fetch-binary.mjs` | fix macOS asset naming (darwin→macos); hard-fail on broken `--version`; route Termux to source build |
 | `AUDIT-BASELINE.md` | record re-verified baseline + WIP test isolation findings |
 
-Commits (one per unit): `2654f2c`, `7e36b36`, `ac33a42`, `f93606a`, `5b28dc8`, `20a43d0`,
-`8e717e6`, `e0ba014`.
+Session 1 commits (one per unit): `2654f2c`, `7e36b36`, `ac33a42`, `f93606a`, `5b28dc8`,
+`20a43d0`, `8e717e6`, `e0ba014`. Session 2 commits: `a59bb93` (TBM integration + tests),
+`1814f06` (benchmark metrics).
 
 Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, `.claude/`,
 `skills-lock.json`, plan files.
@@ -310,22 +330,24 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
 
 | Command | Result |
 |---|---|
-| `bun test src` | 299 pass / 2 skip / **0 fail** (28 files) — committed unit tests |
+| `bun test src` | 309 pass / 2 skip / **2 fail** (29 files) — the 2 failures are pre-existing time-based flakes (`TaskStore > cleanup removes old completed tasks`, `CustomEditor placeholder decoration`); both pass in isolation/reruns and are unrelated to this change |
+| `bun test src/tbm/__tests__/` | 70 pass / **0 fail** (3 files) — incl. 12 real-turn integration tests |
+| `bun test src/memory-backend/__tests__/memory-integration.test.ts` | 30 pass / **0 fail** — memory path re-verified |
 | `bun test test/` | 63 pass / **0 fail** (4 files) — committed integration tests |
 | `bun test` (whole tree) | 787 pass / 57 fail / 4 errors — **all failures in untracked `agent/skills/**`** (vendored third-party skills with missing external deps `@earendil-works/pi-coding-agent`, `hyperframes`); out of scope, left untracked |
 | `bun run build` | exit 0 — produces `bin/snsagent-linux-x64` + `bin/snsagent` (117 MB) |
 | `bunx tsc -p tsconfig.json --noEmit` | exit 0 — typecheck passes (package.json `check:types` uses `tsgo`, not installed; `tsc` is the working equivalent) |
 | `bunx biome lint src test scripts` | exit 0 (biome 0.3.3) |
-| `bun scripts/tbm-benchmark.ts` | runs (harness numbers recorded in TBM Audit) |
+| `bun scripts/tbm-benchmark.ts` | runs — measured OFF/ON numbers recorded in TBM Audit |
 | `install.sh` prebuilt path (sandboxed) | linux-x64 download + `--version` verified against real v0.3.9 release |
 
 ---
 
 ## Remaining Risks
 
-1. **TBM is not integrated** — `src/tbm/` is dead at runtime until someone wires `TbmManager`
-   into `agent-session.ts` and adds a `tbm.*` schema entry. Real-session token savings are
-   unproven.
+1. **TBM is integrated but real-session savings are unproven** — the response cache is
+   store-only (hits do not skip the model) and context delta is accounting-only (it never
+   drops the provider-cached prefix). End-to-end token savings need a real-model benchmark.
 2. **Telegram authorization is opt-in** — `SNS_TELEGRAM_ALLOWED_USERS` defaults to open; a
    misconfigured deployment is still an unauthenticated remote-execution surface.
 3. **Telegram tools auto-approve** — `autoApprove: true` remains; the allowlist gates entry
@@ -354,7 +376,7 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
 - [x] memory injection budget is verified
 - [x] memory clear/delete is verified
 - [x] TBM unit tests pass
-- [x] TBM main-loop integration is proven or clearly marked missing (clearly marked **missing**)
+- [x] TBM main-loop integration is proven (session-hooks wired into transformContext, afterToolCall, turn-end)
 - [x] TBM benchmark data exists
 - [x] no unsupported TBM savings claim remains
 - [x] Telegram end-to-end path is tested

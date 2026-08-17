@@ -1,113 +1,102 @@
 # Token Budget Manager (TBM)
 
-## Status: NOT integrated into the main agent loop
+## Status: INTEGRATED into the main agent loop
 
-`src/tbm/` contains a complete, self-contained `TbmManager` with nine subsystems and
-unit tests. **It is not wired into the main agent loop.** This was verified by
-call-graph audit, not assumed from docs:
+`src/tbm/` is now wired into the real agent turn lifecycle (commit `a59bb93`).
+Previously it was self-contained dead code with zero construction sites; the
+integration is verified by call-graph + an integration test, not by docs.
 
-- No `new TbmManager(...)` exists anywhere outside `src/tbm/` and its test/benchmark
-  harness. Grep across `src/`, `test/`, and `scripts/` returns zero construction sites.
-- The `/tbm` and `/tbm mode` slash commands read `session.tbm`, but **nothing ever
-  assigns `session.tbm`**, so at runtime those commands always report
-  `TBM not initialized. Check config tbm.enabled.`
-- There is **no `tbm.*` key in `src/config/settings-schema.ts`**. The `TbmConfig`
-  type in `src/tbm/config.ts` (and its "loaded from `.sns-myagent/config.yaml`
-  under the `tbm:` key" comment) is not backed by any schema entry, so a `tbm:`
-  block in the persisted settings file is never parsed or consumed.
-- `resolveTbmConfig()` / `DEFAULT_TBM_CONFIG` have zero callers outside `src/tbm/`.
+- `createAgentSession` (`src/sdk.ts`) builds a `TbmManager` from `settings` and
+  passes it to both the agent's `transformContext` (pre-model) and `AgentSession`
+  (`session.tbm`, post-tool / post-turn).
+- `session.tbm` is assigned, so `/tbm` and `/tbm mode` now render a real dashboard
+  and switch the comm mode instead of reporting "TBM not initialized".
 
-Per-subsystem callers (all outside `src/tbm/` = none):
+### Turn lifecycle wiring
 
-| Subsystem | External callers | Runs on a real agent turn? |
+| Phase | Subsystem | Hook |
 |---|---|---|
-| `comm-modes.ts` (`CommunicationModeManager`) | none | no |
-| `context-delta.ts` (`ContextDeltaCache`) | none | no |
-| `context-pyramid.ts` (`ContextPyramid`) | none | no |
-| `lazy-skills.ts` (`LazySkillLoader`) | none | no |
-| `response-cache.ts` (`ResponseCache`) | none | no |
-| `tombstone.ts` (`ConversationTombstoner`) | none | no |
-| `tool-compress.ts` (`ToolOutputCompressor`) | none | no |
-| `dashboard.ts` (`buildDashboard`/render) | none (slash command is un-wired) | no |
-| `config.ts` (`resolveTbmConfig`) | none | no |
+| pre-model | comm-mode directive | `transformContext` → `applyTbmPreModel` |
+| pre-model | tombstone (old plain-text messages) | `transformContext` → `applyTbmPreModel` |
+| pre-model | context-delta accounting | `transformContext` → `applyTbmPreModel` |
+| pre-model | pyramid level | `transformContext` → `applyTbmPreModel` |
+| pre-model | lazy skills | `transformContext` → `applyTbmPreModel` |
+| post-tool | tool-output compression | `Agent.afterToolCall` → `applyTbmToolCompression` |
+| post-turn | response-cache store | `Agent.setOnTurnEnd` → `cacheTbmTurnResponse` |
 
-> `estimateTokens` is also exported from `src/tbm/context-delta.ts`, but the
-> `estimateTokens` used in `src/session/agent-session.ts` is imported from
-> `@oh-my-pi/pi-agent-core`, not from TBM.
+All hooks live in `src/tbm/session-hooks.ts` as pure functions of
+`(TbmManager, messages)` so they can be driven with real `AgentMessage` shapes in
+tests and still produce observable payload effects.
 
-### Runtime diagram (actual call paths, not design intent)
+### Configuration
 
-```text
-User Turn
-  ↓
-Agent Loop (src/session/agent-session.ts, src/sdk.ts)
-  ↓
-TbmManager?          ← NOT WIRED (no construction site)
-  ├─ context delta        ✗
-  ├─ context pyramid      ✗
-  ├─ lazy skills          ✗
-  ├─ tool compression     ✗
-  ├─ response cache       ✗
-  ├─ tombstone            ✗
-  └─ communication mode   ✗
-  ↓
-model request (unaffected by any TBM subsystem)
+`tbm.*` keys are declared in `src/config/settings-schema.ts` and bridged to
+`TbmConfig` by `src/tbm/settings-bridge.ts` (`resolveTbmConfigFromSettings`). Set
+a `tbm:` block in config.yml, e.g.:
+
+```yaml
+tbm:
+  enabled: true
+  commMode: caveman
+  compressTerminal: 500
 ```
 
-The `/tbm` slash command is the only user-facing surface and it is inert.
+The master switch **defaults to OFF**, so the existing loop is byte-for-byte
+unchanged until a user opts in. When disabled, every hook is a pass-through.
 
-## What TBM does provide today
+### Token counting is unified
 
-`TbmManager` exposes a coherent API for processing a turn, compressing tool output,
-caching responses, tombstoning messages, registering skills, switching communication
-mode, and rendering the token dashboard. It is unit-tested
-(`src/tbm/__tests__/tbm.test.ts` and `src/tbm/__tests__/tbm-audit.test.ts`) and can be
-exercised through the standalone harness `scripts/tbm-benchmark.ts`.
+`src/tbm/context-delta.ts` `estimateTokens` delegates to
+`@oh-my-pi/pi-agent-core` `countTokens` — the same byte-based estimator the
+session uses for compaction — instead of a divergent chars/4 heuristic.
 
-## Token budgets that ARE separately integrated
+## What TBM does NOT do yet (honest limitations)
 
-The main tree has its own, independent token-budget controls (not `TbmManager`):
-
-- Goal token budgets — `src/goals/runtime.ts`.
-- Soft subagent request budgets — `src/task/executor.ts`.
-- The `+Nk`/`+Nm` turn-budget directive — `src/modes/turn-budget.ts`, surfaced to the
-  eval `budget` helper via `src/tools/index.ts` `getTurnBudget`.
-
-Do not conflate these with the `TbmManager` class.
+- **Response cache is store-only.** `cacheTbmTurnResponse` records the
+  (query → response) pair, but a cache hit does **not** short-circuit the model
+  call — the structured loop cannot safely skip a turn here yet.
+- **Context delta is accounting-only.** `processTurn` hashes a static/dynamic
+  split and reports saved tokens, but it never drops the static prefix from the
+  wire. The provider prompt cache already handles real prefix caching; TBM only
+  measures it.
+- **Tombstone only touches plain-text `user`/`assistant` messages.** Messages with
+  tool calls, images, or thinking blocks are skipped so tool-call ↔ tool-result
+  pairing survives.
 
 ## Measured harness benchmark (not end-to-end)
 
-`bun scripts/tbm-benchmark.ts` drives `TbmManager` directly on a synthetic 20-turn
-conversation. This measures the subsystem in isolation, **not** an agent session.
+`bun scripts/tbm-benchmark.ts` drives `TbmManager` directly on a deterministic
+20-turn synthetic conversation (no network/model). Output tokens and real model
+latency are therefore **not** measured here.
 
 | Metric | TBM OFF | TBM ON |
 |---|---:|---:|
-| content tokens sent | 28,510 | 1,836 |
+| input (content) tokens | 28,510 | 1,836 |
 | directive tokens | 0 | 890 |
+| total tokens (input + directive) | 28,510 | 2,726 |
+| simulated model calls (turns) | 20 | 20 |
 | context-delta cache hits | 0/20 | 19/20 |
 | tool outputs compressed | 0/20 | 20/20 |
 | response cache hits | 0/20 | 10/20 |
 | messages tombstoned | 0 | 700 |
-| latency (subsystem calls only) | 1.6 ms | 9.4 ms |
+| latency (subsystem calls only) | ~1 ms | ~8 ms |
 
-Measured harness reduction: **93.6% fewer on-wire content tokens** in this specific
-synthetic harness. This number is **not** a claim about real sessions — it is dominated
-by the context-delta cache dropping a mostly-static synthetic prefix. Real-session
-savings can only be claimed after TBM is actually wired into the agent loop and
-benchmarked end-to-end.
+Measured harness reduction: **93.6% fewer on-wire content tokens** in this
+synthetic harness, dominated by the context-delta cache dropping a mostly-static
+prefix. This is **not** a claim about real sessions.
 
 ## Testing
 
 ```bash
 bun test src/tbm/__tests__/tbm.test.ts
 bun test src/tbm/__tests__/tbm-audit.test.ts
+bun test src/tbm/__tests__/tbm-session-integration.test.ts   # real-turn hooks
 bun scripts/tbm-benchmark.ts
 ```
 
-## Configuration note
-
-`src/tbm/config.ts` defines `TbmConfig` with `DEFAULT_TBM_CONFIG` (everything enabled).
-This object is **not** wired into the settings schema or the settings loader. Setting a
-`tbm:` block in `.sns-myagent/config.yaml` has no runtime effect today. If TBM is ever
-integrated, the config must first be added to `src/config/settings-schema.ts` and consumed
-through `Settings.get(...)` like every other subsystem.
+`tbm-session-integration.test.ts` asserts observable payload effects on a real
+turn: the comm-mode directive is injected, old messages are replaced by
+tombstones (originals do not re-enter verbatim, tool-call messages are skipped),
+oversized tool output is truncated, and the finished turn's query/response pair
+lands in the response cache. It also proves `tbm.*` config is consumed and the
+schema default is OFF.
