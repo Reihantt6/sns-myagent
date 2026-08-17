@@ -11,6 +11,12 @@ import { composeTransformContext } from "../session-hooks";
  * transform is wired through `composeTransformContext` — the exact function
  * `createAgentSession` (src/sdk.ts) passes to the session. If the TBM step is
  * removed from that seam, these tests fail (regression-proof wiring).
+ *
+ * The response-cache store path lives in the *post-turn* `setOnTurnEnd` hook
+ * (`cacheTbmTurnResponse`, wired at src/session/agent-session.ts). That hook is
+ * exercised directly in tbm-session-integration.test.ts; pi-agent-core's loop
+ * does not fire `onTurnEnd` from a minimal mock stream, so it is not asserted
+ * through `Agent.prompt` here.
  */
 
 const mockModel = {
