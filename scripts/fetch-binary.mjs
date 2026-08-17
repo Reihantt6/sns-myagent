@@ -8,8 +8,8 @@
 // Asset layout matches what .github/workflows/build-release.yml produces:
 //   snsagent-linux-x64          (raw, not zipped)
 //   snsagent-linux-arm64
-//   snsagent-darwin-x64
-//   snsagent-darwin-arm64
+//   snsagent-macos-x64
+//   snsagent-macos-arm64
 //   snsagent-windows-x64.exe
 //
 // Falls back to musl variant on Linux if glibc asset unavailable.
@@ -62,7 +62,7 @@ function pickAssetName(platform, arch, isMusl) {
 	if (platform === "darwin") {
 		const a = x(arch);
 		if (!a) return null;
-		return [`snsagent-darwin-${a}`];
+		return [`snsagent-macos-${a}`];
 	}
 	if (platform === "win32") {
 		return arch === "x64" ? [`snsagent-windows-x64.exe`] : null;
