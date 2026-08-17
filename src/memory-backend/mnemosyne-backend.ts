@@ -171,23 +171,28 @@ function consolidateEpisodic(db: Database): number {
 // Backend
 // ---------------------------------------------------------------------------
 
-let db: Database | undefined;
+// Per-agentDir handle registry. The previous module-level `let db` singleton
+// ignored `agentDir` after the first open, so a second project in the same
+// process silently shared (and polluted) the first project's SQLite file — a
+// cross-project scope-isolation bug. Keying by resolved path keeps each agent
+// directory's three-tier memory isolated.
+const dbs = new Map<string, Database>();
 
 function getDb(agentDir: string): Database {
-	if (db) return db;
 	const p = dbPath(agentDir);
-	db = new Database(p);
-	db.exec("PRAGMA journal_mode=WAL");
-	db.exec("PRAGMA foreign_keys=ON");
-	initSchema(db);
-	return db;
+	const existing = dbs.get(p);
+	if (existing) return existing;
+	const database = new Database(p);
+	database.exec("PRAGMA journal_mode=WAL");
+	database.exec("PRAGMA foreign_keys=ON");
+	initSchema(database);
+	dbs.set(p, database);
+	return database;
 }
 
 function resetDb(): void {
-	if (db) {
-		db.close();
-		db = undefined;
-	}
+	for (const database of dbs.values()) database.close();
+	dbs.clear();
 }
 
 function ftsSearch(
@@ -256,13 +261,10 @@ export const mnemosyneBackend: MemoryBackend = {
 
 	async clear(agentDir): Promise<void> {
 		try {
-			const p = dbPath(agentDir);
-			const d = db;
-			if (d) {
-				d.exec("DELETE FROM episodic");
-				d.exec("DELETE FROM semantic");
-				d.exec("DELETE FROM procedural");
-			}
+			const database = getDb(agentDir);
+			database.exec("DELETE FROM episodic");
+			database.exec("DELETE FROM semantic");
+			database.exec("DELETE FROM procedural");
 		} catch {
 			// swallow
 		}

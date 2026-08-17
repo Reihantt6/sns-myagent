@@ -87,15 +87,22 @@ function initSchema(database: Database): void {
 // Backend
 // ---------------------------------------------------------------------------
 
-let db: Database | undefined;
+// Per-agentDir handle registry. The previous module-level `let db` singleton
+// ignored `agentDir` after the first open, so a second project in the same
+// process silently shared (and polluted) the first project's SQLite file — a
+// cross-project scope-isolation bug. Keying by resolved path keeps each agent
+// directory's facts isolated.
+const dbs = new Map<string, Database>();
 
 function getDb(agentDir: string): Database {
-	if (db) return db;
 	const p = dbPath(agentDir);
-	db = new Database(p);
-	db.exec("PRAGMA journal_mode=WAL");
-	initSchema(db);
-	return db;
+	const existing = dbs.get(p);
+	if (existing) return existing;
+	const database = new Database(p);
+	database.exec("PRAGMA journal_mode=WAL");
+	initSchema(database);
+	dbs.set(p, database);
+	return database;
 }
 
 export const mem0Backend: MemoryBackend = {
