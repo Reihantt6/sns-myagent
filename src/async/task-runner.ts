@@ -147,6 +147,10 @@ export class TaskRunner {
       this.#store.updateStatus(task.id, "failed", { error: errorMsg });
     } finally {
       this.#running.delete(task.id);
+      // After destroy the store may already be closed — never touch it here.
+      // (The try/catch above already bail on #destroyed; the finally block
+      // must too, or a late continuation hits a closed DB.)
+      if (this.#destroyed) return;
       // Refresh task from store for notification
       const updated = this.#store.getById(task.id);
       if (updated) this.#notify(updated);
