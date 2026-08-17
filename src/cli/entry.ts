@@ -24,10 +24,11 @@ async function maybeAutostartTelegram(): Promise<void> {
 
 	// Keep short-lived commands free of Grammy, the SDK, and extension-runtime
 	// imports. The bridge is only needed for an actual agent launch.
-	const [{ startTelegramAdapter }, { createForwardToAgent, getBridgeStats, resetChatSession }] = await Promise.all([
-		import("../adapters/telegram/index.js"),
-		import("../adapters/telegram/bridge.js"),
-	]);
+	const [{ startTelegramAdapter, resolveTelegramAllowedUsers }, { createForwardToAgent, getBridgeStats, resetChatSession }] =
+		await Promise.all([
+			import("../adapters/telegram/index.js"),
+			import("../adapters/telegram/bridge.js"),
+		]);
 	const agentForwarder = createForwardToAgent();
 	const forwardToAgent = (text: string, sessionKey: string) =>
 		agentForwarder(sessionKey, "telegram", text);
@@ -36,6 +37,7 @@ async function maybeAutostartTelegram(): Promise<void> {
 		forwardToAgent,
 		resetChatSession,
 		getBridgeStats,
+		allowedUserIds: resolveTelegramAllowedUsers(),
 	});
 }
 

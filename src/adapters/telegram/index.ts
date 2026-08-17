@@ -41,6 +41,7 @@ export function startTelegramAdapter(
 		forwardToAgent?: (text: string, sessionKey: string) => Promise<string>;
 		resetChatSession?: (chatId: string) => boolean;
 		getBridgeStats?: () => { activeSessions: number; chatIds: string[] };
+		allowedUserIds?: Set<number>;
 	} = {},
 ): TelegramBot | undefined {
 	if (activeBot) return activeBot;
@@ -53,8 +54,17 @@ export function startTelegramAdapter(
 		forwardToAgent: opts.forwardToAgent,
 		resetChatSession: opts.resetChatSession,
 		getBridgeStats: opts.getBridgeStats,
+		allowedUserIds: opts.allowedUserIds,
 	});
 	activeBot = bot;
+
+	// The adapter runs agent actions with auto-approve. If no allowlist is
+	// configured, every user who can reach the bot can drive those actions.
+	if (!opts.allowedUserIds || opts.allowedUserIds.size === 0) {
+		logger.warn(
+			"telegram: no SNS_TELEGRAM_ALLOWED_USERS allowlist — the bot will execute agent actions for ANY user who can message it",
+		);
+	}
 
 	bot.start().catch((error) => {
 		logger.debug("telegram: autostart failed", { error: String(error) });
@@ -72,6 +82,24 @@ export function startTelegramAdapter(
 	process.once("SIGTERM", shutdown);
 
 	return bot;
+}
+
+/**
+ * Parse `SNS_TELEGRAM_ALLOWED_USERS` (comma-separated numeric user ids) into a
+ * `Set<number>`. Returns `undefined` when the var is unset/empty so callers can
+ * distinguish "no restriction" from "explicit empty allowlist".
+ */
+export function resolveTelegramAllowedUsers(
+	raw: string | undefined = process.env.SNS_TELEGRAM_ALLOWED_USERS,
+): Set<number> | undefined {
+	const trimmed = raw?.trim();
+	if (!trimmed) return undefined;
+	const ids = new Set<number>();
+	for (const part of trimmed.split(",")) {
+		const value = Number(part.trim());
+		if (Number.isFinite(value) && value > 0) ids.add(value);
+	}
+	return ids;
 }
 
 /** Stop the autostarted instance (if any). Test\\-only helper. */
