@@ -160,3 +160,33 @@ describe("TaskRunner", () => {
     expect(updated!.result).toBe("polled: polled task");
   });
 });
+
+describe("TaskRunner shutdown safety", () => {
+  it("never touches the store after destroy + close (no closed-DB crash)", async () => {
+    // Regression: #executeTask's finally block used to call store.getById()
+    // without a #destroyed guard. Destroying the runner and closing the store
+    // while a task was in flight made the late continuation hit a closed DB,
+    // surfacing as an unhandled error attributed to an unrelated test.
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    runner.registerExecutor("slow", async () => {
+      await gate;
+      return { success: true, result: "ok" };
+    });
+
+    const task = store.create({ description: "in-flight during shutdown", taskType: "slow" });
+    void runner.submit(task);
+    // Give #executeTask a moment to reach the executor.
+    await new Promise((r) => setTimeout(r, 20));
+
+    runner.destroy();
+    store.close();
+    release();
+
+    // Let the finally continuation run — any DB access would throw here and
+    // fail the test as an unhandled error.
+    await new Promise((r) => setTimeout(r, 50));
+    // The task was never marked completed because shutdown won the race.
+    expect(runner.runningCount).toBe(0);
+  });
+});
