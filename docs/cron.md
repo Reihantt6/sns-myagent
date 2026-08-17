@@ -34,6 +34,13 @@ persistent SQLite-backed scheduler inside the agent process.
 > /cron run daily-backup
 ```
 
+## Screenshot
+
+![Cron jobs](screenshots/cron.png)
+
+`/cron list` after adding a job (`nightly-backup`, `0 2 * * *`, shell action) —
+from the current build in a sandboxed, anonymized workspace.
+
 ## Failure behavior
 
 - A tick that throws logs `Cron tick error:` and the scheduler keeps going on

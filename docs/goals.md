@@ -64,6 +64,14 @@ Schema keys: `goal.enabled`, `goal.statusInFooter`, `goal.continuationModes`
 - Not audited end-to-end with a real model run (unit-subject coverage only).
 - No multi-session goal ownership: the goal lives in the session that set it.
 
+## Screenshot
+
+![Goal mode active objective](../docs/screenshots/goal.png)
+
+`/goal show` with an active objective; the footer carries the `🎯 Goal`
+indicator and token budget. From the current build (no-model sandbox, anonymized
+workspace path).
+
 ## Testing status
 
 **PARTIAL** — implemented (`src/goals/` + registry wiring) with token-usage

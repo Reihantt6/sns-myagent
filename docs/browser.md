@@ -33,6 +33,13 @@ browser:
 > /browser            # switch headless ⭄ visible
 ```
 
+## Screenshot
+
+![Browser mode toggle](screenshots/browser.png)
+
+`/browser` reports the active mode (headless or visible) in the TUI — captured
+in a sandboxed, anonymized workspace from the current build.
+
 ## Failure behavior
 
 - Without a Chromium install, launch fails with a clear error; the tool

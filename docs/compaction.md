@@ -45,6 +45,13 @@ compaction:
 > /compact snapcompact           # bitmap archive, no LLM call
 ```
 
+## Screenshot
+
+![Compaction panel](screenshots/compact.png)
+
+`/compact` on an empty session — the honest empty-state message ("Nothing to
+compact"). Captured from the current build in a sandboxed, anonymized workspace.
+
 ## Failure behavior
 
 - A mode that demands a remote path (`requiresRemote`) with no remote endpoint
