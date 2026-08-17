@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <strong>BYOK coding agent CLI - 30 built-in tools, 62 slash commands, multi-provider LLM, memory, MCP, Telegram.</strong>
+  <strong>BYOK coding agent CLI — bring your own key, configure it by talking to it. Multi-provider LLM, memory, MCP, subagents, Telegram.</strong>
 </p>
 
 <p align="center">
@@ -29,338 +29,92 @@
 
 ---
 
-**snsagent** is a personal, single-user AI coding agent CLI. Bring your own API key, talk to the agent, and it configures itself - MCP servers, memory backends, model switching, all through conversation. Purpose-built for single-user terminal use with conversational configuration.
+**snsagent** is a personal, single-user AI coding agent for the terminal. Bring your own
+API key (BYOK), talk to the agent, and it configures itself — MCP servers, memory backends,
+model switching — through conversation. No forced subscription; the ~120 MB binary is yours
+to run anywhere.
 
 ---
 
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [Features](#features)
-- [Tools](#tools-30-built-in)
-- [Slash Commands](#slash-commands)
-- [Memory Backends](#memory-backends)
-- [Which command do I run?](#which-command-do-i-run)
+- [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Termux (Android)](#termux-android)
-- [Quick Start](#quick-start)
 - [Configuration](#configuration)
-- [Run as a Systemd Service](#run-as-a-systemd-service)
-- [Documentation](#documentation)
-- [Troubleshooting](#troubleshooting)
-- [CLI Reference](#cli-reference)
-- [MCP Integration](#mcp-integration)
 - [Telegram](#telegram)
 - [Architecture](#architecture)
+- [Documentation](#documentation)
 - [Development](#development)
-- [Contributing](#contributing)
 - [Security](#security)
 - [License](#license)
-- [Credits](#credits)
+
+---
+
+## Screenshots
+
+Captured from the current build (interactive screens run via `bun run src/cli/entry.ts`;
+see the note below about the compiled binary). Click any thumbnail for the full-size image in
+[`docs/screenshots/`](./docs/screenshots/).
+
+| Screen | Image |
+|--------|-------|
+| Setup wizard — BYOK provider | ![Setup wizard](./docs/screenshots/setup-wizard.png) |
+| Main TUI | ![Main TUI](./docs/screenshots/main-tui.png) |
+| `/settings` panel | ![Settings](./docs/screenshots/settings.png) |
+| `/model` picker | ![Model picker](./docs/screenshots/model.png) |
+| `/memory stats` | ![Memory stats](./docs/screenshots/memory-stats.png) |
+| `/memory diagnose` | ![Memory diagnose](./docs/screenshots/memory-diagnose.png) |
+| `/mcp` surface | ![MCP](./docs/screenshots/mcp.png) |
+| `/stats` dashboard | ![Stats](./docs/screenshots/stats.png) |
+| Error state (no model) | ![Error state](./docs/screenshots/error-state.png) |
+
+> **Compiled binary note.** `./bin/snsagent-linux-x64` (and the npm-installed binary) runs in
+> "JS-only mode" — the native pty/grep/shell addon is not embedded, so the *interactive TUI*
+> does not render there. The source-run path above is the supported path for the interactive
+> UI. See [docs/troubleshooting.md](./docs/troubleshooting.md).
 
 ---
 
 ## Features
 
-| Feature | Source |
-|---------|--------|
-| **30 built-in tools** | `src/tools/builtin-names.ts` |
-| **62 built-in slash commands** | `src/slash-commands/builtin-registry.ts` |
-| **Multi-provider LLM** | OpenAI, Anthropic, Ollama, custom endpoints via built-in provider system |
-| **BYOK Quick Setup** | Setup wizard tab - enter Base URL + API Key, auto-detect models, zero config editing |
-| **7 memory backends** | mnemopi (default), hindsight, mnemosyne, mem0, lcm, local, off - `src/memory-backend/resolve.ts` |
-| **MCP integration** | 22 source files in `src/mcp/` |
-| **Plan mode** | `src/plan-mode/` - agent plans before executing |
-| **Goal mode** | Autonomous objective with token budget and lifecycle |
-| **Subagent delegation** | `src/task/` - spawn child agents for parallel work |
-| **Advisor** | Second model reviews each turn and injects notes |
-| **Collaborative sessions** | `src/collab/` - host/join sessions via link or QR code |
-| **Skills & plugins** | `src/extensibility/` - markdown skills + plugin marketplace |
-| **Auto-learning** | `src/autolearn/` - agent learns from interactions |
-| **Browser automation** | Puppeteer-based headless browser - `src/tools/` browser tool |
-| **LSP integration** | Language Server Protocol - `src/lsp/` |
-| **Eval backends** | Python, Ruby, Julia, JavaScript - `src/eval/` |
-| **SSH remote execution** | `src/tools/ssh.ts`, `src/ssh/` |
-| **Text-to-speech** | 11 files in `src/tts/` |
-| **TinyLLM local inference** | 7 files in `src/tiny/` |
-| **Telegram bot** | 5 files in `src/adapters/telegram/` - auto-boot with `SNS_TELEGRAM_BOT_TOKEN` |
-| **Debug Adapter Protocol** | `src/dap/` |
-| **Context compaction** | Automatic context window management with multiple strategies |
-| **IRC** | IRC tool for chat protocol interaction |
-| **Todo system** | Markdown-based todo list with reminders |
-
----
-
-## Tools (30 Built-in)
-
-All tool names come from `src/tools/builtin-names.ts`.
-
-### File & Code Operations
-
-| Tool | Description |
-|------|-------------|
-| `read` | Read file contents with line ranges |
-| `write` | Write / create / append to files |
-| `edit` | Find-and-replace edits in files |
-| `find` | Find files by name or pattern |
-| `search` | Search file contents (regex) |
-
-### Shell & Execution
-
-| Tool | Description |
-|------|-------------|
-| `bash` | Execute shell commands |
-| `eval` | Evaluate code snippets (Python, JS, Ruby, Julia) |
-| `ssh` | Execute commands on remote hosts via SSH |
-
-### Code Intelligence
-
-| Tool | Description |
-|------|-------------|
-| `ast_grep` | AST-based code search |
-| `ast_edit` | AST-aware code editing |
-| `lsp` | Language Server Protocol operations |
-| `debug` | Debugging assistance |
-
-### Web & Browser
-| Tool | Description |
-|------|-------------|
-| `web_search` | Web search via configured provider |
-| `search_tool_bm25` | BM25-based search tool |
-| `browser` | Headless browser automation (Puppeteer) |
-| `inspect_image` | Image analysis |
-
-### Memory & Learning
-
-| Tool | Description |
-|------|-------------|
-| `memory_edit` | Edit memory entries |
-| `retain` | Store information in memory |
-| `recall` | Retrieve information from memory |
-| `reflect` | Self-reflection on past actions |
-| `learn` | Learn from interactions |
-| `manage_skill` | Manage skill files |
-
-### Sessions & Tasks
-
-| Tool | Description |
-|------|-------------|
-| `task` | Spawn subagent for delegated work |
-| `job` | Manage background jobs |
-| `checkpoint` | Save session checkpoint |
-| `rewind` | Rewind to a previous checkpoint |
-
-### Communication & Other
-
-| Tool | Description |
-|------|-------------|
-| `irc` | IRC chat protocol |
-| `todo` | Markdown todo list management |
-| `github` | GitHub operations (repos, issues, PRs) |
-| `ask` | Ask clarifying questions |
-
----
-
-## Slash Commands
-
-62 primary commands from `src/slash-commands/builtin-registry.ts`, plus 4 aliases in the lookup map. `/help` is a TUI shortcut, not a registry entry. Most useful registered commands:
-
-### Session & Navigation
-
-| Command | Description |
-|---------|-------------|
-| `/compact` | Compact conversation context |
-| `/context` | Show context-window breakdown |
-| `/copy` | Copy last response to clipboard |
-| `/export` | Export session to file |
-| `/dump` | Dump raw session transcript |
-| `/share` | Share session via collab link |
-| `/settings` | Open settings |
-
-### Model & Provider
-
-| Command | Description |
-|---------|-------------|
-| `/model` | Switch model for this session |
-| `/switch` | Quick model switch (same as alt+p) |
-| `/fast [on\|off\|status]` | Toggle priority service tier |
-| `/setup` | Open provider setup wizard (OAuth + BYOK + Web search) |
-
-### Goals & Planning
-
-| Command | Description |
-|---------|-------------|
-| `/plan` | Toggle plan mode |
-| `/plan-review` | Review the active plan |
-| `/goal <set\|show\|pause\|resume\|drop\|budget>` | Goal lifecycle management |
-| `/guided-goal` | Guided goal walkthrough |
-| `/loop [count\|duration]` | Toggle loop mode |
-| `/advisor [on\|off\|status\|dump]` | Advisor subagent control |
-
-### Output & Collaboration
-
-| Command | Description |
-|---------|-------------|
-| `/collab [view\|status\|stop]` | Host a live collab session |
-| `/join <link>` | Join a collab session |
-| `/leave` | Leave collab session |
-| `/todo <edit\|copy\|export\|import\|append\|start\|done\|drop>` | Todo list management |
-| `/browser [headless\|visible]` | Switch browser mode |
-
-### System
-
-| Command | Description |
-|---------|-------------|
-| `/mcp [reload]` | MCP server status / reload |
-| `/ssh` | Run command on remote host |
-| `/plugins` | Show installed plugins |
-| `/marketplace` | Open marketplace manager |
-| `/stats [--port]` | Launch stats dashboard |
-| `/usage [show\|reset]` | Token usage / rate-limit reset |
-| `/changelog [full]` | Show changelog entries |
-| `/debug` | Toggle debug logging |
-
----
-
-## Memory Backends
-
-Backends are selected via `memory.backend` in `~/.omp/agent/config.yml`. Source: `src/memory-backend/resolve.ts`. The schema default is `off`; `mnemopi` is the fully-integrated local backend we recommend.
-
-| Backend | What it does (verified) | Auto-recall / auto-retain |
-|---------|--------------------------|---------------------------|
-| **mnemopi** | Local SQLite + embeddings + graph; full recall/retain/scope/isolation. | ✅ injected on first turn + auto-retain |
-| **hindsight** | Remote memory service (`hindsight.apiUrl`, default `http://localhost:8888`). | ✅ injected (when service configured) |
-| **local** | Rollout-summary pipeline + `learned.md` lessons. | ❌ manual save only |
-| **mem0** | Local SQLite + FTS5 semantic facts. | ❌ manual save/search only |
-| **lcm** | Local SQLite, delta-encoded context. | ❌ manual save/search only |
-| **mnemosyne** | Legacy three-tier SQLite; **migrated to `mnemopi`** at config load (unreachable). | — |
-| **off** | No memory subsystem. | ❌ |
-
-> Note: `mem0`, `lcm`, and `local` persist and recall via `save`/`search`, but only
-> `mnemopi` and `hindsight` automatically inject recalled facts into a fresh turn.
-> See [docs/memory.md](./docs/memory.md) and the audit tests
-> (`src/memory-backend/__tests__/memory-integration.test.ts`).
-
-## Cron Scheduler
-
-Persistent background scheduler, SQLite-backed. Source: `src/cron/`.
-
-```bash
-/cron list              # List all jobs
-/cron add <name> <expr> <action> [args]   # Add: action = prompt|shell|skill
-/cron run <name>        # Run immediately
-/cron remove <name>     # Delete
-/cron status            # Show scheduler status
-/cron enable <name>     # Enable
-/cron disable <name>    # Disable
-```
-
-Example: `/cron add backup "0 2 * * *" shell "git push"` runs `git push` daily at 2 AM.
-
-### mnemopi Settings
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `mnemopi.dbPath` | - | SQLite database path |
-| `mnemopi.bank` | - | Memory bank |
-| `mnemopi.scoping` | - | Scoping mode |
-| `mnemopi.embeddingVariant` | - | Embedding model variant |
-| `mnemopi.autoRecall` | - | Auto-recall on context load |
-| `mnemopi.autoRetain` | - | Auto-retain after conversations |
-| `mnemopi.retainEveryNTurns` | `4` | Turns between auto-retains |
-| `mnemopi.recallLimit` | `8` | Max recall results |
-| `mnemopi.recallContextTurns` | `3` | Context turns for recall |
-| `mnemopi.recallMaxQueryChars` | `4000` | Max query characters |
-| `mnemopi.injectionTokenLimit` | `5000` | Token budget for injected memories |
-| `mnemopi.debug` | `false` | Debug logging |
-
----
-
-## Which command do I run?
-
-```text
-Installed globally: snsagent
-From source:       bun run src/cli/entry.ts
-Built binary:      ./bin/snsagent-linux-x64
-Repository:        sns-myagent
-```
-
-`sns-myagent` is the repository/project name. `snsagent` is the executable command installed by npm or produced by the source build. In interactive mode, `/help` is a TUI shortcut; 62 primary commands and 4 aliases are registered in `src/slash-commands/builtin-registry.ts`.
-
-## Installation
-
-### Normal user path: npm
-
-```bash
-npm install -g @sns-myagent/cli
-snsagent
-```
-
-The package downloads the platform binary during installation. Requires Node.js 18+ and works on Linux, macOS, Windows, and WSL.
-
-### First launch
-
-On the first launch, follow the setup wizard:
-
-1. Choose a provider or enter a custom Base URL.
-2. Enter an API key when the provider requires one.
-3. Choose a model and start chatting.
-
-You can run `snsagent init` or `snsagent setup` later to reopen provider setup.
-
-### Alternative: run from source
-
-```bash
-git clone https://github.com/Reihantt6/sns-myagent.git
-cd sns-myagent
-bun install
-bun run src/cli/entry.ts
-```
-
-This requires Bun >= 1.3.14. To build the standalone Linux x64 binary instead:
-
-```bash
-bun run build
-./bin/snsagent-linux-x64
-```
-
-Other supported installers:
-
-- Linux, macOS, and WSL: `curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash`
-- Windows PowerShell: `irm https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex`
-- Android/Termux: see [the Termux guide](./docs/termux.md)
-
-## Verify the installation
-
-```bash
-snsagent --version
-snsagent --help
-```
-
----
-
-## Termux (Android)
-
-Full guide: [`docs/termux.md`](./docs/termux.md)
-
-Quick setup on Android:
-
-```bash
-# 1. Install Termux from F-Droid (NOT Play Store)
-# 2. Update + install deps
-pkg update && pkg upgrade -y
-pkg install -y git nodejs-lts
-# 3. Install Bun
-curl -fsSL https://bun.sh/install | bash
-source ~/.bashrc
-# 4. Run from source (npm/prebuilt binaries are glibc and won't run on Android)
-git clone https://github.com/Reihantt6/sns-myagent.git
-cd sns-myagent
-bun install
-# 5. Setup (BYOK wizard)
-bun run src/cli/entry.ts init
-# 6. Run
-bun run src/cli/entry.ts
-```
+Status legend: **VERIFIED** = a real integration path was demonstrated (not just a green unit
+test). **PARTIAL** = implemented and partly tested, but not deep-audited end-to-end.
+**UNTESTED** = implemented, no committed test. **BROKEN** = dead/unreachable code.
+
+| Feature | Status | Evidence |
+|---------|--------|----------|
+| **30 built-in tools** | VERIFIED | `src/tools/builtin-names.ts` (all real implementations) |
+| **62 slash commands** (+ 4 aliases) | VERIFIED | `src/slash-commands/builtin-registry.ts` |
+| **Multi-provider LLM** (OpenAI, Anthropic, Ollama, custom) | VERIFIED | `src/modes/setup-wizard/` + provider registry |
+| **BYOK setup wizard** | VERIFIED | `src/modes/setup-wizard/` + tests + screenshots |
+| **Memory — mnemopi** (default recommended) | VERIFIED | `src/memory-backend/__tests__/memory-integration.test.ts` (30 tests: retain → persist → recall → inject) |
+| **Memory — hindsight** (remote service) | PARTIAL | `src/hindsight/`; needs `hindsight.apiUrl` service |
+| **Memory — mem0 / lcm / local** | PARTIAL | manual save/search; **no auto-recall/injection** |
+| **Memory — mnemosyne** | BROKEN | migrated to `mnemopi` at config load; dead enum value |
+| **TBM (token budget manager)** | VERIFIED (integrated) | `src/tbm/session-hooks.ts` wired into the turn lifecycle; default **OFF**. No savings claim without the measured benchmark — see [docs/tbm.md](./docs/tbm.md) |
+| **Telegram bot** | PARTIAL | `src/adapters/telegram/`; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` |
+| **MCP integration** | PARTIAL | `src/mcp/` (22 files); `/mcp` surface verified |
+| **Plan mode** | PARTIAL | `src/plan-mode/` |
+| **Goal mode** | PARTIAL | `src/goals/` (token budget + lifecycle) |
+| **Subagents / multi-agent** | PARTIAL | `src/task/`, `src/agents/` (consensus/critic/best-of-N) |
+| **Advisor** (second-model review) | VERIFIED | `src/advisor/` + `advisor.test.ts` |
+| **Cron scheduler** | PARTIAL | `src/cron/` + parser tests |
+| **Browser automation** (Puppeteer) | PARTIAL | `src/tools/browser/` |
+| **SSH remote execution** | PARTIAL | `src/tools/ssh.ts` |
+| **Eval backends** (Python/JS/Ruby/Julia) | VERIFIED | `src/eval/` + eval tests |
+| **Context compaction** | PARTIAL | `src/session/` (multiple strategies) |
+| **Plugins / skills** | UNTESTED | `src/extensibility/` (implemented, no committed test) |
+| **Collaborative sessions** | UNTESTED | `src/collab/` (implemented, no committed test) |
+| **LSP integration** | PARTIAL | `src/lsp/` |
+| **Text-to-speech / STT** | PARTIAL | `src/tts/`, `src/stt/` |
+| **Todo system** | PARTIAL | `src/` todo helpers |
+
+Full findings: [`AUDIT-REPORT.md`](./AUDIT-REPORT.md),
+[`AUDIT-BASELINE.md`](./AUDIT-BASELINE.md),
+[docs/security-model.md](./docs/security-model.md).
 
 ---
 
@@ -372,7 +126,8 @@ bun run src/cli/entry.ts
 snsagent
 ```
 
-The first launch opens the setup wizard - choose a provider or custom Base URL, enter an API key, pick a model, and start chatting.
+First launch opens the setup wizard — choose a provider (or custom Base URL), enter an API
+key, pick a model, and start chatting.
 
 ### 2. Use it
 
@@ -391,22 +146,118 @@ The first launch opens the setup wizard - choose a provider or custom Base URL, 
 > load coding skill
 ```
 
-### Alternative: environment variables
-
-You can also set the provider key directly instead of using the wizard - the agent picks it up on launch:
+Or set the key directly via environment — the agent picks it up on launch:
 
 ```bash
-export OPENAI_API_KEY="your-key-here"      # or ANTHROPIC_API_KEY, etc.
+export OPENAI_API_KEY="your-key-here"   # or ANTHROPIC_API_KEY, etc.
 snsagent
 ```
 
-The setup wizard (`snsagent init` / `snsagent setup`) is available any time to reconfigure provider, Base URL, and model.
+---
+
+## Installation
+
+### npm (recommended for most users)
+
+```bash
+npm install -g @sns-myagent/cli
+snsagent
+```
+
+The package downloads the platform binary during install. Requires Node.js 18+; works on
+Linux, macOS, Windows, and WSL.
+
+### One-liner installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
+```
+
+- Linux, macOS, WSL: `curl … install.sh | bash`
+- Windows PowerShell: `irm https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.ps1 | iex`
+- Android/Termux: see [Termux (Android)](#termux-android)
+
+### From source
+
+```bash
+git clone https://github.com/Reihantt6/sns-myagent.git
+cd sns-myagent
+bun install
+bun run src/cli/entry.ts
+```
+
+Requires Bun >= 1.3.14. To build the standalone Linux x64 binary:
+
+```bash
+bun run build
+./bin/snsagent-linux-x64
+```
+
+### Verify
+
+```bash
+snsagent --version   # -> snsagent 0.3.9
+snsagent --help
+```
+
+---
+
+## Termux (Android)
+
+Full guide: [`docs/termux.md`](./docs/termux.md). The npm/prebuilt binaries are glibc and will
+not run on Android — use the source build.
+
+```bash
+# 1. Install Termux from F-Droid (NOT Play Store)
+pkg update && pkg upgrade -y
+pkg install -y git nodejs-lts
+# 2. Install Bun
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+# 3. Clone + run from source
+git clone https://github.com/Reihantt6/sns-myagent.git
+cd sns-myagent
+bun install
+bun run src/cli/entry.ts
+```
 
 ---
 
 ## Configuration
 
-The interactive agent stores settings at `~/.omp/agent/config.yml` and providers at `~/.omp/agent/models.yml`. Existing installs may also have `~/.omp/agent/config.json` with compatibility provider/model values. The legacy `init` router creates `.sns-myagent/config.json` in the current project. Source: `src/config/settings.ts`, `src/config/config-file.ts`, and `src/config/loader.ts`.
+Interactive settings live at `~/.omp/agent/config.yml` (providers at
+`~/.omp/agent/models.yml`). Edit them through `/settings` or through conversation; the schema
+defaults are safe (memory backend defaults to `off`, TBM defaults to `off`).
+
+### Key settings
+
+```jsonc
+{
+  // Model selection
+  "model.*": "…",
+
+  // Feature toggles
+  "advisor.enabled": true,
+  "bash.enabled": true,
+  "browser.enabled": true,
+  "checkpoint.enabled": true,
+  "compaction.enabled": true,
+  "goal.enabled": true,
+  "todo.enabled": true,
+
+  // Memory (default "off"; "mnemopi" is the fully-integrated local backend)
+  "memory.backend": "off",   // off | mnemopi | hindsight | mem0 | lcm | local | mnemosyne
+
+  // TBM (default OFF — no behavior change until opted in)
+  "tbm.enabled": false,
+
+  // Eval backends
+  "eval.py": true, "eval.js": true, "eval.rb": true, "eval.jl": true
+}
+```
+
+Full schema: [`docs/configuration.md`](./docs/configuration.md) and
+`src/config/settings-schema.ts`.
 
 ### Where things are stored
 
@@ -414,214 +265,31 @@ The interactive agent stores settings at `~/.omp/agent/config.yml` and providers
 |------|----------|
 | Interactive config | `~/.omp/agent/config.yml` |
 | Provider models | `~/.omp/agent/models.yml` |
-| Legacy router config | `.sns-myagent/config.json` in the current project |
-| Secrets | local provider configuration plus supported `*_API_KEY` environment variables |
-| Memory & sessions | `~/.omp/agent/` (mnemopi data, sessions, and state files) |
-| Service secrets (systemd daemon) | `/etc/snsagent/secrets.env` - see [deploy/README.md](./deploy/README.md) |
-| Logs (systemd daemon) | `journalctl -u snsagent` |
-
-### Key Config Categories
-
-Interactive settings use dot-separated paths. Full schema in `src/config/settings-schema.ts`.
-
-```jsonc
-{
-  // Model selection
-  "model.*": "...",
-
-  // Feature toggles
-  "advisor.enabled": true,
-  "bash.enabled": true,
-  "browser.enabled": true,
-  "browser.headless": true,
-  "checkpoint.enabled": true,
-  "compaction.enabled": true,
-  "debug.enabled": false,
-  "github.enabled": true,
-  "goal.enabled": true,
-  "todo.enabled": true,
-
-  // Eval backends
-  "eval.py": true,
-  "eval.js": true,
-  "eval.rb": true,
-  "eval.jl": true,
-
-  // Memory
-  "memory.backend": "mnemopi",  // "mnemopi" | "hindsight" | "mnemosyne" | "mem0" | "lcm" | "local" | "off"
-  "hindsight.scoping": "...",
-
-  // MCP
-  "mcp.*": {},
-
-  // Session
-  "session.*": {},
-
-  // Theme
-  "theme.dark": "titanium",
-
-  // Compaction
-  "compaction.enabled": true,
-  "compaction.strategy": "...",
-  "compaction.thresholdPercent": 80,
-  "compaction.idleEnabled": true,
-  "compaction.idleTimeoutSeconds": 300,
-
-  // Todo
-  "todo.enabled": true,
-  "todo.reminders": true,
-  "todo.reminders.max": 5,
-
-  // Mnemopi (when memory.backend = "mnemopi")
-  "mnemopi.dbPath": "...",
-  "mnemopi.autoRecall": true,
-  "mnemopi.autoRetain": true,
-  "mnemopi.retainEveryNTurns": 4,
-  "mnemopi.recallLimit": 8
-}
-```
-
-Access in TUI via `/settings` or through conversation.
-
----
-
-## CLI Reference
-
-```
-snsagent                          # Interactive TUI mode
-snsagent init                     # First-run setup: memory + BYOK provider
-snsagent setup                    # Alias for init
-snsagent telegram                 # Start Telegram adapter
-snsagent --help                   # Show help
-snsagent --version                # Show version
-```
-
----
-
-## Run as a Systemd Service
-
-For a persistent daemon on a Linux server (e.g. a Telegram bot running 24/7), use the deployment scripts in [deploy/README.md](./deploy/README.md). This is separate from the interactive `snsagent` CLI session above.
-
-```bash
-cd /root/projects/sns-myagent
-bun install
-bun run build
-sudo bash deploy/install.sh
-sudo systemctl status snsagent
-```
-
-Note: `deploy/install.sh` only stages systemd units and cron jobs - it does **not** enable or start anything unless you pass `--enable`. Secrets for the daemon live in `/etc/snsagent/secrets.env` (chmod 600), e.g. `SNS_TELEGRAM_BOT_TOKEN`.
-
-### Operations
-
-```bash
-sudo systemctl start snsagent
-sudo systemctl restart snsagent
-sudo systemctl status snsagent
-journalctl -u snsagent -f
-```
-
----
-
-## Documentation
-
-Detailed guides live in [`docs/`](./docs/):
-
-| Guide | Covers |
-|-------|--------|
-| [Installation](./docs/installation.md) | Install options per platform |
-| [Configuration](./docs/configuration.md) | Config files, providers, models |
-| [Memory](./docs/memory.md) | Memory backends and how to switch |
-| [Termux (Android)](./docs/termux.md) | Running on Android/Termux |
-| [Terminal UI](./docs/terminal-ui.md) | The interactive TUI |
-| [TBM](./docs/tbm.md) | Token budget manager (integrated, default OFF) |
-| [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
-| [FAQ](./docs/faq.md) | Frequently asked questions |
-
----
-
-## Troubleshooting
-
-| Symptom | Diagnostic | Fix |
-|---------|-----------|-----|
-| `command not found: snsagent` | `npm ls -g --depth=0` | Install globally: `npm install -g @sns-myagent/cli`, or run from source: `bun run src/cli/entry.ts` |
-| `bun: command not found` | `which bun` | Install Bun: `curl -fsSL https://bun.sh/install \| bash` (or use the npm-installed `snsagent` binary instead) |
-| Provider or model error | Rerun `snsagent init`, verify Base URL, API key, and model choice | Fix the provider settings in the wizard |
-| `Permission denied` running `bin/snsagent-linux-x64` | `ls -l bin/snsagent-linux-x64` | `chmod +x bin/snsagent-linux-x64` (only for a source-built binary) |
-| systemd service failed | `sudo systemctl status snsagent` and `journalctl -u snsagent -e` | Check the error in the logs, fix, then `sudo systemctl restart snsagent` |
-| Telegram not responding | `snsagent telegram status` | Verify `SNS_TELEGRAM_BOT_TOKEN` in `/etc/snsagent/secrets.env` (daemon) or the environment (CLI), then check service logs |
-
----
-
-## MCP Integration
-
-Connect Model Context Protocol servers for additional tools. 22 source files in `src/mcp/`.
-
-### Through Conversation
-
-```
-> add MCP filesystem for /home/user/projects
-> add MCP github
-```
-
-### Through Config
-
-Configure via `/mcp` or the settings panel. Servers are defined in the MCP config section.
-
-### Popular MCP Servers
-
-| Server | Package |
-|--------|---------|
-| Filesystem | `@modelcontextprotocol/server-filesystem` |
-| PostgreSQL | `@modelcontextprotocol/server-postgres` |
-| GitHub | `@modelcontextprotocol/server-github` |
+| Memory & sessions | `~/.omp/agent/` (mnemopi data, sessions, state) |
+| Daemon secrets (systemd) | `/etc/snsagent/secrets.env` (chmod 600) |
 
 ---
 
 ## Telegram
 
-Telegram bot adapter in `src/adapters/telegram/` (5 files). Built on [grammY](https://grammy.dev/).
-
-### Setup
-
-1. Create a bot via [@BotFather](https://t.me/BotFather) on Telegram
-2. Set the token:
+Run the agent as a Telegram bot. Built on [grammY](https://grammy.dev/).
 
 ```bash
 export SNS_TELEGRAM_BOT_TOKEN="your-bot-token-here"
+snsagent          # bot auto-starts polling
 ```
 
-3. Run snsagent - the bot auto-starts polling:
+Or explicitly: `snsagent telegram`. Disable auto-start with `SNS_TELEGRAM_AUTOSTART=0`.
+
+**Authorization is opt-in and important.** Without it the bot executes agent actions for
+*anyone* who can message it. Restrict to your own numeric user id:
 
 ```bash
-snsagent
+export SNS_TELEGRAM_ALLOWED_USERS="123456789"
 ```
 
-The adapter starts automatically when `SNS_TELEGRAM_BOT_TOKEN` is set. Disable auto-start with:
-
-```bash
-export SNS_TELEGRAM_AUTOSTART=0
-```
-
-Or start the Telegram adapter explicitly:
-
-```bash
-snsagent telegram
-```
-
-### Authorization (important)
-
-By default the bot will execute agent actions for **any** user who can message
-it (and for group chats), because Telegram messages drive agent sessions with
-`autoApprove: true`. Restrict it to your own Telegram user id:
-
-```bash
-export SNS_TELEGRAM_ALLOWED_USERS="123456789"   # your numeric Telegram user id
-```
-
-When the allowlist is set, non-listed users are rejected before the agent is
-consulted; when unset, a warning is logged. See
-[docs/security-model.md](./docs/security-model.md).
+See [docs/security-model.md](./docs/security-model.md) for the full authorization boundary
+(including the `autoApprove: true` caveat).
 
 ---
 
@@ -630,190 +298,82 @@ consulted; when unset, a warning is logged. See
 ```
 sns-myagent/
 ├── src/
-│   ├── cli/                    # CLI entry point + commands
-│   ├── config/                 # Settings schema, loader, defaults
-│   ├── tools/                  # 30 built-in tools
-│   ├── modes/                  # Interactive mode, TUI, controllers
-│   ├── session/                # Session management
-│   ├── mcp/                    # MCP integration (22 files)
-│   ├── prompts/                # System prompts
-│   ├── memory-backend/         # Memory backend resolver
-│   ├── mnemopi/                # mnemopi backend (SQLite + vector + graph)
-│   ├── hindsight/              # hindsight backend (remote memory)
-│   ├── extensibility/          # Skills, plugins, marketplace
-│   ├── capability/             # Skill system
-│   ├── task/                   # Subagent delegation
-│   ├── plan-mode/              # Plan mode
-│   ├── web/                    # Web search, scrapers
-│   ├── ssh/                    # SSH tool
-│   ├── lsp/                    # LSP tool
-│   ├── eval/                   # Eval backends (Python, Ruby, Julia, JS)
-│   ├── collab/                 # Collaborative sessions
-│   ├── autolearn/              # Auto-learning system
-│   ├── adapters/
-│   │   └── telegram/           # Telegram bot adapter
-│   ├── tts/                    # Text-to-speech (11 files)
-│   ├── tiny/                   # TinyLLM local inference (7 files)
-│   ├── dap/                    # Debug Adapter Protocol
-│   ├── stt/                    # Speech-to-text
-│   ├── thinking.ts             # Thinking mode support
-│   ├── ui/                     # Terminal UI components
-│   └── utils/                  # Utilities
-├── docs/                       # Documentation
-├── bin/                        # Prebuilt binaries
-├── scripts/                    # Build + dev scripts
-├── install.sh                  # Multi-arch installer
-├── install.ps1                 # Windows installer
+│   ├── cli/                  # CLI entry point + commands
+│   ├── config/               # Settings schema, loader, defaults
+│   ├── tools/                # 30 built-in tools
+│   ├── modes/                # Interactive mode, TUI, controllers
+│   ├── session/              # Session management + agent loop
+│   ├── mcp/                  # MCP integration
+│   ├── memory-backend/       # Memory backend resolver
+│   ├── mnemopi/              # mnemopi backend (SQLite + vector + graph)
+│   ├── hindsight/            # hindsight backend (remote memory)
+│   ├── tbm/                  # Token Budget Manager (integrated, default OFF)
+│   ├── task/ agents/         # Subagent delegation / multi-agent
+│   ├── plan-mode/ goals/     # Plan mode / goal mode
+│   ├── advisor/              # Second-model review
+│   ├── cron/                 # Cron scheduler
+│   ├── eval/                 # Eval runtimes (Python/JS/Ruby/Julia)
+│   ├── extensibility/        # Skills, plugins, marketplace
+│   ├── collab/               # Collaborative sessions
+│   ├── adapters/telegram/    # Telegram bot adapter
+│   ├── tts/ stt/             # Speech-to-text / text-to-speech
+│   ├── lsp/ dap/             # LSP + Debug Adapter Protocol
+│   └── utils/                # Utilities
+├── docs/                     # Documentation (+ screenshots/)
+├── bin/                      # Prebuilt binaries (gitignored)
+├── scripts/                  # Build + dev scripts
+├── install.sh / install.ps1  # Installers
 └── package.json
 ```
+
+---
+
+## Documentation
+
+| Guide | Covers |
+|-------|--------|
+| [Architecture](./docs/architecture.md) | Agent-loop integration points (memory/TBM/advisor/tools) |
+| [Installation](./docs/installation.md) | Install options per platform |
+| [Configuration](./docs/configuration.md) | Config files, providers, models |
+| [Memory](./docs/memory.md) | Memory backends and how to switch |
+| [Termux (Android)](./docs/termux.md) | Running on Android/Termux |
+| [Terminal UI](./docs/terminal-ui.md) | The interactive TUI |
+| [TBM](./docs/tbm.md) | Token budget manager (integrated, default OFF) |
+| [Telegram](./docs/telegram.md) | Telegram bot + authorization boundary |
+| [Security model](./docs/security-model.md) | Authorization + attack surface |
+| [Upstream comparison](./docs/upstream.md) | Lineage vs oh-my-pi |
+| [Development](./docs/development.md) | Custom node_modules + install mechanism |
+| [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
+| [FAQ](./docs/faq.md) | Frequently asked questions |
 
 ---
 
 ## Development
 
 ```bash
-bun install              # Install dependencies
+bun install              # Install dependencies (runs custom postinstall — see docs/development.md)
 bun run build            # Build binary to bin/
 bun run src/cli/entry.ts # Run from source
 bun test                 # Run tests
-bun run check            # Biome check + type check
-bun run lint             # Biome lint
-bun run fix              # Auto-fix lint + format
+bunx biome lint src test # Lint
+bunx tsc -p tsconfig.json --noEmit  # Typecheck
 ```
 
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-change`)
-3. Commit with clear messages
-4. Push and open a Pull Request
-
-### Commit Convention
-
-```
-add:      new feature or file
-fix:      bug fix
-refactor: code restructuring
-docs:     documentation changes
-test:     test additions or changes
-chore:    maintenance tasks
-```
+See [docs/development.md](./docs/development.md) for the custom `node_modules` install
+mechanism (binary download + `pi-natives` JS-only patch) and dependency drift.
 
 ---
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting and security policies.
+snsagent executes code (bash, eval, SSH, browser, MCP tools) on your behalf. Review the
+authorization boundary and tool-approval behavior in
+[docs/security-model.md](./docs/security-model.md). See [SECURITY.md](SECURITY.md) for
+vulnerability reporting.
 
 ---
 
 ## License
 
-MIT license.
-
----
-
-## Implementation Status (v0.3.9)
-
-What is actually wired and working in the source tree, verified 2026-08-10:
-
-### Tools (30 / 30) - `src/tools/builtin-names.ts`
-
-All 30 tools are real implementations, not stubs.
-
-### Slash Commands (62 primary, 66 lookup keys) - `src/slash-commands/builtin-registry.ts`
-
-62 primary top-level commands are registered, with 4 aliases in the lookup map. All are callable via `/<name>` in interactive mode.
-
-### Memory Backends - `src/memory-backend/resolve.ts`
-
-| Backend | Status (verified) | Notes |
-|---------|-------------------|-------|
-| `mnemopi` | ✅ VERIFIED | local SQLite; full recall→inject + auto-retain + scope isolation (tested) |
-| `hindsight` | ✅ VERIFIED (needs service) | remote; `hindsight.apiUrl` defaults to `http://localhost:8888` |
-| `local` | ⚠️ PARTIAL | manual `learned.md` save; no auto-recall |
-| `mem0` | ⚠️ PARTIAL | local SQLite; manual save/search; no auto-recall |
-| `lcm` | ⚠️ PARTIAL | local SQLite; manual save/search; no auto-recall |
-| `mnemosyne` | 🚫 DEAD CODE | `memory.backend=mnemosyne` is migrated to `mnemopi`; backend is unreachable |
-| `off` | ✅ VERIFIED | no-op |
-
-Set via `memory.backend` in `~/.omp/agent/config.yml`. Schema default is `off` (not `mnemopi`).
-
-### Telegram Adapter - `src/adapters/telegram/`
-
-5 files (bot, handler, format, index, bridge). 11 slash commands wired: `/start /help /chat /reset /status /memory /cron /model /code /review /task`. File upload/download supported. Auto-boot when `SNS_TELEGRAM_BOT_TOKEN` is set.
-
-### Multi-Agent Orchestration - `src/agents/`
-
-12 files. `agents.yaml` config, 3 ensemble strategies (consensus / critic / best-of-N), resilience (retry + circuit-breaker + timeout). CLI `orchestrate <prompt>` wired to executor via `src/agents/executor.ts` and resolves the persisted `modelRoles.default` (v0.3.9).
-
-### Terminal UI - `src/tui/` + `src/ui/`
-
-The SNS splash, `●` prefix chat blocks, flat status bar, command palette, error display, and memory toast are implemented in the terminal UI. The welcome component also supports a gradient logo animation. v0.3.6+ rebrand.
-
-### CI / CD
-
-GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, smoke, all-checks. 5 platform binaries (linux x64/arm64, macos x64/arm64, windows x64) auto-built on tag push. Docker multi-arch image auto-built and pushed to `ghcr.io/reihantt6/sns-myagent`.
-
-### Published
-
-- npm: `npm install -g @sns-myagent/cli` → v0.3.9
-- GitHub releases: 5 binaries per version
-- Docker: `ghcr.io/reihantt6/sns-myagent:v0.3.9`
-
----
-
-## Screenshots
-
-Captured from the current source-run build (`bun run src/cli/entry.ts`).
-
-| Screen | Image |
-|--------|-------|
-| Setup wizard — BYOK provider | ![Setup wizard](./docs/screenshots/setup-wizard.png) |
-| Setup — glyph mode | ![Glyph mode](./docs/screenshots/setup-glyphs.png) |
-| Main TUI (no model yet) | ![Main TUI](./docs/screenshots/main-tui.png) |
-| `/settings` panel | ![Settings](./docs/screenshots/settings.png) |
-| `/model` picker | ![Model picker](./docs/screenshots/model.png) |
-| `/memory stats` (backend off) | ![Memory stats](./docs/screenshots/memory-stats.png) |
-| `/memory diagnose` | ![Memory diagnose](./docs/screenshots/memory-diagnose.png) |
-| `/mcp` command surface | ![MCP](./docs/screenshots/mcp.png) |
-| `/stats` dashboard launch | ![Stats](./docs/screenshots/stats.png) |
-| Error state (no model selected) | ![Error state](./docs/screenshots/help.png) |
-
-> The prebuilt binary (`./bin/snsagent-linux-x64`, and the npm-installed binary)
-> runs in "JS-only mode" (native pty/grep/shell disabled) and its interactive
-> TUI does not render in our test environment; the source-run path above is the
-> supported path for the interactive UI. See
-> [docs/troubleshooting.md](./docs/troubleshooting.md).
-
-## Verification Status (audit)
-
-Statuses from the deep audit (2026-08-17). `VERIFIED` = a real integration path
-was demonstrated, not just a green unit test.
-
-| Feature | Status | Evidence |
-|---------|--------|----------|
-| Setup wizard | ✅ VERIFIED | `src/modes/setup-wizard/` + tests + screenshots |
-| Memory (mnemopi) | ✅ VERIFIED | `src/memory-backend/__tests__/memory-integration.test.ts` (retain→persist→recall→inject) |
-| Memory (mem0/lcm/local) | ⚠️ PARTIAL | manual save/search; no auto-recall |
-| TBM | ✅ VERIFIED (integrated) | `src/tbm/session-hooks.ts` wired into transformContext + afterToolCall + turn-end; default OFF — see [docs/tbm.md](./docs/tbm.md) |
-| Telegram | ⚠️ PARTIAL | path wired; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` |
-| Goal mode | ⚠️ PARTIAL | `src/goals/` implemented; not deeply audited |
-| Subagents | ⚠️ PARTIAL | `src/task/`, `src/agents/` implemented; not deeply audited |
-| MCP | ⚠️ PARTIAL | `src/mcp/` implemented; `/mcp` surface verified |
-| Cron | ⚠️ PARTIAL | `src/cron/` + parser tests |
-| Browser | ⚠️ PARTIAL | puppeteer `src/tools/browser/` |
-| Plugins | ⚠️ PARTIAL | `src/extensibility/` |
-| Collaboration | ⚠️ PARTIAL | `src/collab/` |
-
-Full findings: see `AUDIT-REPORT.md` (generated by the audit) and
-[docs/security-model.md](./docs/security-model.md),
-[docs/upstream.md](./docs/upstream.md).
-
-## Credits
-
-snsagent is a rebranded fork of Pi Agent with implementation lineage from oh-my-pi packages. The project keeps those upstream package names as dependencies while presenting the sns-myagent identity to users.
-
-Built with dedication for single-user terminal coding workflows.
+MIT license. snsagent is a rebranded fork of Pi Agent with implementation lineage from the
+`@oh-my-pi/*` packages (see [docs/upstream.md](./docs/upstream.md)).

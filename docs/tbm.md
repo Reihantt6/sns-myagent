@@ -90,7 +90,8 @@ prefix. This is **not** a claim about real sessions.
 ```bash
 bun test src/tbm/__tests__/tbm.test.ts
 bun test src/tbm/__tests__/tbm-audit.test.ts
-bun test src/tbm/__tests__/tbm-session-integration.test.ts   # real-turn hooks
+bun test src/tbm/__tests__/tbm-session-integration.test.ts   # real-turn hooks (12 tests)
+bun test src/tbm/__tests__/tbm-agent-loop.test.ts            # real pi-agent-core loop (4 tests, regression-proof)
 bun scripts/tbm-benchmark.ts
 ```
 
@@ -100,3 +101,10 @@ tombstones (originals do not re-enter verbatim, tool-call messages are skipped),
 oversized tool output is truncated, and the finished turn's query/response pair
 lands in the response cache. It also proves `tbm.*` config is consumed and the
 schema default is OFF.
+
+`tbm-agent-loop.test.ts` drives the **real pi-agent-core `Agent.prompt` loop** through
+`composeTransformContext` (the exact seam `createAgentSession` uses) and asserts the
+TBM effects are observable in the assembled model-request payload. It is
+mutation-verified: removing `applyTbmPreModel` from the seam fails the suite, so the
+wiring is regression-proof. Lazy-skills injection is also covered here — the pre-model
+hook injects the name index plus the full content of **only** the referenced skills.
