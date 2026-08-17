@@ -171,11 +171,24 @@ model request (comm directive + tombstoned messages affect the payload)
 context delta is accounting-only (it never drops the provider-cached prefix), and tombstone
 only touches plain-text `user`/`assistant` messages so tool-call pairing survives.
 
-**Integration test** (`src/tbm/__tests__/tbm-session-integration.test.ts`, 12 tests) proves
-observable payload effects on a real turn: comm-mode directive injected, old messages
-replaced by tombstones (originals do not re-enter verbatim; tool-call messages skipped),
-oversized tool output truncated, query/response cached, and `tbm.*` config consumed with a
-schema default of OFF.
+**Integration tests.**
+- `src/tbm/__tests__/tbm-session-integration.test.ts` (12 tests) proves observable payload
+effects: comm-mode directive injected, old messages replaced by tombstones (originals do not
+re-enter verbatim; tool-call messages skipped), oversized tool output truncated, query/response
+cached, and `tbm.*` config consumed with a schema default of OFF.
+- `src/tbm/__tests__/tbm-agent-loop.test.ts` (4 tests, session 3) drives the **real
+pi-agent-core `Agent.prompt` loop** through `composeTransformContext` — the exact seam
+`createAgentSession` uses — and asserts observable payload effects (directive, tombstone,
+lazy-skills load-only-when-referenced, disabled-payload-identical). Mutation-verified:
+removing `applyTbmPreModel` from the seam fails 3/4 tests, so the wiring is regression-proof.
+- Session 3 also fixed a real gap the hardening test exposed: `lazy-skills.processMessage`
+advanced stats but discarded its result, so loaded skill content never reached the model
+payload. `applyTbmPreModel` now injects the name index plus the full content of only the
+referenced skills.
+- The response-cache **store path** (`cacheTbmTurnResponse`) is exercised at the hook level in
+`tbm-session-integration.test.ts`; it is wired into the real `setOnTurnEnd`
+(`src/session/agent-session.ts`), but pi-agent-core does not fire `onTurnEnd` from a minimal
+mock stream, so it is not asserted through `Agent.prompt` (documented, not overclaimed).
 
 **Benchmark (harness-only, NOT end-to-end).** `bun scripts/tbm-benchmark.ts` drives
 `TbmManager` directly on a synthetic 20-turn conversation:
@@ -316,10 +329,16 @@ Custom `postinstall` (must stay intact, verified clean):
 | `docs/tbm.md`, `docs/security-model.md`, `docs/upstream.md`, `docs/termux.md`, `docs/troubleshooting.md`, `README.md` | align docs with verified reality |
 | `install.sh`, `scripts/fetch-binary.mjs` | fix macOS asset naming (darwin→macos); hard-fail on broken `--version`; route Termux to source build |
 | `AUDIT-BASELINE.md` | record re-verified baseline + WIP test isolation findings |
+| `src/tbm/session-hooks.ts` | inject lazy-skill content into the payload (was stats-only) |
+| `src/tbm/__tests__/tbm-agent-loop.test.ts` | real pi-agent-core loop regression-proof test (4 tests) |
+| `src/async/task-runner.ts`, `src/async/__tests__/task-runner.test.ts` | guard `#executeTask` finally block against closed store after `destroy()`; regression test |
+| `src/async/task-store.ts` | inclusive (`<=`) cleanup cutoff to stop ms-boundary flake |
 
 Session 1 commits (one per unit): `2654f2c`, `7e36b36`, `ac33a42`, `f93606a`, `5b28dc8`,
 `20a43d0`, `8e717e6`, `e0ba014`. Session 2 commits: `a59bb93` (TBM integration + tests),
-`1814f06` (benchmark metrics).
+`1814f06` (benchmark metrics), `e5a4006`/`c83bbfd` (regression-proof loop test + scope note),
+`2d29f72` (docs). Session 3 commits: `5463807` (task-runner shutdown guard),
+`8b1b08e` (cleanup inclusive cutoff).
 
 Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, `.claude/`,
 `skills-lock.json`, plan files.
@@ -330,11 +349,11 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
 
 | Command | Result |
 |---|---|
-| `bun test src` | 309 pass / 2 skip / **2 fail** (29 files) — the 2 failures are pre-existing time-based flakes (`TaskStore > cleanup removes old completed tasks`, `CustomEditor placeholder decoration`); both pass in isolation/reruns and are unrelated to this change |
-| `bun test src/tbm/__tests__/` | 70 pass / **0 fail** (3 files) — incl. 12 real-turn integration tests |
+| `bun test src` | **316 pass / 2 skip / 0 fail** (30 files) — stable across 3 consecutive runs after the two flake fixes below |
+| `bun test src/tbm/__tests__/` | 16 pass / **0 fail** (2 files) — 4 real-loop regression-proof + 12 hook-level integration |
 | `bun test src/memory-backend/__tests__/memory-integration.test.ts` | 30 pass / **0 fail** — memory path re-verified |
 | `bun test test/` | 63 pass / **0 fail** (4 files) — committed integration tests |
-| `bun test` (whole tree) | 787 pass / 57 fail / 4 errors — **all failures in untracked `agent/skills/**`** (vendored third-party skills with missing external deps `@earendil-works/pi-coding-agent`, `hyperframes`); out of scope, left untracked |
+| `bun test` (whole tree) | **863 tests** / 56 fail / 3 errors — **all failures in untracked `agent/skills/**`** (vendored third-party skills with missing external deps); committed `src/` + `test/` fully green |
 | `bun run build` | exit 0 — produces `bin/snsagent-linux-x64` + `bin/snsagent` (117 MB) |
 | `bunx tsc -p tsconfig.json --noEmit` | exit 0 — typecheck passes (package.json `check:types` uses `tsgo`, not installed; `tsc` is the working equivalent) |
 | `bunx biome lint src test scripts` | exit 0 (biome 0.3.3) |
@@ -363,6 +382,10 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
    are excluded from the committed tree and this report's green numbers.
 9. **Observability IDs** (session/turn/tool-call) are not yet attached to every core-loop log
    line.
+10. **`bun test` runs all files in one non-isolated process** — module-level singletons
+   (e.g. `TaskStore`/`TaskRunner`) are shared across test files. Two shared-DB flake bugs
+   exposed by this were fixed (session 3, commits `5463807`, `8b1b08e`); other singletons
+   remain a latent cross-file coupling risk if a test closes shared state.
 
 ---
 
