@@ -4644,6 +4644,41 @@ export const SETTINGS_SCHEMA = {
 	"thinkingBudgets.high": { type: "number", default: 16384 },
 
 	"thinkingBudgets.xhigh": { type: "number", default: 32768 },
+
+	// ── Token Budget Manager (TBM) ───────────────────────────────────────────
+	// Config-file-only knobs (no `ui` = hidden from the settings panel). Set a
+	// `tbm:` block in config.yml, e.g.:
+	//   tbm:
+	//     enabled: true
+	//     commMode: caveman
+	// Master switch defaults to OFF so the existing agent loop is unchanged
+	// until a user opts in.
+	"tbm.enabled": { type: "boolean", default: false },
+	"tbm.contextDelta": { type: "boolean", default: true },
+	"tbm.pyramid": { type: "boolean", default: true },
+	"tbm.pyramidStartLevel": { type: "number", default: 1 },
+	"tbm.pyramidMaxLevel": { type: "number", default: 4 },
+	"tbm.lazySkills": { type: "boolean", default: true },
+	"tbm.lazySkillsNameBudget": { type: "number", default: 200 },
+	"tbm.lazySkillsMaxPerTurn": { type: "number", default: 3 },
+	"tbm.compress": { type: "boolean", default: true },
+	"tbm.compressTerminal": { type: "number", default: 500 },
+	"tbm.compressReadFile": { type: "number", default: 800 },
+	"tbm.compressWebExtract": { type: "number", default: 1000 },
+	"tbm.compressSearchFiles": { type: "number", default: 300 },
+	"tbm.compressDefault": { type: "number", default: 500 },
+	"tbm.commMode": {
+		type: "enum",
+		values: ["auto", "caveman", "normal", "verbose"] as const,
+		default: "auto",
+	},
+	"tbm.tombstone": { type: "boolean", default: true },
+	"tbm.tombstoneAfterTurns": { type: "number", default: 20 },
+	"tbm.tombstoneKeepRecent": { type: "number", default: 5 },
+	"tbm.responseCache": { type: "boolean", default: true },
+	"tbm.responseCacheTtl": { type: "number", default: 3600 },
+	"tbm.responseCacheMaxEntries": { type: "number", default: 100 },
+	"tbm.responseCacheSimilarity": { type: "number", default: 0.95 },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════

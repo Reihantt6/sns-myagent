@@ -8,6 +8,7 @@
  */
 
 import { createHash } from "node:crypto";
+import { countTokens } from "@oh-my-pi/pi-agent-core";
 
 export interface ContextDeltaStats {
 	/** Total turns processed. */
@@ -39,10 +40,13 @@ export function hashContent(content: string): string {
 }
 
 /**
- * Estimate token count from character count. Rule of thumb: ~4 chars per token.
+ * Estimate token count. Delegates to the same byte-based estimator the main
+ * agent loop uses (`@oh-my-pi/pi-agent-core` `countTokens`), so TBM's reported
+ * token figures are consistent with the rest of the session rather than a
+ * divergent chars/4 heuristic.
  */
 export function estimateTokens(text: string): number {
-	return Math.ceil(text.length / 4);
+	return countTokens(text);
 }
 
 /**

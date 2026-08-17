@@ -209,6 +209,8 @@ import type { HindsightSessionState } from "../hindsight/state";
 import { type LocalProtocolOptions, resolveLocalUrlToPath } from "../internal-urls";
 import { IrcBus, type IrcMessage } from "../irc/bus";
 import { resolveMemoryBackend } from "../memory-backend";
+import { type TbmManager } from "../tbm";
+import { applyTbmToolCompression, cacheTbmTurnResponse } from "../tbm/session-hooks";
 import { shutdownMnemopiEmbedClient } from "../mnemopi/embed-client";
 import { getMnemopiSessionState, type MnemopiSessionState, setMnemopiSessionState } from "../mnemopi/state";
 import { containsOrchestrate, ORCHESTRATE_NOTICE } from "../modes/orchestrate";
@@ -574,6 +576,8 @@ export interface AgentSessionConfig {
 	 * teardown never tears down the shared servers.
 	 */
 	disconnectOwnedMcpManager?: () => Promise<void>;
+	/** Token Budget Manager wired into this session (undefined when disabled). */
+	tbm?: TbmManager;
 }
 
 /** Options for AgentSession.prompt() */
@@ -1262,6 +1266,7 @@ export class AgentSession {
 	// Tool registry and prompt builder for extensions
 	#toolRegistry: Map<string, AgentTool>;
 	#transformContext: (messages: AgentMessage[], signal?: AbortSignal) => AgentMessage[] | Promise<AgentMessage[]>;
+	#tbm: TbmManager | undefined;
 	#onPayload: SimpleStreamOptions["onPayload"] | undefined;
 	#onResponse: SimpleStreamOptions["onResponse"] | undefined;
 	#onSseEvent: SimpleStreamOptions["onSseEvent"] | undefined;
@@ -1575,6 +1580,7 @@ export class AgentSession {
 		this.#builtInToolNames = new Set(config.builtInToolNames ?? []);
 		this.#requestedToolNames = config.requestedToolNames;
 		this.#transformContext = config.transformContext ?? (messages => messages);
+		this.#tbm = config.tbm;
 		this.#onPayload = config.onPayload;
 		this.rawSseDebugBuffer = config.rawSseDebugBuffer ?? new RawSseDebugBuffer();
 		// Avoid wrapping in an `async` closure when no user callback is configured: the
@@ -1619,6 +1625,7 @@ export class AgentSession {
 					await this.#advisorRuntime.waitForCatchup(30000, threshold, signal);
 				}
 			}
+			cacheTbmTurnResponse(this.#tbm, messages);
 		});
 		this.yieldQueue = new YieldQueue({
 			isStreaming: () => this.isStreaming,
@@ -1688,8 +1695,9 @@ export class AgentSession {
 			this.#preCacheStreamingEditFile(event);
 			this.#maybeAbortStreamingEdit(event);
 		});
-		// Per-tool TTSR reminders are folded into the matched tool's result via this hook.
-		this.agent.afterToolCall = ctx => this.#ttsrAfterToolCall(ctx);
+		// Per-tool TTSR reminders are folded into the matched tool's result via this hook,
+		// then TBM tool-output compression runs on the (possibly augmented) result.
+		this.agent.afterToolCall = ctx => this.#afterToolCall(ctx);
 		this.agent.providerSessionState = this.#providerSessionState;
 		this.#syncAgentSessionId();
 		this.#syncTodoPhasesFromBranch();
@@ -2172,6 +2180,10 @@ export class AgentSession {
 
 	get asyncJobManager(): AsyncJobManager | undefined {
 		return this.#asyncJobManager;
+	}
+
+	get tbm(): TbmManager | undefined {
+		return this.#tbm;
 	}
 
 	getAgentId(): string | undefined {
@@ -3207,6 +3219,15 @@ export class AgentSession {
 		return {
 			content: [{ type: "text", text: reminder }, ...ctx.result.content],
 		};
+	}
+
+	/** Chained `afterToolCall` hook: TTSR reminders first, then TBM tool-output compression. */
+	#afterToolCall(ctx: AfterToolCallContext): AfterToolCallResult | undefined {
+		const ttsr = this.#ttsrAfterToolCall(ctx);
+		const base = ttsr?.content ?? ctx.result.content;
+		const compressed = applyTbmToolCompression(this.#tbm, ctx.toolCall.name, base);
+		if (!compressed) return ttsr;
+		return { content: compressed as AfterToolCallResult["content"] };
 	}
 
 	#extractTtsrRuleNames(details: unknown): string[] {

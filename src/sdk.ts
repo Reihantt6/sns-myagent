@@ -106,6 +106,9 @@ import {
 	SecretObfuscator,
 } from "./secrets";
 import { AgentSession } from "./session/agent-session";
+import { TbmManager } from "./tbm";
+import { resolveTbmConfigFromSettings } from "./tbm/settings-bridge";
+import { applyTbmPreModel } from "./tbm/session-hooks";
 import { discoverAuthStorage as discoverAuthStorageFromConfig } from "./session/auth-broker-config";
 import type { AuthStorage } from "./session/auth-storage";
 import {
@@ -2415,9 +2418,13 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			return obfuscateMessages(obfuscator, converted);
 		};
 
+		const tbmConfig = resolveTbmConfigFromSettings(settings);
+		const tbmManager: TbmManager | undefined = tbmConfig.enabled ? new TbmManager(tbmConfig) : undefined;
+
 		const transformContext = async (messages: AgentMessage[], _signal?: AbortSignal) => {
 			const withContext = await extensionRunner.emitContext(messages);
-			return wrapSteeringForModel(withContext);
+			const withTbm = applyTbmPreModel(tbmManager, withContext);
+			return wrapSteeringForModel(withTbm);
 		};
 		// Per-request provider-context transforms. Obfuscate FIRST so secrets are
 		// redacted from text before snapcompact rasterizes it into PNG frames.
@@ -2618,9 +2625,10 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			agent,
 			pruneToolDescriptions: inlineToolDescriptors,
 			thinkingLevel: autoThinking ? AUTO_THINKING : effectiveThinkingLevel,
-			sessionManager,
-			settings,
-			autoApprove: options.autoApprove,
+		sessionManager,
+		settings,
+		autoApprove: options.autoApprove,
+		tbm: tbmManager,
 			evalKernelOwnerId,
 			// Defined only for top-level sessions (creation is gated above).
 			// AgentSession uses this to decide whether it may dispose the global
