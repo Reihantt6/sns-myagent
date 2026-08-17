@@ -90,9 +90,19 @@ Yes. The interactive agent streams provider responses when supported by the sele
 
 ### What is TBM?
 
-The Token Budget Manager exists in `src/tbm/` and includes a `TbmManager` plus unit tests. It currently provides a separate manager for context delta processing, context pyramids, lazy skills, tool-output compression, communication modes, tombstoning, response caching, and a dashboard.
+The Token Budget Manager (`src/tbm/`) manages context-delta accounting, context
+pyramids, lazy skills, tool-output compression, communication modes, tombstoning,
+and response caching. It is **integrated into the main agent loop** (commit
+`a59bb93`): `createAgentSession` wires it into the pre-model
+`transformContext`, post-tool compression, and the post-turn response cache via
+`src/tbm/session-hooks.ts`. The master switch defaults to **OFF**, so existing
+sessions are byte-for-byte unchanged until you opt in with `tbm.enabled: true`.
 
-The broader integration into the main agent loop and the projected savings are not release guarantees. See [tbm.md](tbm.md) for the implemented manager surface and planned integration notes.
+Measured savings exist only for a synthetic harness (93.6% fewer on-wire content
+tokens in `bun scripts/tbm-benchmark.ts`); they are **not** a claim about real
+sessions. See [tbm.md](tbm.md) for the integrated wiring, honest limitations
+(store-only cache, accounting-only context delta), and the regression-proof
+`tbm-agent-loop.test.ts` suite.
 
 ## Memory
 

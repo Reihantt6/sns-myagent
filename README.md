@@ -91,23 +91,23 @@ test). **PARTIAL** = implemented and partly tested, but not deep-audited end-to-
 | **Multi-provider LLM** (OpenAI, Anthropic, Ollama, custom) | VERIFIED | `src/modes/setup-wizard/` + provider registry |
 | **BYOK setup wizard** | VERIFIED | `src/modes/setup-wizard/` + tests + screenshots |
 | **Memory — mnemopi** (default recommended) | VERIFIED | `src/memory-backend/__tests__/memory-integration.test.ts` (30 tests: retain → persist → recall → inject) |
-| **Memory — hindsight** (remote service) | PARTIAL | `src/hindsight/`; needs `hindsight.apiUrl` service |
-| **Memory — mem0 / lcm / local** | PARTIAL | manual save/search; **no auto-recall/injection** |
-| **Memory — mnemosyne** | BROKEN | migrated to `mnemopi` at config load; dead enum value |
-| **TBM (token budget manager)** | VERIFIED (integrated) | `src/tbm/session-hooks.ts` wired into the turn lifecycle; default **OFF**. No savings claim without the measured benchmark — see [docs/tbm.md](./docs/tbm.md) |
-| **Telegram bot** | PARTIAL | `src/adapters/telegram/`; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` |
-| **MCP integration** | PARTIAL | `src/mcp/` (22 files); `/mcp` surface verified |
-| **Plan mode** | PARTIAL | `src/plan-mode/` |
-| **Goal mode** | PARTIAL | `src/goals/` (token budget + lifecycle) |
-| **Subagents / multi-agent** | PARTIAL | `src/task/`, `src/agents/` (consensus/critic/best-of-N) |
-| **Advisor** (second-model review) | VERIFIED | `src/advisor/` + `advisor.test.ts` |
-| **Cron scheduler** | PARTIAL | `src/cron/` + parser tests |
-| **Browser automation** (Puppeteer) | PARTIAL | `src/tools/browser/` |
+| **Memory — hindsight** (remote service) | PARTIAL | `src/hindsight/`; needs `hindsight.apiUrl` service — [docs/memory.md](./docs/memory.md) |
+| **Memory — mem0 / lcm / local** | PARTIAL | manual save/search; **no auto-recall/injection** — [docs/memory.md](./docs/memory.md) |
+| **Memory — mnemosyne** | BROKEN | migrated to `mnemopi` at config load; dead enum value — [docs/memory.md](./docs/memory.md) |
+| **TBM (token budget manager)** | VERIFIED (integrated) | `src/tbm/session-hooks.ts` wired into the turn lifecycle; default **OFF**. No savings claim without the measured benchmark — [docs/tbm.md](./docs/tbm.md) |
+| **Telegram bot** | PARTIAL | `src/adapters/telegram/`; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` — [docs/telegram.md](./docs/telegram.md) |
+| **MCP integration** | PARTIAL | `src/mcp/` (22 files); `/mcp` surface verified — [docs/mcp.md](./docs/mcp.md) |
+| **Plan mode** | PARTIAL | `src/plan-mode/` — [docs/plan-mode.md](./docs/plan-mode.md) |
+| **Goal mode** | PARTIAL | `src/goals/` (token budget + lifecycle) — [docs/goals.md](./docs/goals.md) |
+| **Subagents / multi-agent** | PARTIAL | `src/task/`, `src/agents/` (consensus/critic/best-of-N) — [docs/subagents.md](./docs/subagents.md) |
+| **Advisor** (second-model review) | VERIFIED | `src/advisor/` + `advisor.test.ts` — [docs/advisor.md](./docs/advisor.md) |
+| **Cron scheduler** | PARTIAL | `src/cron/` + parser tests — [docs/cron.md](./docs/cron.md) |
+| **Browser automation** (Puppeteer) | PARTIAL | `src/tools/browser/` — [docs/browser.md](./docs/browser.md) |
 | **SSH remote execution** | PARTIAL | `src/tools/ssh.ts` |
 | **Eval backends** (Python/JS/Ruby/Julia) | VERIFIED | `src/eval/` + eval tests |
-| **Context compaction** | PARTIAL | `src/session/` (multiple strategies) |
-| **Plugins / skills** | UNTESTED | `src/extensibility/` (implemented, no committed test) |
-| **Collaborative sessions** | UNTESTED | `src/collab/` (implemented, no committed test) |
+| **Context compaction** | PARTIAL | `src/session/` (multiple strategies) — [docs/compaction.md](./docs/compaction.md) |
+| **Plugins / skills** | UNTESTED | `src/extensibility/` (implemented, no committed test) — [docs/extensibility.md](./docs/extensibility.md) |
+| **Collaborative sessions** | UNTESTED | `src/collab/` (implemented, no committed test) — [docs/collab.md](./docs/collab.md) |
 | **LSP integration** | PARTIAL | `src/lsp/` |
 | **Text-to-speech / STT** | PARTIAL | `src/tts/`, `src/stt/` |
 | **Todo system** | PARTIAL | `src/` todo helpers |
@@ -336,10 +336,20 @@ sns-myagent/
 | [Installation](./docs/installation.md) | Install options per platform |
 | [Configuration](./docs/configuration.md) | Config files, providers, models |
 | [Memory](./docs/memory.md) | Memory backends and how to switch |
+| [MCP](./docs/mcp.md) | Model Context Protocol servers |
 | [Termux (Android)](./docs/termux.md) | Running on Android/Termux |
 | [Terminal UI](./docs/terminal-ui.md) | The interactive TUI |
 | [TBM](./docs/tbm.md) | Token budget manager (integrated, default OFF) |
 | [Telegram](./docs/telegram.md) | Telegram bot + authorization boundary |
+| [Goals](./docs/goals.md) | Autonomous objective mode |
+| [Plan mode](./docs/plan-mode.md) | Plan-before-execute workflow |
+| [Subagents](./docs/subagents.md) | Task delegation + async background jobs |
+| [Browser](./docs/browser.md) | Puppeteer browser automation |
+| [Cron](./docs/cron.md) | Scheduled jobs (prompt/shell/skill) |
+| [Compaction](./docs/compaction.md) | Context-window compaction strategies |
+| [Extensibility](./docs/extensibility.md) | Plugins, skills, custom tools |
+| [Collab](./docs/collab.md) | Live shared sessions |
+| [Advisor](./docs/advisor.md) | Second-model turn review |
 | [Security model](./docs/security-model.md) | Authorization + attack surface |
 | [Upstream comparison](./docs/upstream.md) | Lineage vs oh-my-pi |
 | [Development](./docs/development.md) | Custom node_modules + install mechanism |

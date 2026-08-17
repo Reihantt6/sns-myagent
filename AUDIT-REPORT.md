@@ -231,6 +231,12 @@ Docs audited against source; corrected where they diverged from reality:
 Remaining doc gap: no dedicated deep pages for goals/subagents/MCP/cron/browser/plugins/
 collaboration beyond README coverage (recorded, not created for volume).
 
+Session 4 follow-up: deep pages added for goals, plan-mode, subagents, MCP, cron,
+browser, compaction, extensibility (plugins/skills), collab, and advisor — each using
+the Purpose / How it works / Configuration / Real example / Expected behavior /
+Failure behavior / Limitations / Testing status template, with statuses matching the
+feature matrix (PARTIAL/UNTESTED where the audit found partial or no committed tests).
+
 ---
 
 ## Screenshot Inventory
