@@ -237,6 +237,17 @@ the Purpose / How it works / Configuration / Real example / Expected behavior /
 Failure behavior / Limitations / Testing status template, with statuses matching the
 feature matrix (PARTIAL/UNTESTED where the audit found partial or no committed tests).
 
+Session-4 installer test (2026-08-17): install.sh was traced and exercised in
+isolation. Prebuilt path (linux/x64), Termux path (detects via TERMUX_VERSION /
+/data/data/com.termux / `uname -o`; routes to source build), and API-failure
+fallback (mocked rate-limit → source build) all install a working `snsagent
+0.3.9`. macOS asset names (`snsagent-macos-*`) confirmed. **Remaining action
+(push required, not performed)**: commit `e0ba014` (macOS asset naming + Termux
+route) is on HEAD but not yet fetched into `origin/main`; the `curl | bash`
+one-liner still serves the older installer, which attempts the prebuilt path on
+Termux and could install a non-executing binary. Push e0ba014 (and the session-4
+commits) to make the one-liner match the verified behavior.
+
 ---
 
 ## Screenshot Inventory
