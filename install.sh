@@ -4,7 +4,9 @@ set -euo pipefail
 # SNS MyAgent Installer - Multi-arch, Termux-aware
 # Usage: curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 #
-# Supports: Linux x64, Linux ARM64 (Termux/Android), macOS x64/arm64, Windows (WSL)
+# Supports prebuilt binaries: Linux x64 (glibc), macOS x64/arm64, Windows (WSL).
+# Linux ARM64 (Termux/Android) and musl (Alpine) build from source (bun required) —
+# the glibc-linked linux-arm64 release asset does not exec on Android's bionic libc.
 # Strategy: download prebuilt binary (fast) → fallback to build-from-source (bun needed)
 
 REPO="Reihantt6/sns-myagent"
@@ -78,8 +80,8 @@ asset_name() {
       ;;
     darwin)
       case "$arch" in
-        x64)   echo "snsagent-darwin-x64" ;;
-        arm64) echo "snsagent-darwin-arm64" ;;
+        x64)   echo "snsagent-macos-x64" ;;
+        arm64) echo "snsagent-macos-arm64" ;;
       esac
       ;;
     windows)
@@ -153,14 +155,15 @@ download_binary() {
   mv "$tmpfile" "$dest"
   chmod 755 "$dest"
 
-  # Verify
+  # Verify. A compiled binary that cannot print --version is broken for this
+  # platform (e.g. glibc asset on Android/Termux), so fall back to source build.
   if "$dest" --version &>/dev/null; then
     info "snsagent installed to ${dest}"
     return 0
   else
-    warn "Binary downloaded but --version check failed (may need first-run setup)"
-    info "Installed to ${dest}"
-    return 0
+    warn "Binary downloaded but --version check failed (wrong libc/arch). Removing and falling back to build from source."
+    rm -f "$dest"
+    return 1
   fi
 }
 
@@ -248,18 +251,23 @@ main() {
   detect_platform
   termux_setup
 
-  # Strategy: prebuilt binary first, build-from-source fallback
-  if download_binary; then
-    ensure_path
-    echo ""
-    info "Installation complete!"
-    info "Run: snsagent --help"
-    [ "$IS_TERMUX" = true ] && info "Or add to PATH: export PATH=\"\$PATH:${INSTALL_DIR}\""
-    echo ""
-    return 0
+  # Strategy: prebuilt binary first, build-from-source fallback.
+  # Termux/Android skips the prebuilt path entirely: the glibc linux-arm64 asset
+  # will not exec under Android's bionic libc, so build from source directly.
+  if [ "$IS_TERMUX" != true ]; then
+    if download_binary; then
+      ensure_path
+      echo ""
+      info "Installation complete!"
+      info "Run: snsagent --help"
+      echo ""
+      return 0
+    fi
+    warn "Prebuilt binary not available. Building from source..."
+  else
+    step "Termux: prebuilt glibc binary is incompatible with Android — building from source."
   fi
 
-  warn "Prebuilt binary not available. Building from source..."
   build_from_source
   ensure_path
   echo ""

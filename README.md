@@ -352,12 +352,14 @@ pkg install -y git nodejs-lts
 # 3. Install Bun
 curl -fsSL https://bun.sh/install | bash
 source ~/.bashrc
-# 4. Install SNS-MyAgent
-npm install -g @sns-myagent/cli
+# 4. Run from source (npm/prebuilt binaries are glibc and won't run on Android)
+git clone https://github.com/Reihantt6/sns-myagent.git
+cd sns-myagent
+bun install
 # 5. Setup (BYOK wizard)
-snsagent init
+bun run src/cli/entry.ts init
 # 6. Run
-snsagent
+bun run src/cli/entry.ts
 ```
 
 ---

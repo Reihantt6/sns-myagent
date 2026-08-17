@@ -13,22 +13,17 @@ Run snsagent on Android through Termux.
 
 Use a current F-Droid or GitHub Termux release. The old Play Store build is not maintained.
 
-## Install the published package
+## Why the npm / prebuilt binary does not run on Android
 
-```bash
-pkg update && pkg upgrade -y
-pkg install -y nodejs-lts git curl openssh
-npm install -g @sns-myagent/cli
-snsagent --version
-```
+The `@sns-myagent/cli` postinstall and `install.sh` both download a prebuilt
+`snsagent-linux-arm64` asset that is compiled with `bun build --compile` on
+GitHub's `ubuntu-latest` runner. That artifact is **glibc-linked** and will not
+exec under Android's bionic libc, so `snsagent --version` fails on Termux.
 
-Expected output:
+The installer (`curl ... | bash`) detects Termux and skips the prebuilt path,
+falling back to a from-source build. Use the source path below instead.
 
-```text
-snsagent 0.3.9
-```
-
-## Run from source
+## Run from source (recommended)
 
 ```bash
 pkg install -y nodejs-lts git
@@ -43,8 +38,10 @@ bun run src/cli/entry.ts --version
 
 ## First-run setup
 
+From the cloned repo:
+
 ```bash
-snsagent
+bun run src/cli/entry.ts
 ```
 
 Use `/setup` to configure a provider, or edit `~/.omp/agent/models.yml`. For a local Ollama-compatible endpoint, use the endpoint URL and select `openai-completions`. Do not place a real key in this document or in a committed file.
@@ -70,9 +67,11 @@ Termux can stop background processes. For a boot workflow, install Termux:Boot a
 
 ```bash
 mkdir -p ~/.termux/boot
-echo 'snsagent telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
+echo 'cd ~/sns-myagent && bun run src/cli/entry.ts telegram start --token YOUR_TOKEN' > ~/.termux/boot/snsagent.sh
 chmod +x ~/.termux/boot/snsagent.sh
 ```
+
+Replace `YOUR_TOKEN` with the bot token (keep it out of any committed file).
 
 ## Troubleshooting
 
@@ -80,7 +79,7 @@ chmod +x ~/.termux/boot/snsagent.sh
 |---------|-----|
 | `bun: command not found` | `export PATH="$HOME/.bun/bin:$PATH"` or restart Termux |
 | `npm install fails` | `pkg install nodejs-lts git` and retry |
-| `Permission denied` | Use `snsagent` from npm or run the source entrypoint with Bun |
+| `Permission denied` | Run the source entrypoint with Bun (`bun run src/cli/entry.ts`) |
 | `Out of memory` | Use a hosted LLM and avoid local model inference |
 | `Keyboard lacks Esc` | Install Hacker's Keyboard, or use Ctrl+[ as Esc |
 | `Termux crashes` | Update Termux from F-Droid or GitHub |
