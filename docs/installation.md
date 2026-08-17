@@ -88,7 +88,7 @@ Use `/setup` to configure a provider, or configure a provider in `~/.omp/agent/m
 
 The first step of the setup wizard collects the provider details (Tab moves between fields, Enter connects):
 
-![Provider setup wizard](screenshots/setup-byok.png)
+![Provider setup wizard](screenshots/setup-wizard.png)
 
 > Note: the screenshot uses a fallback font. In a terminal with a Nerd Font installed, the status bar and icons render with their intended glyphs.
 
