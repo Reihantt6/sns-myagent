@@ -40,9 +40,16 @@ to `$INSTALL_DIR` (default `~/.local/bin`, override with
 reloading. A `GITHUB_TOKEN` env var is honored for rate-limited
 environments.
 
-Verified 2026-08 (isolated `SNS_INSTALL_DIR` runs): prebuilt path, Termux
-route (source build), and the API-failure fallback all install a working
+Verified 2026-08 (isolated `SNS_INSTALL_DIR` runs): the prebuilt path, the
+Termux route (source build), and the API-failure fallback all install a working
 `snsagent 0.3.9`.
+
+> **Note**: the fixes in `install.sh` (macOS asset naming, Termux source-build
+> route) were committed as `e0ba014` but had not yet been pushed to
+> `origin/main` at the time of verification — `curl … | bash -c main/install.sh`
+> still serves the pre-fix version until those commits are pushed. Test the
+> one-liner again after pushing. The behavior documented here matches the
+> repository version of `install.sh`.
 
 ## Windows PowerShell
 
