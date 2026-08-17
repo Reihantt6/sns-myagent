@@ -223,17 +223,22 @@ All tool names come from `src/tools/builtin-names.ts`.
 
 ## Memory Backends
 
-Seven backends, configured via `memory.backend` in `~/.omp/agent/config.yml`. Source: `src/memory-backend/resolve.ts`.
+Backends are selected via `memory.backend` in `~/.omp/agent/config.yml`. Source: `src/memory-backend/resolve.ts`. The schema default is `off`; `mnemopi` is the fully-integrated local backend we recommend.
 
-| Backend | Description | Source |
-|---------|-------------|--------|
-| **mnemopi** (default) | SQLite + vector embeddings + graph. Local, zero setup. | `src/mnemopi/` (7 files) |
-| **hindsight** | Remote memory backend | `src/hindsight/` (10 files) |
-| **mnemosyne** | Three-tier memory: episodic → semantic → procedural. Auto-consolidation. | `src/memory-backend/mnemosyne-backend.ts` |
-| **mem0** | Semantic facts with auto-extraction. Relevance + recency scoring. | `src/memory-backend/mem0-backend.ts` |
-| **lcm** | Latent Context Memory. Delta encoding + multi-resolution. | `src/memory-backend/lcm-backend.ts` |
-| **local** | Rollout summary pipeline | `src/memory-backend/local-backend.ts` |
-| **off** | Memory disabled | `src/memory-backend/off-backend.ts` |
+| Backend | What it does (verified) | Auto-recall / auto-retain |
+|---------|--------------------------|---------------------------|
+| **mnemopi** | Local SQLite + embeddings + graph; full recall/retain/scope/isolation. | ✅ injected on first turn + auto-retain |
+| **hindsight** | Remote memory service (`hindsight.apiUrl`, default `http://localhost:8888`). | ✅ injected (when service configured) |
+| **local** | Rollout-summary pipeline + `learned.md` lessons. | ❌ manual save only |
+| **mem0** | Local SQLite + FTS5 semantic facts. | ❌ manual save/search only |
+| **lcm** | Local SQLite, delta-encoded context. | ❌ manual save/search only |
+| **mnemosyne** | Legacy three-tier SQLite; **migrated to `mnemopi`** at config load (unreachable). | — |
+| **off** | No memory subsystem. | ❌ |
+
+> Note: `mem0`, `lcm`, and `local` persist and recall via `save`/`search`, but only
+> `mnemopi` and `hindsight` automatically inject recalled facts into a fresh turn.
+> See [docs/memory.md](./docs/memory.md) and the audit tests
+> (`src/memory-backend/__tests__/memory-integration.test.ts`).
 
 ## Cron Scheduler
 
@@ -602,6 +607,20 @@ Or start the Telegram adapter explicitly:
 snsagent telegram
 ```
 
+### Authorization (important)
+
+By default the bot will execute agent actions for **any** user who can message
+it (and for group chats), because Telegram messages drive agent sessions with
+`autoApprove: true`. Restrict it to your own Telegram user id:
+
+```bash
+export SNS_TELEGRAM_ALLOWED_USERS="123456789"   # your numeric Telegram user id
+```
+
+When the allowlist is set, non-listed users are rejected before the agent is
+consulted; when unset, a warning is logged. See
+[docs/security-model.md](./docs/security-model.md).
+
 ---
 
 ## Architecture
@@ -706,19 +725,19 @@ All 30 tools are real implementations, not stubs.
 
 62 primary top-level commands are registered, with 4 aliases in the lookup map. All are callable via `/<name>` in interactive mode.
 
-### Memory Backends (7 / 7) - `src/memory-backend/resolve.ts`
+### Memory Backends - `src/memory-backend/resolve.ts`
 
-| Backend | Status | Requires config |
-|---------|--------|-----------------|
-| `mnemopi` (default) | ✅ Works out of box | None - local SQLite + vector + graph |
-| `local` | ✅ Works out of box | None - rollout summary pipeline |
-| `off` | ✅ Works out of box | None - no-op |
-| `mnemosyne` | ✅ Wired | `mnemosyne` Python daemon running locally |
-| `mem0` | ✅ Wired | `MEM0_API_KEY` (or self-hosted endpoint) |
-| `lcm` | ✅ Wired | `LCM_HOST` (default `127.0.0.1:8500`) |
-| `hindsight` | ✅ Wired | `HINDSIGHT_API_KEY` or remote endpoint |
+| Backend | Status (verified) | Notes |
+|---------|-------------------|-------|
+| `mnemopi` | ✅ VERIFIED | local SQLite; full recall→inject + auto-retain + scope isolation (tested) |
+| `hindsight` | ✅ VERIFIED (needs service) | remote; `hindsight.apiUrl` defaults to `http://localhost:8888` |
+| `local` | ⚠️ PARTIAL | manual `learned.md` save; no auto-recall |
+| `mem0` | ⚠️ PARTIAL | local SQLite; manual save/search; no auto-recall |
+| `lcm` | ⚠️ PARTIAL | local SQLite; manual save/search; no auto-recall |
+| `mnemosyne` | 🚫 DEAD CODE | `memory.backend=mnemosyne` is migrated to `mnemopi`; backend is unreachable |
+| `off` | ✅ VERIFIED | no-op |
 
-Set via `memory.backend` in `~/.omp/agent/config.yml`. Default is `mnemopi`.
+Set via `memory.backend` in `~/.omp/agent/config.yml`. Schema default is `off` (not `mnemopi`).
 
 ### Telegram Adapter - `src/adapters/telegram/`
 
@@ -743,6 +762,53 @@ GitHub Actions runs 7-stage pipeline: typecheck, lint, build, test, diagnose, sm
 - Docker: `ghcr.io/reihantt6/sns-myagent:v0.3.9`
 
 ---
+
+## Screenshots
+
+Captured from the current source-run build (`bun run src/cli/entry.ts`).
+
+| Screen | Image |
+|--------|-------|
+| Setup wizard — BYOK provider | ![Setup wizard](./docs/screenshots/setup-wizard.png) |
+| Setup — glyph mode | ![Glyph mode](./docs/screenshots/setup-glyphs.png) |
+| Main TUI (no model yet) | ![Main TUI](./docs/screenshots/main-tui.png) |
+| `/settings` panel | ![Settings](./docs/screenshots/settings.png) |
+| `/model` picker | ![Model picker](./docs/screenshots/model.png) |
+| `/memory stats` (backend off) | ![Memory stats](./docs/screenshots/memory-stats.png) |
+| `/memory diagnose` | ![Memory diagnose](./docs/screenshots/memory-diagnose.png) |
+| `/mcp` command surface | ![MCP](./docs/screenshots/mcp.png) |
+| `/stats` dashboard launch | ![Stats](./docs/screenshots/stats.png) |
+| Error state (no model selected) | ![Error state](./docs/screenshots/help.png) |
+
+> The prebuilt binary (`./bin/snsagent-linux-x64`, and the npm-installed binary)
+> runs in "JS-only mode" (native pty/grep/shell disabled) and its interactive
+> TUI does not render in our test environment; the source-run path above is the
+> supported path for the interactive UI. See
+> [docs/troubleshooting.md](./docs/troubleshooting.md).
+
+## Verification Status (audit)
+
+Statuses from the deep audit (2026-08-17). `VERIFIED` = a real integration path
+was demonstrated, not just a green unit test.
+
+| Feature | Status | Evidence |
+|---------|--------|----------|
+| Setup wizard | ✅ VERIFIED | `src/modes/setup-wizard/` + tests + screenshots |
+| Memory (mnemopi) | ✅ VERIFIED | `src/memory-backend/__tests__/memory-integration.test.ts` (retain→persist→recall→inject) |
+| Memory (mem0/lcm/local) | ⚠️ PARTIAL | manual save/search; no auto-recall |
+| TBM | ⚠️ NOT INTEGRATED | `src/tbm/` has zero runtime consumers — see [docs/tbm.md](./docs/tbm.md) |
+| Telegram | ⚠️ PARTIAL | path wired; auth via opt-in `SNS_TELEGRAM_ALLOWED_USERS` |
+| Goal mode | ⚠️ PARTIAL | `src/goals/` implemented; not deeply audited |
+| Subagents | ⚠️ PARTIAL | `src/task/`, `src/agents/` implemented; not deeply audited |
+| MCP | ⚠️ PARTIAL | `src/mcp/` implemented; `/mcp` surface verified |
+| Cron | ⚠️ PARTIAL | `src/cron/` + parser tests |
+| Browser | ⚠️ PARTIAL | puppeteer `src/tools/browser/` |
+| Plugins | ⚠️ PARTIAL | `src/extensibility/` |
+| Collaboration | ⚠️ PARTIAL | `src/collab/` |
+
+Full findings: see `AUDIT-REPORT.md` (generated by the audit) and
+[docs/security-model.md](./docs/security-model.md),
+[docs/upstream.md](./docs/upstream.md).
 
 ## Credits
 

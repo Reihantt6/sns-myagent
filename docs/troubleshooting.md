@@ -13,6 +13,29 @@ Expected version for this release:
 snsagent 0.3.9
 ```
 
+## Compiled binary shows a blank TUI / "JS-only mode"
+
+The compiled binary (`./bin/snsagent-linux-x64`, and the npm-installed binary)
+prints:
+
+```text
+[pi-natives] JS-only mode: native addon unavailable for linux-x64 (modern)
+[pi-natives] Native features (grep, pty, shell, clipboard, syntax highlighting, etc.) are disabled.
+```
+
+and the interactive TUI does not render. This is the patched `pi-natives`
+fallback (see `patches/pi-natives-js-only-fallback.patch`): the compiled bundle
+does not embed the native `.node` addon, so native terminal features are off.
+
+Workaround: run from source with Bun, which loads the native addon normally:
+
+```bash
+bun install
+bun run src/cli/entry.ts
+```
+
+This is a recorded limitation, not a crash.
+
 ## `command not found: snsagent`
 
 Check whether the package is installed globally:
