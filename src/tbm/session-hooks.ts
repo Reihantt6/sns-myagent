@@ -55,11 +55,11 @@ function withTextContent(message: AgentMessage, text: string): AgentMessage {
 	return { ...message, content: [{ type: "text", text }] } as AgentMessage;
 }
 
-/** Build a developer message carrying the comm-mode directive. */
-function directiveMessage(directive: string): AgentMessage {
+/** Build a developer message carrying injected context (directive / skills). */
+function developerMessage(text: string): AgentMessage {
 	return {
 		role: "developer",
-		content: [{ type: "text", text: directive }],
+		content: [{ type: "text", text }],
 		timestamp: Date.now(),
 	} as AgentMessage;
 }
@@ -86,6 +86,24 @@ function serializeForDelta(messages: AgentMessage[]): string {
 }
 
 /**
+ * Compose the session's pre-LLM `transformContext` so the TBM step is a single,
+ * testable seam. `createAgentSession` uses this exact function; removing the
+ * `applyTbmPreModel` call here is what the agent-loop integration test guards
+ * against.
+ */
+export function composeTransformContext(opts: {
+	tbm: TbmManager | undefined;
+	emitContext: (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]>;
+	wrapSteering: (messages: AgentMessage[]) => AgentMessage[];
+}): (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]> {
+	return async (messages, signal) => {
+		const withContext = await opts.emitContext(messages, signal);
+		const withTbm = applyTbmPreModel(opts.tbm, withContext);
+		return opts.wrapSteering(withTbm);
+	};
+}
+
+/**
  * Pre-model hook. Drives the comm-mode / pyramid / context-delta / lazy-skills
  * subsystems, tombstones old plain-text messages, and injects the comm-mode
  * directive. Returns the (possibly transformed) messages.
@@ -104,8 +122,21 @@ export function applyTbmPreModel(tbm: TbmManager | undefined, messages: AgentMes
 		tbm.contextDelta.processTurn(serializeForDelta(messages));
 	}
 
+	// Lazy skills: inject the name-only index, then load + inject the full
+	// content of only the skills the message actually references. Without this,
+	// `processMessage` would advance stats but never reach the model payload.
+	let skillSection = "";
 	if (tbm.config.lazy_skills.enabled && tbm.lazySkills.stats.totalAvailable > 0) {
-		tbm.lazySkills.processMessage(userText, tbm.config.lazy_skills.max_per_turn);
+		const { skillsToLoad, indexSection } = tbm.lazySkills.processMessage(
+			userText,
+			tbm.config.lazy_skills.max_per_turn,
+		);
+		skillSection = indexSection;
+		if (skillsToLoad.length > 0) {
+			skillSection +=
+				"\n\n## Loaded Skills\n\n" +
+				skillsToLoad.map(skill => skill.fullContent).join("\n\n---\n\n");
+		}
 	}
 
 	let out = messages;
@@ -113,9 +144,10 @@ export function applyTbmPreModel(tbm: TbmManager | undefined, messages: AgentMes
 		out = applyTombstone(tbm, out);
 	}
 
-	if (directive) {
-		out = [directiveMessage(directive), ...out];
-	}
+	const injected: AgentMessage[] = [];
+	if (directive) injected.push(developerMessage(directive));
+	if (skillSection) injected.push(developerMessage(skillSection));
+	if (injected.length > 0) out = [...injected, ...out];
 
 	return out;
 }
