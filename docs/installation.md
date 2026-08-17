@@ -31,7 +31,18 @@ On Linux, macOS, WSL, and supported Termux environments:
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-The installer downloads the latest `snsagent` release asset when one is available. It falls back to a source build with Bun when needed, installs to `~/.local/bin` by default, and prints the PATH command if your shell needs to be reloaded.
+The installer downloads the latest `snsagent` release asset when one is
+available, verifies it with `snsagent --version` (a glibc-linked asset that
+cannot exec — e.g. on Android/Termux — is removed and triggers the source
+build), and falls back to a from-source build with Bun when needed. It installs
+to `$INSTALL_DIR` (default `~/.local/bin`, override with
+`SNS_INSTALL_DIR=/some/path`), and prints the PATH command if your shell needs
+reloading. A `GITHUB_TOKEN` env var is honored for rate-limited
+environments.
+
+Verified 2026-08 (isolated `SNS_INSTALL_DIR` runs): prebuilt path, Termux
+route (source build), and the API-failure fallback all install a working
+`snsagent 0.3.9`.
 
 ## Windows PowerShell
 

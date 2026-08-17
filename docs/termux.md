@@ -23,6 +23,23 @@ exec under Android's bionic libc, so `snsagent --version` fails on Termux.
 The installer (`curl ... | bash`) detects Termux and skips the prebuilt path,
 falling back to a from-source build. Use the source path below instead.
 
+### Installer behavior on Termux (verified 2026-08)
+
+- **Detection**: `TERMUX_VERSION` env var, existence of
+  `/data/data/com.termux`, or `uname -o` = `Android` → `IS_TERMUX=true`.
+- **Route**: prebuilt download is skipped entirely with the message `Termux:
+  prebuilt glibc binary is incompatible with Android — building from source.`
+- **Fallback build**: installs `git curl unzip` via `pkg` (best effort), installs
+  Bun if missing, then `git clone --depth 1` + `bun install` + `bun run build`
+  and copies `bin/snsagent` to `$INSTALL_DIR` (default `~/.local/bin`, override
+  with `SNS_INSTALL_DIR=/some/path bash install.sh`).
+- **Result**: a fully working source-built binary is installed even when the
+  GitHub API is unreachable (tested with a mock rate-limit failure: the
+  installer fell back to the source build without error).
+
+The manual clone path below is equivalent — the installer just automates it.
+
+
 ## Run from source (recommended)
 
 ```bash
