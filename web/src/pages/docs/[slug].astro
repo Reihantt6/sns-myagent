@@ -1,0 +1,203 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import Footer from "../../components/Footer.astro";
+import { DOCS_GROUPS } from "../../data/docs-nav.ts";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return docs.map((doc) => ({
+    params: { slug: doc.id.replace(/\.md$/, "") },
+    props: { doc },
+  }));
+}
+
+interface Props {
+  doc: CollectionEntry<"docs">;
+}
+
+const { doc } = Astro.props;
+const { Content } = await render(doc);
+const title = doc.data.title;
+
+// Build flat slug set for sidebar highlighting
+const allSlugs = DOCS_GROUPS.flatMap((g) => g.slugs);
+const currentSlug = doc.id.replace(/\.md$/, "");
+
+// Find prev/next in the flattened nav order
+const flatOrder = DOCS_GROUPS.flatMap((g) => g.slugs);
+const idx = flatOrder.indexOf(currentSlug);
+const prev = idx > 0 ? flatOrder[idx - 1] : null;
+const next = idx >= 0 && idx < flatOrder.length - 1 ? flatOrder[idx + 1] : null;
+---
+
+<Base title={title} description={`SNS-MyAgent docs: ${title}`} canonical={`/docs/${currentSlug}/`}>
+  <Nav active="docs" />
+  <div class="docs-layout container">
+    <aside class="docs-sidebar">
+      <nav aria-label="Documentation">
+        {DOCS_GROUPS.map((group) => (
+          <div class="docs-group">
+            <h3>{group.label}</h3>
+            <ul>
+              {group.slugs.map((slug) => (
+                <li>
+                  <a
+                    href={`/docs/${slug}/`}
+                    class:list={[{ active: slug === currentSlug }]}
+                  >
+                    {slug.replace(/-/g, " ")}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </aside>
+
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1>{title}</h1>
+        <Content />
+      </article>
+
+      {(prev || next) && (
+        <nav class="docs-pager">
+          {prev && (
+            <a href={`/docs/${prev}/`} class="pager-link pager-prev">
+              <span class="pager-label">Previous</span>
+              <span class="pager-title">{prev.replace(/-/g, " ")}</span>
+            </a>
+          )}
+          {next && (
+            <a href={`/docs/${next}/`} class="pager-link pager-next">
+              <span class="pager-label">Next</span>
+              <span class="pager-title">{next.replace(/-/g, " ")}</span>
+            </a>
+          )}
+        </nav>
+      )}
+    </main>
+  </div>
+  <Footer />
+</Base>
+
+<style>
+  .docs-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 62px);
+  }
+  .docs-sidebar {
+    border-right: 1px solid var(--border);
+    padding: 32px 0 32px 0;
+    position: sticky;
+    top: 62px;
+    align-self: start;
+    max-height: calc(100vh - 62px);
+    overflow-y: auto;
+  }
+  .docs-group {
+    margin-bottom: 24px;
+  }
+  .docs-group h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-3);
+    margin: 0 0 8px;
+    padding: 0 20px;
+  }
+  .docs-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .docs-group a {
+    display: block;
+    padding: 6px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    border-left: 2px solid transparent;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .docs-group a:hover {
+    color: var(--text-1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .docs-group a.active {
+    color: var(--green);
+    border-left-color: var(--green);
+    background: rgba(0, 224, 138, 0.05);
+  }
+  .docs-main {
+    padding: 40px 48px 80px;
+    max-width: 820px;
+  }
+  .docs-article h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px;
+  }
+  .docs-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pager-link:hover {
+    border-color: rgba(0, 224, 138, 0.4);
+    background: rgba(0, 224, 138, 0.04);
+  }
+  .pager-next {
+    margin-left: auto;
+    text-align: right;
+  }
+  .pager-label {
+    font-size: 12px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .pager-title {
+    font-size: 15px;
+    color: var(--text-1);
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  @media (max-width: 860px) {
+    .docs-layout {
+      grid-template-columns: 1fr;
+    }
+    .docs-sidebar {
+      position: relative;
+      top: 0;
+      max-height: none;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .docs-main {
+      padding: 24px 20px 60px;
+    }
+  }
+</style>
+
+<link rel="stylesheet" href="/styles/docs.css" />

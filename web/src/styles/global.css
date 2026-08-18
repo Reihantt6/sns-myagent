@@ -1,0 +1,272 @@
+/* ============================================================
+   SNS-MyAgent — dark terminal design system
+   ============================================================ */
+
+:root {
+  /* Base surfaces */
+  --bg-0: #07090d;
+  --bg-1: #0b0f16;
+  --bg-2: #11161f;
+  --bg-3: #1a2130;
+  --bg-hover: #1c2434;
+
+  /* Terminal chrome */
+  --border: #232c3d;
+  --border-strong: #33405a;
+
+  /* Text */
+  --text-1: #e8edf5;
+  --text-2: #a7b1c2;
+  --text-3: #6b7689;
+
+  /* Accents — matrix green + amber + AI violet */
+  --green: #00e08a;
+  --green-dim: #0a8f5c;
+  --amber: #ffb454;
+  --violet: #b48cff;
+  --cyan: #5ad1e6;
+  --red: #ff6b6b;
+
+  /* Semantic */
+  --link: #5ad1e6;
+  --link-hover: #8fe3f2;
+  --code-bg: #0d1320;
+  --code-border: #1c2637;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --maxw: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Subtle terminal grid backdrop */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(0, 224, 138, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(180, 140, 255, 0.05), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+}
+
+::selection {
+  background: rgba(0, 224, 138, 0.28);
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--link-hover);
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+
+code, pre, kbd {
+  font-family: var(--font-mono);
+}
+
+kbd {
+  background: var(--bg-3);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0.1em 0.45em;
+  font-size: 0.85em;
+}
+
+/* ============ Reusable atoms ============ */
+
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.green {
+  color: var(--green);
+}
+.amber {
+  color: var(--amber);
+}
+.violet {
+  color: var(--violet);
+}
+.dim {
+  color: var(--text-3);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 11px 20px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+}
+
+.btn-primary {
+  background: var(--green);
+  color: #05140c;
+}
+.btn-primary:hover {
+  background: #2df0a3;
+  color: #05140c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 224, 138, 0.25);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+.btn-ghost:hover {
+  border-color: var(--green-dim);
+  color: var(--green);
+}
+
+/* Terminal window frame */
+.term {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.term-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.term-dot.r { background: #ff5f57; }
+.term-dot.y { background: #febc2e; }
+.term-dot.g { background: #28c840; }
+
+.term-title {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.term-body {
+  padding: 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--text-2);
+  overflow-x: auto;
+}
+
+.term-body .ps1 {
+  color: var(--green);
+}
+.term-body .cmd {
+  color: var(--text-1);
+}
+.term-body .out {
+  color: var(--text-2);
+}
+.term-body .ok {
+  color: var(--green);
+}
+.term-body .err {
+  color: var(--red);
+}
+.term-body .hl {
+  color: var(--amber);
+}
+.term-body .dim2 {
+  color: var(--text-3);
+}
+
+/* Section scaffolding */
+.section {
+  padding: 88px 0;
+}
+.section-head {
+  max-width: 720px;
+  margin-bottom: 48px;
+}
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin: 0 0 12px;
+}
+.section-title {
+  font-size: clamp(26px, 3.4vw, 38px);
+  margin: 0 0 14px;
+}
+.section-sub {
+  color: var(--text-2);
+  font-size: 17px;
+  margin: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

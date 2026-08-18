@@ -1,0 +1,130 @@
+---
+interface Props {
+  active?: "home" | "docs";
+}
+const { active } = Astro.props;
+const links = [
+  { href: "/#features", label: "Features" },
+  { href: "/docs/installation/", label: "Docs" },
+  { href: "https://github.com/Reihantt6/sns-myagent", label: "GitHub" },
+];
+---
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="nav-logo" href="/" aria-label="SNS-MyAgent home">
+      <span class="nav-glyph" aria-hidden="true">▚</span>
+      <span class="mono"><span class="green">sns</span>agent</span>
+    </a>
+    <nav class="nav-links" id="nav-menu" aria-label="Primary">
+      {
+        links.map((l) => (
+          <a href={l.href} class:list={[{ active: l.href === "/" && active === "home" }]}>
+            {l.label}
+          </a>
+        ))
+      }
+      <a class="btn btn-primary nav-cta" href="/docs/installation/">Get started</a>
+    </nav>
+    <button id="nav-toggle" class="nav-burger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(7, 9, 13, 0.82);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+  }
+  .nav-logo:hover {
+    color: var(--text-1);
+  }
+  .nav-glyph {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, rgba(0, 224, 138, 0.18), rgba(0, 224, 138, 0.05));
+    border: 1px solid rgba(0, 224, 138, 0.35);
+    color: var(--green);
+    font-size: 14px;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+  .nav-links a:not(.btn) {
+    color: var(--text-2);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .nav-links a:not(.btn):hover,
+  .nav-links a:not(.btn).active {
+    color: var(--green);
+  }
+  .nav-cta {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-left: 6px;
+  }
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .nav-burger span {
+    width: 20px;
+    height: 2px;
+    background: var(--text-2);
+    border-radius: 2px;
+  }
+  @media (max-width: 860px) {
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 62px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      background: rgba(11, 15, 22, 0.98);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px 20px;
+    }
+    .nav-links.open {
+      display: flex;
+    }
+    .nav-links a {
+      padding: 8px 0;
+    }
+    .nav-burger {
+      display: flex;
+    }
+  }
+</style>
