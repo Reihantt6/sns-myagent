@@ -1,0 +1,16 @@
+# Build output
+dist/
+.astro/
+
+# Dependencies
+node_modules/
+
+# Synced at build time from ../docs (single source of truth stays in the repo)
+src/content/docs/
+public/screenshots/
+
+# Local tooling
+.env
+.env.*
+.DS_Store
+*.log

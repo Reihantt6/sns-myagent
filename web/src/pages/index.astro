@@ -1,0 +1,208 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import { FEATURES } from "../data/features";
+
+const docsQuick = [
+  { href: "/docs/installation/", label: "Installation", desc: "npm, one-liner, source, Termux" },
+  { href: "/docs/configuration/", label: "Configuration", desc: "config files, providers, models" },
+  { href: "/docs/memory/", label: "Memory", desc: "backends, auto-recall, scoping" },
+  { href: "/docs/telegram/", label: "Telegram", desc: "bot + authorization boundary" },
+  { href: "/docs/tbm/", label: "TBM", desc: "token budget manager" },
+  { href: "/docs/mcp/", label: "MCP", desc: "Model Context Protocol" },
+  { href: "/docs/faq/", label: "FAQ", desc: "frequently asked questions" },
+  { href: "/docs/security-model/", label: "Security model", desc: "attack surface + approvals" },
+  { href: "/docs/troubleshooting/", label: "Troubleshooting", desc: "common issues and fixes" },
+];
+
+const statusTone: Record<string, string> = {
+  VERIFIED: "green",
+  PARTIAL: "amber",
+  UNTESTED: "dim",
+};
+---
+<Base title="SNS-MyAgent">
+  <Nav active="home" />
+  <link rel="stylesheet" href="/styles/landing.css" />
+
+  <main>
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="hero-badge"><span class="dot"></span> v0.3.9 · MIT · BYOK</span>
+          <h1>
+            A coding agent <br />
+            you <span class="green">configure by talking to it</span>
+          </h1>
+          <p class="hero-tag">
+            <span class="mono green">snsagent</span> is a personal, single-user AI coding agent for
+            the terminal. Bring your own key (BYOK), chat, and it sets up MCP servers, memory
+            backends, and model switching through conversation. No forced subscription.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/docs/installation/">
+              Install snsagent <span aria-hidden="true">→</span>
+            </a>
+            <a class="btn btn-ghost" href="/docs/architecture/">Read the docs</a>
+          </div>
+          <div class="hero-install">
+            <span class="ps1">$</span>
+            <code>npm install -g @sns-myagent/cli</code>
+            <button
+              id="copy-install"
+              type="button"
+              aria-label="Copy install command"
+              title="Copy"
+            >⧉</button>
+            <span id="copy-feedback" class="copied" aria-live="polite"></span>
+          </div>
+          <ul class="hero-points">
+            <li>30 built-in tools</li>
+            <li>62 slash commands</li>
+            <li>Multi-provider LLM</li>
+            <li>Memory · MCP · Telegram</li>
+            <li>Subagents · cron · TBM</li>
+          </ul>
+        </div>
+
+        <div class="term term-hero" aria-hidden="true">
+          <div class="term-bar">
+            <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+            <span class="term-title">snsagent — ~/projects/sns-myagent</span>
+          </div>
+          <div class="term-body">
+            <div class="line"><span class="n">1</span><span><span class="ps1">$</span> <span class="cmd">snsagent</span></span></div>
+            <div class="line"><span class="n">2</span><span class="dim2">… setup wizard: choose provider, paste key, pick model …</span></div>
+            <div class="line"><span class="n">3</span><span><span class="ps1">❯</span> <span class="cmd">what files are in the current directory?</span></span></div>
+            <div class="line"><span class="n">4</span><span class="out">src/ cli/ config/ tools/ modes/ session/ tbm/ docs/ …</span></div>
+            <div class="line"><span class="n">5</span><span><span class="ps1">❯</span> <span class="cmd">add MCP filesystem for /home/user/projects</span></span></div>
+            <div class="line"><span class="n">6</span><span class="out">✓ mcp filesystem configured — server now live.</span></div>
+            <div class="line"><span class="n">7</span><span><span class="ps1">❯</span> <span class="cmd">switch to anthropic with claude-sonnet</span></span></div>
+            <div class="line"><span class="n">8</span><span class="out">✓ model → <span class="hl">claude-sonnet-4-20250514</span> (anthropic)</span></div>
+            <div class="line"><span class="n">9</span><span><span class="ps1">❯</span> <span class="cmd">create a TypeScript module that parses CSV files</span></span></div>
+            <div class="line"><span class="n">10</span><span class="out">✓ wrote <span class="hl">src/utils/csv.ts</span> — 128 lines, 0 errors.</span></div>
+            <div class="line"><span class="n">11</span><span><span class="ps1">❯</span> <span class="cmd">/memory stats</span></span></div>
+            <div class="line"><span class="n">12</span><span class="out">memory backend: <span class="ok">mnemopi</span> · facts: <span class="ok">214</span> · auto-recall: on</span></div>
+            <div class="line"><span class="n">13</span><span><span class="ps1">❯</span> <span class="hl">▊</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= STRIP ================= -->
+    <div class="strip" aria-hidden="true">
+      <div class="strip-track">
+        <span><em>30</em> built-in tools</span>
+        <span><em>62</em> slash commands</span>
+        <span><em>BYOK</em> multi-provider</span>
+        <span><em>mnemopi</em> local memory</span>
+        <span><em>MCP</em> integration</span>
+        <span><em>Telegram</em> bot</span>
+        <span><em>subagents</em> + async tasks</span>
+        <span><em>cron</em> scheduler</span>
+        <span><em>TBM</em> token manager</span>
+        <span><em>~120 MB</em> binary</span>
+        <span><em>MIT</em> license</span>
+        <span><em>0 forced</em> cost</span>
+        <span><em>30</em> built-in tools</span>
+        <span><em>62</em> slash commands</span>
+        <span><em>BYOK</em> multi-provider</span>
+        <span><em>mnemopi</em> local memory</span>
+        <span><em>MCP</em> integration</span>
+        <span><em>Telegram</em> bot</span>
+        <span><em>subagents</em> + async tasks</span>
+        <span><em>cron</em> scheduler</span>
+        <span><em>TBM</em> token manager</span>
+        <span><em>~120 MB</em> binary</span>
+        <span><em>MIT</em> license</span>
+        <span><em>0 forced</em> cost</span>
+      </div>
+    </div>
+
+    <!-- ================= FEATURES ================= -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-eyebrow">// features</p>
+          <h2 class="section-title">One terminal agent, the whole stack</h2>
+          <p class="section-sub">
+            Status labels mirror the project's audit: <span class="green">VERIFIED</span> means a
+            real integration path was demonstrated, <span class="amber">PARTIAL</span> means
+            implemented and partly tested.
+          </p>
+        </div>
+        <div class="fgrid">
+          {
+            FEATURES.map((f) => (
+              <a class="fcard" href={f.href ?? "/docs/architecture/"} style="display:block">
+                <div class:list={["fcard-icon", f.tone]}>{f.icon}</div>
+                <h3>
+                  {f.title} <span class:list={["mono", statusTone[f.status]]} style="font-size:11px;letter-spacing:.08em;margin-left:6px">[{f.status}]</span>
+                </h3>
+                <p>{f.desc}</p>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DOCS ================= -->
+    <section class="section" id="docs" style="padding-top:0">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-eyebrow">// documentation</p>
+          <h2 class="section-title">Start reading</h2>
+          <p class="section-sub">23 guides covering installation, configuration, every subsystem, and the security model.</p>
+        </div>
+        <div class="docs-links">
+          {
+            docsQuick.map((d) => (
+              <a class="doc-link" href={d.href}>
+                <span class="arrow">→</span>
+                <span>{d.label}<span class="desc"> — {d.desc}</span></span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CTA ================= -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="cta-box">
+          <h2>Your key. Your agent. Your machine.</h2>
+          <p>
+            One ~120 MB binary, zero forced subscription, safe defaults. Install it, talk to it,
+            and let it configure itself.
+          </p>
+          <div class="hero-actions" style="justify-content:center;margin-bottom:0">
+            <a class="btn btn-primary" href="/docs/installation/">Install snsagent →</a>
+            <a class="btn btn-ghost" href="https://github.com/Reihantt6/sns-myagent">GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
+    const btn = document.querySelector<HTMLButtonElement>("#copy-install");
+    const feedback = document.querySelector<HTMLSpanElement>("#copy-feedback");
+    btn?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText("npm install -g @sns-myagent/cli");
+        if (feedback) {
+          feedback.textContent = "copied ✓";
+          setTimeout(() => (feedback.textContent = ""), 1800);
+        }
+      } catch {
+        if (feedback) feedback.textContent = "copy failed";
+      }
+    });
+  </script>
+</Base>

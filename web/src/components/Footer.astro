@@ -1,0 +1,102 @@
+---
+const version = "0.3.9";
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="mono green">snsagent</span>
+      <p class="dim">
+        BYOK coding agent CLI — bring your own key, configure it by talking to it.
+      </p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="/#features">Features</a>
+        <a href="/docs/installation/">Install</a>
+        <a href="/docs/faq/">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Docs</h4>
+        <a href="/docs/configuration/">Configuration</a>
+        <a href="/docs/memory/">Memory</a>
+        <a href="/docs/telegram/">Telegram</a>
+        <a href="/docs/tbm/">TBM</a>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="https://github.com/Reihantt6/sns-myagent">GitHub</a>
+        <a href="https://github.com/Reihantt6/sns-myagent/blob/main/SECURITY.md">Security</a>
+        <a href="/docs/syarat-ketentuan/">Syarat &amp; Ketentuan</a>
+        <a href="https://github.com/Reihantt6/sns-myagent/blob/main/LICENSE">License (MIT)</a>
+      </div>
+    </div>
+  </div>
+  <div class="container footer-bottom dim">
+    <span>© {year} SNS-MyAgent · v{version}</span>
+    <span class="mono">sns-myagent.web.id</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-1);
+    margin-top: 40px;
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 2fr;
+    gap: 48px;
+    padding-top: 56px;
+    padding-bottom: 40px;
+  }
+  .footer-brand .mono {
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .footer-brand p {
+    font-size: 14px;
+    max-width: 300px;
+    margin-top: 10px;
+  }
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .footer-col h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    margin: 0 0 14px;
+  }
+  .footer-col a {
+    display: block;
+    color: var(--text-2);
+    font-size: 14.5px;
+    padding: 4px 0;
+  }
+  .footer-col a:hover {
+    color: var(--green);
+  }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  @media (max-width: 760px) {
+    .footer-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .footer-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

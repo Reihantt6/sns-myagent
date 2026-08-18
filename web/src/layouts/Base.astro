@@ -1,0 +1,50 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+}
+const { title, description, canonical } = Astro.props;
+const siteTitle = "SNS-MyAgent";
+const pageTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
+const defaultDescription =
+  "SNS-MyAgent — BYOK coding agent CLI. Configure it by talking to it. Multi-provider LLM, memory, MCP, subagents, Telegram.";
+const canonicalUrl = canonical ? new URL(canonical, Astro.site).toString() : Astro.site!.toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description ?? defaultDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="generator" content={Astro.generator} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description ?? defaultDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="theme-color" content="#07090d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Mobile nav toggle
+      const toggle = document.querySelector<HTMLButtonElement>("#nav-toggle");
+      const menu = document.querySelector<HTMLElement>("#nav-menu");
+      toggle?.addEventListener("click", () => {
+        menu?.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", String(menu?.classList.contains("open") ?? false));
+      });
+    </script>
+  </body>
+</html>

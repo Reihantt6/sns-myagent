@@ -385,6 +385,7 @@ sns-myagent/
 | [Advisor](./docs/advisor.md) | Second-model turn review |
 | [Security model](./docs/security-model.md) | Authorization + attack surface |
 | [Upstream comparison](./docs/upstream.md) | Lineage vs oh-my-pi |
+| [Syarat & Ketentuan](./docs/syarat-ketentuan.md) | Terms of use (Indonesian) |
 | [Development](./docs/development.md) | Custom node_modules + install mechanism |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
 | [FAQ](./docs/faq.md) | Frequently asked questions |
