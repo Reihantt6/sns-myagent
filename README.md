@@ -38,7 +38,6 @@ to run anywhere.
 
 ## Table of Contents
 
-- [Screenshots](#screenshots)
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
@@ -52,40 +51,6 @@ to run anywhere.
 - [License](#license)
 
 ---
-
-## Screenshots
-
-Captured from the current build (interactive screens run via `bun run src/cli/entry.ts`;
-see the note below about the compiled binary). Click any thumbnail for the full-size image in
-[`docs/screenshots/`](./docs/screenshots/).
-
-| Screen | Image |
-|--------|-------|
-| Setup wizard — BYOK provider | ![Setup wizard](./docs/screenshots/setup-wizard.png) |
-| Main TUI | ![Main TUI](./docs/screenshots/main-tui.png) |
-| `/settings` panel | ![Settings](./docs/screenshots/settings.png) |
-| `/model` picker | ![Model picker](./docs/screenshots/model.png) |
-| `/memory stats` | ![Memory stats](./docs/screenshots/memory-stats.png) |
-| `/memory diagnose` | ![Memory diagnose](./docs/screenshots/memory-diagnose.png) |
-| `/mcp` surface | ![MCP](./docs/screenshots/mcp.png) |
-| `/stats` dashboard | ![Stats](./docs/screenshots/stats.png) |
-| Error state (no model) | ![Error state](./docs/screenshots/error-state.png) |
-| `/goal` (active objective) | ![Goal mode](./docs/screenshots/goal.png) |
-| `/cron list` (scheduled jobs) | ![Cron](./docs/screenshots/cron.png) |
-| `/task` (async subagent jobs) | ![Subagents / tasks](./docs/screenshots/task.png) |
-| `/browser` mode toggle | ![Browser](./docs/screenshots/browser.png) |
-| `/compact` (nothing to compact) | ![Compaction](./docs/screenshots/compact.png) |
-| `telegram status` (sanitized, no token) | ![Telegram status](./docs/screenshots/telegram.png) |
-| `/tools` inspector | ![Tools](./docs/screenshots/tools.png) |
-| Setup-wizard glyphs | ![Setup glyphs](./docs/screenshots/setup-glyphs.png) |
-| TBM dashboard | ![TBM dashboard](./docs/screenshots/tbm-dashboard.png) |
-| `/help` shortcut list | ![Help](./docs/screenshots/help.png) |
-| Collab comm-mode indicator | ![Comm mode](./docs/screenshots/comm-mode.png) |
-
-> **Compiled binary note.** `./bin/snsagent-linux-x64` (and the npm-installed binary) runs in
-> "JS-only mode" — the native pty/grep/shell addon is not embedded, so the *interactive TUI*
-> does not render there. The source-run path above is the supported path for the interactive
-> UI. See [docs/troubleshooting.md](./docs/troubleshooting.md).
 
 ---
 
@@ -127,6 +92,50 @@ Full findings: [`AUDIT-REPORT.md`](./AUDIT-REPORT.md),
 [`AUDIT-BASELINE.md`](./AUDIT-BASELINE.md),
 [docs/security-model.md](./docs/security-model.md).
 
+**Tools and commands.** 30 built-in tools, 62 slash commands:
+
+![Tools inspector - all built-in tools](./docs/screenshots/tools.png)
+
+**Settings and model picker.** Configure everything through `/settings` or conversation:
+
+![Settings panel](./docs/screenshots/settings.png)
+![Model picker](./docs/screenshots/model.png)
+
+**Memory.** mnemopi backend (local SQLite + vector + graph):
+
+![Memory stats](./docs/screenshots/memory-stats.png)
+![Memory diagnose](./docs/screenshots/memory-diagnose.png)
+
+**TBM.** Token Budget Manager dashboard (integrated, default OFF):
+
+![TBM dashboard](./docs/screenshots/tbm-dashboard.png)
+
+**MCP.** Model Context Protocol integration surface:
+
+![MCP integration](./docs/screenshots/mcp.png)
+
+**Goal mode, cron, subagents, browser, compaction:**
+
+![Goal mode - active objective](./docs/screenshots/goal.png)
+![Cron - scheduled jobs](./docs/screenshots/cron.png)
+![Task - async subagent jobs](./docs/screenshots/task.png)
+![Browser mode toggle](./docs/screenshots/browser.png)
+![Compaction](./docs/screenshots/compact.png)
+
+**Stats and error handling:**
+
+![Stats dashboard](./docs/screenshots/stats.png)
+![Error state - no model configured](./docs/screenshots/error-state.png)
+
+**Collab sessions:**
+
+![Collab comm-mode indicator](./docs/screenshots/comm-mode.png)
+
+> **Compiled binary note.** `./bin/snsagent-linux-x64` (and the npm-installed binary) runs in
+> "JS-only mode" - the native pty/grep/shell addon is not embedded, so the *interactive TUI*
+> does not render there. The source-run path (`bun run src/cli/entry.ts`) is the supported
+> path for the interactive UI. See [docs/troubleshooting.md](./docs/troubleshooting.md).
+
 ---
 
 ## Quick Start
@@ -137,8 +146,19 @@ Full findings: [`AUDIT-REPORT.md`](./AUDIT-REPORT.md),
 snsagent
 ```
 
-First launch opens the setup wizard — choose a provider (or custom Base URL), enter an API
+First launch opens the setup wizard - choose a provider (or custom Base URL), enter an API
 key, pick a model, and start chatting.
+
+![Setup wizard - BYOK provider selection](./docs/screenshots/setup-wizard.png)
+![Setup wizard glyphs](./docs/screenshots/setup-glyphs.png)
+
+Once configured, you land in the main TUI:
+
+![Main TUI - interactive chat interface](./docs/screenshots/main-tui.png)
+
+Type `/help` anytime to see all slash commands:
+
+![Help - slash command list](./docs/screenshots/help.png)
 
 ### 2. Use it
 
@@ -301,6 +321,8 @@ export SNS_TELEGRAM_ALLOWED_USERS="123456789"
 
 See [docs/security-model.md](./docs/security-model.md) for the full authorization boundary
 (including the `autoApprove: true` caveat).
+
+![Telegram status - sanitized, no token](./docs/screenshots/telegram.png)
 
 ---
 
