@@ -290,6 +290,11 @@ Severity scale: CRITICAL / HIGH / MEDIUM / LOW / INFO. Full evidence in
 | bash / eval / write / ssh / browser / cron surfaces (approval policy + sandbox inherited) | MEDIUM | INHERITED |
 | Dead code: `src/tbm/`, `mnemosyneBackend` | INFO | DOCUMENTED |
 | Secrets | LOW | INHERITED (never logged; never read during audit) |
+| `tools.approvalMode` schema default is `yolo` (auto-approve) — docs claim it is opt-in via CLI flags; a fresh config auto-approves *all* tool calls, including critical bash patterns (`rm -rf /`, `curl \| bash`) | MEDIUM | DOCUMENTED (doc mismatch; `always-ask` works when set) |
+| Read-tool path resolution does not sandbox to cwd — `../` traversal resolves outside the workspace (proven: `resolveReadPath("../outside/secret.txt", ws)` reads the file) | MEDIUM | DOCUMENTED (single-user local design; no multi-tenant boundary) |
+| Response cache semantic match false-positives on single-word queries — any single-word query matches any other (zero-bigram branch returns 1.0) | LOW | DOCUMENTED (TBM default OFF; store-only cache, never skips the model) |
+| Tombstone `tokensSaved` could be **negative** and `compressionRatio` > 1 for non-compressible (single-sentence) messages | LOW | **FIXED** — clamped `>= 0` / `<= 1` + regression test |
+| `Settings.get()/isConfigured()` with an undeclared path threw a raw `TypeError` (`for..of undefined` in `getByPath`) | LOW | **FIXED** — friendly `Unknown setting path` error + regression test |
 
 Observability: 217 structured `logger.debug/warn` sites; auth-gate logs (`userId`, `chatId`)
 added this audit. The core loop does not yet attach session/turn/tool-call IDs to every log
@@ -380,6 +385,80 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
 | `bunx biome lint src test scripts` | exit 0 (biome 0.3.3) |
 | `bun scripts/tbm-benchmark.ts` | runs — measured OFF/ON numbers recorded in TBM Audit |
 | `install.sh` prebuilt path (sandboxed) | linux-x64 download + `--version` verified against real v0.3.9 release |
+| **Phase 4B** `bun test test/security-b1.test.ts` | 18 pass / 0 fail — approval-mode default, critical bash patterns, path traversal |
+| **Phase 4B** `bun test test/security-b2.test.ts` | 8 pass / 0 fail — Telegram auth edges, hostile config, secret leakage |
+| **Phase 4B** `bun test test/security-b3.test.ts` | 9 pass / 0 fail — cross-session memory isolation, response cache, tombstone (+ clamp regression) |
+| **Phase 4B** `bun test test/security-b4.test.ts` | 10 pass / 0 fail — corrupt config/session files, wrong types, extreme unicode |
+| **Phase 4B** `bunx tsc --noEmit` | exit 0 |
+| **Phase 4B** full `bun test` (with 4B changes) | 850 pass / 56 fail / 3 errors — **failure count unchanged from baseline** (stash comparison: 848/58 without changes); all 56 are pre-existing env-dependent failures (hyperframes/HeyGen/svgl/favicon/ffprobe network & media tests), none caused by 4B |
+
+---
+
+## Fuzz / Bug Hunt (Phase 4B)
+
+Security-focused bug hunt over the four surfaces below. Every finding was proven with a
+committed test (`test/security-b*.test.ts`); no claim without evidence.
+
+### B1 — Injection & command execution
+
+- **Default approval mode is `yolo`.** `Settings.isolated({}).get("tools.approvalMode")` returns
+  `"yolo"` (schema default). In yolo mode `resolveApproval` returns `allow` for **everything**,
+  including a critical-pattern `rm -rf /` (override is ignored). `docs/security-model.md`
+  claims yolo is opt-in via CLI flags — that is not true for a fresh config. **Severity MEDIUM,
+  DOCUMENTED.** Mitigation: set `tools.approvalMode: always-ask` (verified: prompts on critical
+  payloads), or deny specific tools via `tools.approval.<tool>: deny`.
+- **Critical bash patterns are detected** when a non-yolo mode is active: `rm -rf /`, `rm -fr /`,
+  `sudo rm /etc/passwd`, fork bomb, `curl | bash`, `wget | sh`, `eval "$(curl …)"`,
+  `bash <(curl …)`, `dd … of=/dev/sda`, `shutdown now` all match `CRITICAL_BASH_PATTERNS`
+  (12/12 cases verified); benign `echo`/`git status` do not. **Verified good.**
+- **Path traversal is not guarded** by the read-tool resolver: `resolveReadPath("../outside/secret.txt", ws)`
+  resolves outside the workspace and the file is readable. **Severity MEDIUM, DOCUMENTED** —
+  this is a single-user local agent by design (no multi-tenant boundary); the agent is trusted
+  with the user's shell, so path sandboxing would be defense-in-depth, not a boundary.
+
+### B2 — Auth & access
+
+- **Telegram auth edges verified good:** a message with no `from` (channel post/service message)
+  yields `userId 0`, which never passes the allowlist; allowlist parsing normalizes whitespace/
+  junk (`" 42 , 0, -5, abc, 7 "` → `{7, 42}`). **Verified good.**
+- **Hostile config values do not crash** the settings layer: wrong-typed values
+  (`memory.backend: 12345`, `tbm.enabled: "yes"`, `compaction.thresholdPercent: "abc"`),
+  1 MB string values, and path-traversal values (`mnemopi.dbPath: "../../../../etc/shadow"`)
+  all resolve without throwing. Traversal-in-value is a documented backend responsibility, not
+  a settings-layer crash. **Verified good.**
+- **FIXED — `Settings.get()` raw TypeError.** `get("modelRoles.default")` (a record, not a
+  declared `SettingPath`) threw a raw `TypeError` from `for..of undefined` in `getByPath`.
+  Extensions/plugins/JS config can hit this with arbitrary strings. Now throws a friendly
+  `Unknown setting path: …` Error in both `get()` and `isConfigured()`. **LOW, FIXED** + regression
+  test.
+- **Secret leakage:** a dummy `sk-…` key never appears in captured stdout/stderr during a
+  settings/config-resolution flow (monkeypatched write test). The `token` command prints keys
+  only on explicit user request (by design). **Verified good.**
+
+### B3 — Memory & cache poisoning
+
+- **Cross-session memory isolation holds:** a fact saved in agentDir A (mnemopi, separate
+  dbPath) is NOT recalled from agentDir B; A still recalls its own fact (control). **Verified good.**
+- **Response cache overwrite = invalidation:** re-setting a query replaces the old response;
+  TTL expiry and `clear()` both drop entries. **Verified good.**
+- **Semantic cache false-positive on single-word queries:** `set("deploy", …)` then
+  `get("status")` returns a semantic `hit` — both are single words, zero bigrams, so the
+  both-empty jaccard branch returns 1.0. **LOW, DOCUMENTED** (TBM default OFF; cache is
+  store-only and never skips the model, so real-world impact is a misleading accounting stat).
+- **FIXED — tombstone negative savings.** `ConversationTombstoner` reported a **negative**
+  `tokensSaved` and `compressionRatio > 1` for single-sentence messages (summary ≈ original,
+  +5 formatting overhead). Now clamped to `>= 0` / `<= 1`. **LOW, FIXED** + regression test.
+- **Tombstone non-reentry holds:** tombstoned messages never re-enter verbatim; originals stay
+  retrievable by hash (documented contract). **Verified good.**
+
+### B4 — Robustness / light fuzz
+
+- **Corrupt `config.yml`** (broken YAML, scalar/array) loads with defaults — no stacktrace.
+  **Verified good.**
+- **Corrupt session files** (garbage bytes, truncated header, partial trailing JSON line)
+  load leniently — bad rows skipped, intact rows survive. **Verified good.**
+- **Extreme unicode / 100 KB+ input** into `parseSlashCommand`, `parseSubcommand`, and
+  `parseCommandArgs` (NUL bytes, emoji, unclosed quotes) never throws or hangs. **Verified good.**
 
 ---
 
@@ -407,6 +486,14 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
    (e.g. `TaskStore`/`TaskRunner`) are shared across test files. Two shared-DB flake bugs
    exposed by this were fixed (session 3, commits `5463807`, `8b1b08e`); other singletons
    remain a latent cross-file coupling risk if a test closes shared state.
+11. **`tools.approvalMode` defaults to `yolo`** (Phase 4B) — a fresh config auto-approves all
+   tool calls including critical bash patterns. Docs claim opt-in; schema says otherwise. Set
+   `tools.approvalMode: always-ask` or per-tool `deny` policies to harden.
+12. **Read tool is not cwd-sandboxed** (Phase 4B) — `../` traversal reads outside the
+   workspace. Acceptable for a single-user local agent; revisit if any shared/remote surface
+   is added.
+13. **Response cache false-positives on single-word queries** (Phase 4B) — semantic matcher
+   treats any two single-word queries as identical. LOW (TBM default OFF, store-only).
 
 ---
 
