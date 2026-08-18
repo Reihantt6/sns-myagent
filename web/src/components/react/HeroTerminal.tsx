@@ -1,20 +1,37 @@
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
 
 const LINES = [
-  { ps1: "$", cmd: "snsagent", cls: "" },
-  { ps1: ">", cmd: "what files are in this directory?", cls: "text-[var(--color-fg)]" },
-  { ps1: "", cmd: "src/  cli/  config/  tools/  session/  tbm/  docs/", cls: "text-[var(--color-fg-3)]" },
-  { ps1: ">", cmd: "add MCP filesystem for /home/user/projects", cls: "text-[var(--color-fg)]" },
+  { ps1: "$", cmd: "snsagent", cls: "text-zinc-100" },
+  { ps1: ">", cmd: "what files are in this directory?", cls: "text-zinc-100" },
+  { ps1: "", cmd: "src/  cli/  config/  tools/  session/  tbm/  docs/", cls: "text-zinc-500" },
+  { ps1: ">", cmd: "add MCP filesystem for /home/user/projects", cls: "text-zinc-100" },
   { ps1: "", cmd: "ok, mcp filesystem is live now.", cls: "text-[var(--color-accent)]" },
-  { ps1: ">", cmd: "switch to anthropic, claude-sonnet", cls: "text-[var(--color-fg)]" },
-  { ps1: "", cmd: "model -> claude-sonnet-4-20250514 (anthropic)", cls: "text-[var(--color-fg-3)]" },
-  { ps1: ">", cmd: "/memory stats", cls: "text-[var(--color-fg)]" },
-  { ps1: "", cmd: "backend: mnemopi  facts: 214  auto-recall: on", cls: "text-[var(--color-fg-3)]" },
+  { ps1: ">", cmd: "switch to anthropic, claude-sonnet", cls: "text-zinc-100" },
+  { ps1: "", cmd: "model -> claude-sonnet-4-20250514 (anthropic)", cls: "text-zinc-500" },
+  { ps1: ">", cmd: "/memory stats", cls: "text-zinc-100" },
+  { ps1: "", cmd: "backend: mnemopi  facts: 214  auto-recall: on", cls: "text-zinc-500" },
 ];
 
-/** Premium animated terminal window: lines cascade in, cursor blinks. */
+const STATUSES = [
+  "mcp filesystem: live",
+  "memory auto-recall: on, 214 facts",
+  "model: claude-sonnet-4 (anthropic)",
+  "approval mode: always-ask",
+];
+
+/** Premium animated terminal window: lines cascade in, status ticks, cursor blinks. */
 export function HeroTerminal() {
   const reduce = useReducedMotion();
+  const [statusIdx, setStatusIdx] = useState(0);
+
+  // Cycle the live status line on an interval (purposeful: shows the agent's
+  // live runtime state). Static under prefers-reduced-motion.
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => setStatusIdx((i) => (i + 1) % STATUSES.length), 2800);
+    return () => clearInterval(id);
+  }, [reduce]);
 
   return (
     <motion.div
@@ -65,6 +82,34 @@ export function HeroTerminal() {
             className="inline-block h-[14px] w-[7px] bg-[var(--color-accent)]"
           />
         </motion.div>
+      </div>
+
+      {/* Live status footer */}
+      <div className="flex items-center gap-2.5 border-t border-white/10 bg-white/[0.02] px-5 py-3">
+        <motion.span
+          aria-hidden="true"
+          animate={reduce ? undefined : { opacity: [1, 0.35, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          className="h-2 w-2 shrink-0 rounded-full bg-[#28c840]"
+        />
+        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+          live
+        </span>
+        <span className="h-3 w-px bg-white/10" aria-hidden="true" />
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={statusIdx}
+              initial={reduce ? false : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduce ? undefined : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="block truncate font-mono text-[12px] text-zinc-400"
+            >
+              {STATUSES[statusIdx]}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

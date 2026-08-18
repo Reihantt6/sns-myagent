@@ -155,11 +155,20 @@
 }
 
 /* Tables */
+.docs-article .table-wrap {
+  margin: 0 0 24px;
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
 .docs-article table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0 0 24px;
+  margin: 0;
   font-size: 14px;
+  min-width: 100%;
 }
 .docs-article th {
   text-align: left;
@@ -168,6 +177,7 @@
   padding: 10px 14px;
   border-bottom: 2px solid var(--color-line-2);
   background: var(--color-surface);
+  white-space: nowrap;
 }
 .docs-article td {
   padding: 10px 14px;
@@ -179,6 +189,23 @@
 }
 .docs-article table code {
   font-size: 0.9em;
+}
+
+/* Sticky first column so the row label stays visible while scrolling */
+.docs-article th:first-child,
+.docs-article td:first-child {
+  position: sticky;
+  left: 0;
+}
+.docs-article th:first-child {
+  z-index: 2;
+  background: var(--color-surface);
+  box-shadow: inset -1px 0 0 var(--color-line-2);
+}
+.docs-article td:first-child {
+  z-index: 1;
+  background: var(--color-ink);
+  box-shadow: inset -1px 0 0 var(--color-line);
 }
 
 /* Horizontal rule */
@@ -243,4 +270,92 @@
 }
 .callout-info .callout-icon {
   color: var(--color-info);
+}
+
+/* Images */
+.docs-article img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--color-line);
+  display: block;
+}
+.docs-article p img {
+  margin: 8px 0 20px;
+}
+
+/* Prevent long tokens (URLs, commands, table cells) from widening the page */
+.docs-article {
+  overflow-wrap: break-word;
+}
+.docs-article pre,
+.docs-article .table-wrap,
+.docs-article code {
+  max-width: 100%;
+}
+
+/* Code block scrollbars: thin, theme-aware */
+.docs-article pre {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.docs-article pre::-webkit-scrollbar {
+  height: 8px;
+}
+.docs-article pre::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 4px;
+}
+
+/* ---------- Mobile typography and spacing ---------- */
+@media (max-width: 640px) {
+  .docs-article {
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+  .docs-article h1 {
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    margin-bottom: 16px;
+  }
+  .docs-article h2 {
+    font-size: 20px;
+    margin-top: 36px;
+    margin-bottom: 10px;
+  }
+  .docs-article h3 {
+    font-size: 16.5px;
+    margin-top: 26px;
+  }
+  .docs-article h4 {
+    font-size: 14.5px;
+  }
+  .docs-article pre {
+    padding: 14px 16px !important;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+  .docs-article table {
+    font-size: 13px;
+  }
+  .docs-article th,
+  .docs-article td {
+    padding: 8px 10px;
+  }
+  .docs-pager {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pager-link {
+    max-width: 100%;
+  }
+  .pager-next {
+    margin-left: 0;
+  }
+  .docs-sidebar-toggle {
+    position: sticky;
+    top: 72px;
+    z-index: 20;
+    background: var(--color-surface);
+  }
 }

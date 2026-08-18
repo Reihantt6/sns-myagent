@@ -94,12 +94,18 @@ export function BentoGrid({ cells }: BentoGridProps) {
             <p className="mt-2 text-[14px] leading-relaxed text-[var(--color-fg-2)]">{cell.desc}</p>
 
             {cell.shot && (
-              <div className="mt-6 overflow-hidden rounded-[10px] border border-[var(--color-line)]">
+              <div className="mt-6 overflow-hidden rounded-[10px] border border-[var(--color-line)] bg-[#0a0e15]">
+                <div className="flex items-center gap-1.5 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2">
+                  <span className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+                  <span className="h-2 w-2 rounded-full bg-[#febc2e]" />
+                  <span className="h-2 w-2 rounded-full bg-[#28c840]" />
+                </div>
                 <img
                   src={`/screenshots/${cell.shot}`}
                   alt={cell.shotAlt ?? cell.title}
                   loading="lazy"
-                  className="w-full transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                  decoding="async"
+                  className="w-full transition-transform duration-300 ease-out group-hover:scale-[1.02]"
                 />
               </div>
             )}
