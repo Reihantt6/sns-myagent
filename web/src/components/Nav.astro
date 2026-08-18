@@ -16,7 +16,7 @@ const links = [
 ];
 ---
 
-<header class="sticky top-0 z-30 border-b border-[var(--color-line)] bg-[var(--color-ink)]/85 backdrop-blur-md">
+<header id="site-header" class="site-header sticky top-0 z-30 border-b border-[var(--color-line)] bg-[var(--color-ink)]/85 backdrop-blur-md">
   <div class="container-site flex h-16 items-center justify-between gap-6">
     <a href="/" class="flex min-h-[44px] items-center gap-2.5 text-[15px] font-bold tracking-tight" aria-label="SNS-MyAgent home">
       <span class="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[var(--color-accent-border)] bg-[var(--color-accent-muted)] font-mono text-[13px] font-bold text-[var(--color-accent)]">&gt;_</span>
@@ -25,18 +25,20 @@ const links = [
 
     <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
       {
-        links.map((link) => (
-          <a
-            href={link.href}
-            class:list={[
-              "flex min-h-[44px] items-center rounded-[10px] px-3.5 py-2 text-[14px] font-medium text-[var(--color-fg-2)] transition-colors duration-150 hover:bg-[var(--color-surface)] hover:text-[var(--color-fg)]",
-              link.href.startsWith("/#") && active === "home" ? "text-[var(--color-fg)]" : "",
-              link.href === "/docs/" && active === "docs" ? "text-[var(--color-fg)]" : "",
-            ]}
-          >
-            {link.label}
-          </a>
-        ))
+        links.map((link) => {
+          const isActive = link.href === "/docs/" && active === "docs";
+          return (
+            <a
+              href={link.href}
+              class:list={[
+                "nav-link flex min-h-[44px] items-center rounded-[10px] px-3.5 py-2 text-[14px] font-medium text-[var(--color-fg-2)] transition-colors duration-150 hover:bg-[var(--color-surface)] hover:text-[var(--color-fg)]",
+                isActive ? "nav-link-active" : "",
+              ]}
+            >
+              {link.label}
+            </a>
+          );
+        })
       }
     </nav>
 
@@ -49,3 +51,11 @@ const links = [
     </div>
   </div>
 </header>
+
+<script>
+  // Subtle elevation once the page is scrolled (premium sticky header).
+  const header = document.getElementById("site-header");
+  const onScroll = () => header?.classList.toggle("is-scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+</script>

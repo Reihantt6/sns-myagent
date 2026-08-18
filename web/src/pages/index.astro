@@ -7,23 +7,9 @@ import { HeroTerminal } from "../components/react/HeroTerminal";
 import { PlatformSelector } from "../components/react/PlatformSelector";
 import { BentoGrid, type BentoCell } from "../components/react/BentoGrid";
 import { Reveal } from "../components/react/Reveal";
+import { StatsCounter } from "../components/react/StatsCounter";
 import { ArrowRightIcon, BookOpenIcon } from "@phosphor-icons/react";
 import type { BentoIconName } from "../components/react/BentoGrid";
-
-const marqueeItems = [
-  "30 built-in tools",
-  "62 slash commands",
-  "BYOK multi-provider",
-  "Local memory backend",
-  "MCP integration",
-  "Telegram bridge",
-  "Subagents and async tasks",
-  "Cron scheduler",
-  "TBM token manager",
-  "~120 MB binary",
-  "MIT licensed",
-  "Safe defaults",
-];
 
 const bentoCells: BentoCell[] = [
   {
@@ -146,17 +132,8 @@ const docsQuick = [
       </div>
     </section>
 
-    <!-- ============ CAPABILITY MARQUEE (one per page) ============ -->
-    <div class="overflow-hidden border-y border-[var(--color-line)] bg-[var(--color-ink-2)] py-5" aria-hidden="true">
-      <div class="marquee-track flex w-max items-center gap-10">
-        {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item) => (
-          <span class="flex items-center gap-3 whitespace-nowrap text-[13.5px] font-medium text-[var(--color-fg-3)]">
-            <span class="text-[var(--color-accent)]">{"//"}</span>
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
+    <!-- ============ STATS ============ -->
+    <StatsCounter client:load />
 
     <!-- ============ FEATURES (bento) ============ -->
     <section id="features" class="container-site section-pad">
@@ -166,8 +143,9 @@ const docsQuick = [
             One terminal agent, the whole stack
           </h2>
           <p class="mt-4 text-[16px] leading-relaxed text-[var(--color-fg-2)]">
-            Status labels mirror the project audit: VERIFIED means a real integration path was
-            demonstrated, PARTIAL means implemented and partly tested.
+            Every capability below is a real, working implementation. Status labels stay honest:
+            VERIFIED means the path was demonstrated end to end, PARTIAL means it is implemented
+            and being hardened.
           </p>
         </div>
       </Reveal>
@@ -193,19 +171,25 @@ const docsQuick = [
         <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {galleryShots.map((shot, i) => (
             <Reveal delay={(i % 3) * 0.08} client:load>
-              <figure class="group overflow-hidden rounded-[16px] border border-[var(--color-line)] bg-[var(--color-surface)] transition-colors duration-200 hover:border-[var(--color-accent-border)]">
+              <figure class="group overflow-hidden rounded-[14px] border border-[var(--color-line)] bg-[#0a0e15] transition-colors duration-200 hover:border-[var(--color-accent-border)]">
+                <div class="flex items-center justify-between gap-2 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-2.5">
+                  <div class="flex min-w-0 items-center gap-2">
+                    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-[#ff5f57]"></span>
+                    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-[#febc2e]"></span>
+                    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-[#28c840]"></span>
+                    <span class="ml-1 truncate text-[12px] font-medium text-[var(--color-fg-2)]">{shot.caption}</span>
+                  </div>
+                  <span class="shrink-0 font-mono text-[11px] text-[var(--color-fg-3)]">{shot.cmd}</span>
+                </div>
                 <div class="overflow-hidden">
                   <img
                     src={`/screenshots/${shot.file}`}
                     alt={shot.caption}
                     loading="lazy"
-                    class="w-full transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                    decoding="async"
+                    class="w-full transition-transform duration-300 ease-out group-hover:scale-[1.02]"
                   />
                 </div>
-                <figcaption class="flex items-center justify-between px-5 py-3.5">
-                  <span class="text-[13px] font-medium text-[var(--color-fg-2)]">{shot.caption}</span>
-                  <span class="font-mono text-[12px] text-[var(--color-fg-3)]">{shot.cmd}</span>
-                </figcaption>
               </figure>
             </Reveal>
           ))}
@@ -285,20 +269,3 @@ const docsQuick = [
 
   <Footer />
 </Base>
-
-<style>
-  .marquee-track {
-    animation: marquee 36s linear infinite;
-  }
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-33.333%); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .marquee-track {
-      animation: none;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-  }
-</style>
