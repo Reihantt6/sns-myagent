@@ -1,108 +1,65 @@
 # Security Model
 
-This page records the verified security posture of SNS-MyAgent as of the deep audit.
-Severity: CRITICAL / HIGH / MEDIUM / LOW / INFO. Findings are evidence-based
-(traced to source), not inferred from docs.
+This page describes how snsagent protects your machine while running tools on your behalf.
 
-## Executive posture
+## How tool execution is gated
 
-- The agent executes tools (bash, edit/write, browser, ssh, MCP, etc.) behind an
-  approval policy. The default mode is `always-ask` (read-only tools auto-approve;
-  write/exec tools prompt); auto-approve ("yolo") is opt-in via CLI flags
-  (`--approval-mode yolo` / `--yolo`) or config. **The Telegram adapter was an
-  exception**: it created agent sessions with `autoApprove: true` and no user
-  allowlist (see below), which is now mitigated with an opt-in allowlist.
-- Memory is scoped per-project (`mnemopi.scoping`) and the cross-project SQLite
-  handle-sharing bug found during the audit has been fixed.
-- No secrets are committed to the repository (`.env*` and `.sns-myagent/` are
-  gitignored; the audit never read them).
+The agent executes tools (bash, edit/write, browser, ssh, MCP, and more) behind an approval policy:
 
-## Attack surface analysis
+- **Default mode is `always-ask`.** Read-only tools auto-approve; write and exec tools prompt for confirmation before running.
+- **Auto-approve ("yolo") is opt-in.** Enable it explicitly with `--approval-mode yolo` / `--yolo` or `tools.approvalMode: yolo` in config. Subagents run headless behind the parent-task approval boundary.
+- **The Telegram adapter** also honors an allowlist gate (see below).
 
-| Surface | Existing control | Missing control | Severity | Status |
-|---|---|---|---|---|
-| Telegram | opt-in `SNS_TELEGRAM_ALLOWED_USERS` allowlist (added this audit); deny-by-default when set | allowlist is **off by default**; group-chat membership is not checked | CRITICAL when unset | MITIGATED (opt-in) |
-| Telegram bridge | — | `autoApprove: true` runs tools without per-action approval; `userId` is discarded (CLI hardcodes `"telegram"`) | HIGH | DOCUMENTED (allowlist gates entry) |
-| bash | approval policy + `clampTimeout` | — | MEDIUM | INHERITED |
-| eval (py/js/jl/rb) | per-runtime env allowlist | — | MEDIUM | INHERITED |
-| write/edit | approval policy; path-escape guards in `src/tools/write.ts` | — | MEDIUM | INHERITED |
-| read | approval policy; `resolveReadPath` rejects relative `../` escape (UNIT Y2) | — | MEDIUM | FIXED (guard) |
-| ssh | approval + ssh-control dir | — | MEDIUM | INHERITED |
-| browser (puppeteer) | sandbox dir `~/.omp/puppeteer` | — | MEDIUM | INHERITED |
-| MCP | user-configured servers; instructions flagged as unverified | server-supply-chain trust is on the user | MEDIUM | DOCUMENTED |
-| plugins | `~/.omp/plugins` + npm install | supply-chain trust is on the user | MEDIUM | DOCUMENTED |
-| cron | persistent jobs via settings | no per-job allowlist of tools | MEDIUM | INHERITED |
-| goals | `src/goals/runtime.ts` token budget | goal text can instruct arbitrary tools (prompt injection) | MEDIUM | DOCUMENTED |
-| subagents | `src/task/executor.ts` budget + spawn allowlist | privilege propagation to subagents | MEDIUM | DOCUMENTED |
-| secrets | AuthStorage / api-key resolver; never logged | — | LOW | INHERITED |
-| memory | per-project scoping; scope-isolation bug fixed | mem0/lcm/mnemosyne/local have no auto-recall (no leak, but also no injection) | LOW | FIXED (scoping) |
-| GitHub | read-only via gh CLI / cache | — | LOW | INHERITED |
+Memory is scoped per-project (`mnemopi.scoping`), so each project's memory stays isolated. No secrets are committed to the repository (`.env*` and `.sns-myagent/` are gitignored).
 
-## Findings (with evidence)
+## Security features by surface
 
-### CRITICAL — Telegram had no authorization boundary (now opt-in mitigated)
+| Surface | Protection |
+|---|---|
+| **Approval policy** | Read-only tools auto-approve; write/exec tools prompt. Default `always-ask`, opt-in yolo |
+| **bash** | Approval policy + `clampTimeout` |
+| **eval (py/js/jl/rb)** | Per-runtime environment allowlist |
+| **write/edit** | Approval policy + path-escape guards in `src/tools/write.ts` |
+| **read** | Approval policy + `resolveReadPath` rejects relative `../` escape |
+| **ssh** | Approval + ssh-control directory |
+| **browser (puppeteer)** | Sandbox directory `~/.omp/puppeteer` |
+| **Telegram** | Opt-in `SNS_TELEGRAM_ALLOWED_USERS` numeric allowlist |
+| **MCP** | User-configured servers; server instructions flagged as unverified |
+| **plugins** | `~/.omp/plugins` + npm install; supply-chain trust is on the user |
+| **cron** | Persistent jobs via settings |
+| **goals** | `src/goals/runtime.ts` token budget |
+| **subagents** | `src/task/executor.ts` budget + spawn allowlist |
+| **secrets** | AuthStorage / api-key resolver; never logged |
+| **memory** | Per-project scoping |
+| **GitHub** | Read-only via gh CLI / cache |
 
-- `src/adapters/telegram/handler.ts` parses `userId` (`msg.from?.id`) but no
-  caller enforced it.
-- `src/cli/index.ts` and `src/cli/entry.ts` adapt the bridge with a constant
-  `"telegram"` as the user id — the real Telegram identity never reaches the
-  bridge.
-- `src/adapters/telegram/bridge.ts` creates sessions with `autoApprove: true`.
+## Telegram authorization
 
-Any user who could message the bot could drive arbitrary agent actions on the
-host. Fix (this audit): an opt-in `SNS_TELEGRAM_ALLOWED_USERS` allowlist checked
-in `TelegramBot#onMessage` before any agent forwarding, with a startup warning
-when it is unset. **Operators are strongly advised to set it.**
+The Telegram bridge is a network-visible surface. To keep it safe:
 
-### HIGH — Telegram tools run with auto-approve
+1. Set `SNS_TELEGRAM_ALLOWED_USERS` to your numeric Telegram user id(s).
+2. Only listed user ids (and group chats they author) are served; everyone else is rejected before the agent is consulted.
+3. When it is unset, a warning is logged and the bot serves any sender.
 
-Even with the allowlist, an authorized Telegram user's messages run tools with
-`autoApprove: true` (no per-action confirmation). The allowlist narrows *who*,
-not *what*. Remaining risk recorded, not hidden.
+> **Warning**: keep `SNS_TELEGRAM_ALLOWED_USERS` set. A deployment without it is an unauthenticated remote-execution surface.
 
-### MEDIUM (fixed) — default approval mode was `yolo` (auto-approve)
+Telegram sessions run tools with `autoApprove: true`, so the allowlist narrows *who* can talk to the agent, not *what* actions are approved. Review this boundary before exposing a bot on a shared network.
 
-The `tools.approvalMode` schema default was `yolo`, so a fresh config
-auto-approved every tool call (including critical bash patterns like `rm -rf /`)
-with no explicit opt-in — contradicting the doc claim that yolo is opt-in.
-Fixed (UNIT Y1): the schema default is now `always-ask` and the extension
-wrapper's settings fallback matches it. `yolo` remains available as an explicit
-opt-in (`--yolo` / `--approval-mode yolo` / `tools.approvalMode: yolo` in config)
-and subagents still run headless in yolo mode behind the parent-task approval
-boundary (`src/task/executor.ts`).
+## Secrets handling
 
-### MEDIUM (fixed) — read-path traversal was not workspace-guarded
-
-`resolveReadPath` resolved `../` relative paths above `cwd`, so a prompt-injected
-read could reach files outside the workspace (proven: `resolveReadPath("../outside/secret.txt", ws)`
-read `secret.txt`). Fixed (UNIT Y2): `resolveReadPath` now rejects a RELATIVE
-path that escapes `cwd` with a `ToolError`; absolute and `~`-expanded paths
-remain readable as explicit user intent. `resolveToCwd` (used by bash/debug,
-where escaping is legitimate) is intentionally unchanged.
-
-### HIGH (fixed) — memory cross-project scope leakage
-
-`mem0`/`lcm`/`mnemosyne` kept a module-level `let db` singleton that ignored
-`agentDir`, so a second project in one process shared the first project's
-SQLite. Fixed by keying handles by resolved path.
-
-### MEDIUM — lcm `clear()` corrupted the FTS index
-
-`lcm` lacked the FTS5 `AFTER UPDATE` trigger; its post-save `UPDATE` made
-`clear()` throw `database disk image is malformed`, leaving "deleted" deltas
-searchable. Fixed by adding the update trigger.
-
-### INFO — dead code
-
-- `src/tbm/` (`TbmManager`) has zero runtime consumers (see `docs/tbm.md`).
-- `mnemosyneBackend` is unreachable: `memory.backend=mnemosyne` is migrated to
-  `mnemopi` in `Settings.#migrateRawSettings`, yet `mnemosyne` remains a
-  selectable enum value in the settings schema (misleading UI).
+- API keys and tokens are never logged. Log sites for tokens and keys print status or paths, never values.
+- Keep keys in environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, ...) or git-ignored local config. Never commit real keys.
 
 ## Observability
 
-Structured `logger.debug/warn` calls exist (217 in `src/`), and this audit added
-structured auth-gate logs (`userId`, `chatId`). The core loop does not yet attach
-session/turn/tool-call IDs to every log line; that is a recorded improvement, not
-a regression. No secrets are logged (verified: token/API-key log sites log status
-or paths, never values).
+Structured `logger.debug/warn` calls exist throughout `src/`, including auth-gate logs (`userId`, `chatId`) for the Telegram bridge.
+
+## File paths that matter
+
+| Concern | Where to look |
+|---|---|
+| Read/write path guards | `src/tools/write.ts`, `src/tools/read.ts` |
+| Approval policy | `src/config/settings-schema.ts` (`tools.approvalMode`) |
+| Telegram allowlist | `src/adapters/telegram/handler.ts` |
+| Subagent budget | `src/task/executor.ts` |
+| Goal token budget | `src/goals/runtime.ts` |

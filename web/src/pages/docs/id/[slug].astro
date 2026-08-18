@@ -1,0 +1,49 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import DocsLayout from "../../../components/DocsLayout.astro";
+import { FLAT_ORDER } from "../../../data/docs-nav";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  const id = docs.filter((d) => d.id.startsWith("id/"));
+  return id.map((doc) => ({
+    params: { slug: doc.id.replace(/^id\//, "").replace(/\.md$/, "") },
+    props: { doc },
+  }));
+}
+
+interface Props {
+  doc: CollectionEntry<"docs">;
+}
+
+const { doc } = Astro.props;
+const { Content } = await render(doc);
+const title = doc.data.title;
+
+const currentSlug = doc.id.replace(/^id\//, "").replace(/\.md$/, "");
+
+const allDocs = await getCollection("docs");
+const idDocs = allDocs.filter((d) => d.id.startsWith("id/"));
+const displayNames: Record<string, string> = {};
+for (const d of idDocs) {
+  const slug = d.id.replace(/^id\//, "").replace(/\.md$/, "");
+  displayNames[slug] = d.data.title;
+}
+
+const idx = FLAT_ORDER.indexOf(currentSlug);
+const prev = idx > 0 ? FLAT_ORDER[idx - 1] : null;
+const next = idx >= 0 && idx < FLAT_ORDER.length - 1 ? FLAT_ORDER[idx + 1] : null;
+---
+
+<Base title={title} description={`Dokumentasi SNS-MyAgent: ${title}`} canonical={`/docs/id/${currentSlug}/`}>
+  <DocsLayout
+    currentSlug={currentSlug}
+    lang="id"
+    prev={prev}
+    next={next}
+    displayNames={displayNames}
+  >
+    <Content />
+  </DocsLayout>
+</Base>

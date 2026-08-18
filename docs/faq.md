@@ -14,6 +14,8 @@ snsagent is designed for conversational setup and single-user terminal work. You
 
 Yes, when you have a local or no-auth OpenAI-compatible endpoint such as Ollama. Configure that endpoint in `/setup` or `~/.omp/agent/models.yml`.
 
+> **Tip**: start with a local endpoint (for example Ollama on `http://127.0.0.1:11434/v1`) to evaluate snsagent without any API key.
+
 ## Installation
 
 ### What are the minimum requirements?
@@ -86,23 +88,15 @@ Yes. The interactive agent streams provider responses when supported by the sele
 - **hindsight**: remote memory service.
 - **mnemosyne**, **mem0**, and **lcm**: available backend integrations with their own runtime or service requirements.
 
+> **Tip**: `mnemopi` is the fully integrated local backend. It survives process restarts and feeds recalled facts back into the model context automatically. Choose `off` if you want no memory subsystem at all (the schema default).
+
 ## TBM
 
 ### What is TBM?
 
-The Token Budget Manager (`src/tbm/`) manages context-delta accounting, context
-pyramids, lazy skills, tool-output compression, communication modes, tombstoning,
-and response caching. It is **integrated into the main agent loop** (commit
-`a59bb93`): `createAgentSession` wires it into the pre-model
-`transformContext`, post-tool compression, and the post-turn response cache via
-`src/tbm/session-hooks.ts`. The master switch defaults to **OFF**, so existing
-sessions are byte-for-byte unchanged until you opt in with `tbm.enabled: true`.
+The Token Budget Manager (`src/tbm/`) manages context-delta accounting, context pyramids, lazy skills, tool-output compression, communication modes, tombstoning, and response caching. It is integrated into the main agent loop: `createAgentSession` wires it into the pre-model `transformContext`, post-tool compression, and the post-turn response cache via `src/tbm/session-hooks.ts`. The master switch defaults to **OFF**, so existing sessions are byte-for-byte unchanged until you opt in with `tbm.enabled: true`.
 
-Measured savings exist only for a synthetic harness (93.6% fewer on-wire content
-tokens in `bun scripts/tbm-benchmark.ts`); they are **not** a claim about real
-sessions. See [tbm.md](tbm.md) for the integrated wiring, honest limitations
-(store-only cache, accounting-only context delta), and the regression-proof
-`tbm-agent-loop.test.ts` suite.
+See [tbm.md](tbm.md) for the wiring, limitations, and the test suite.
 
 ## Memory
 
@@ -127,3 +121,5 @@ Keep keys in environment variables or local configuration excluded by `.gitignor
 ### Can someone access my agent?
 
 The interactive CLI is single-user and local. Protect the machine, agent directory, provider credentials, Telegram token, and any service configuration.
+
+> **Warning**: the Telegram bridge and collab sessions are network-visible surfaces. Keep `SNS_TELEGRAM_ALLOWED_USERS` set, and review the security model before exposing any service on a shared network.

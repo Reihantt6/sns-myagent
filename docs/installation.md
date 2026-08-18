@@ -1,6 +1,6 @@
 # Installation Guide
 
-snsagent v0.3.9 is available from npm and the GitHub v0.3.9 release.
+snsagent v0.3.9 is available from npm and the GitHub v0.3.9 release. This guide covers every supported install path, from the one-line npm command to a from-source build.
 
 ## Recommended install with npm
 
@@ -17,7 +17,7 @@ Expected output:
 snsagent 0.3.9
 ```
 
-The npm postinstall script downloads the matching binary from the latest GitHub release. If the binary download is unavailable, npm still completes and you can retry with:
+The npm postinstall script downloads the matching binary for your platform from the latest GitHub release. If the download is unavailable, npm still completes and you can retry with:
 
 ```bash
 npm rebuild @sns-myagent/cli
@@ -31,25 +31,9 @@ On Linux, macOS, WSL, and supported Termux environments:
 curl -fsSL https://raw.githubusercontent.com/Reihantt6/sns-myagent/main/install.sh | bash
 ```
 
-The installer downloads the latest `snsagent` release asset when one is
-available, verifies it with `snsagent --version` (a glibc-linked asset that
-cannot exec — e.g. on Android/Termux — is removed and triggers the source
-build), and falls back to a from-source build with Bun when needed. It installs
-to `$INSTALL_DIR` (default `~/.local/bin`, override with
-`SNS_INSTALL_DIR=/some/path`), and prints the PATH command if your shell needs
-reloading. A `GITHUB_TOKEN` env var is honored for rate-limited
-environments.
+The installer downloads the latest `snsagent` release asset when one is available, verifies it with `snsagent --version`, and falls back to a from-source build with Bun when needed. It installs to `$INSTALL_DIR` (default `~/.local/bin`, override with `SNS_INSTALL_DIR=/some/path`), and prints the PATH command if your shell needs reloading. A `GITHUB_TOKEN` env var is honored for rate-limited environments.
 
-Verified 2026-08 (isolated `SNS_INSTALL_DIR` runs): the prebuilt path, the
-Termux route (source build), and the API-failure fallback all install a working
-`snsagent 0.3.9`.
-
-> **Note**: the fixes in `install.sh` (macOS asset naming, Termux source-build
-> route) were committed as `e0ba014` but had not yet been pushed to
-> `origin/main` at the time of verification — `curl … | bash -c main/install.sh`
-> still serves the pre-fix version until those commits are pushed. Test the
-> one-liner again after pushing. The behavior documented here matches the
-> repository version of `install.sh`.
+> **Tip**: after the shell installer, reload your shell or run `export PATH="$HOME/.local/bin:$PATH"` so `snsagent` is on PATH.
 
 ## Windows PowerShell
 

@@ -2,18 +2,13 @@
 
 ## Purpose
 
-Run snsagent as a Telegram bot: each message drives a real agent session
-(message → handler → session → agent → model → tool → response → Telegram). The
-adapter lives in `src/adapters/telegram/` and is built on [grammY](https://grammy.dev/).
+Run snsagent as a Telegram bot: each message drives a real agent session (message → handler → session → agent → model → tool → response → Telegram). The adapter lives in `src/adapters/telegram/` and is built on [grammY](https://grammy.dev/).
 
 ## How it works
 
-- The bot polls Telegram when `SNS_TELEGRAM_BOT_TOKEN` is set (auto-boot), or when
-  started explicitly with `snsagent telegram`.
-- Each chat maps to an agent session; incoming text becomes a user turn, and the
-  agent's reply is sent back through the bot.
-- Eleven slash commands are wired: `/start /help /chat /reset /status /memory /cron
-  /model /code /review /task`. File upload/download is supported.
+- The bot polls Telegram when `SNS_TELEGRAM_BOT_TOKEN` is set (auto-boot), or when started explicitly with `snsagent telegram`.
+- Each chat maps to an agent session; incoming text becomes a user turn, and the agent's reply is sent back through the bot.
+- Eleven slash commands are wired: `/start /help /chat /reset /status /memory /cron /model /code /review /task`. File upload/download is supported.
 
 ## Configuration
 
@@ -37,38 +32,27 @@ Bot:             Session: active · model: claude-sonnet · backend: mnemopi
 
 ![Telegram status (sanitized)](screenshots/telegram.png)
 
-`snsagent telegram status` shows the adapter state and **no** secrets: token
-fields display as `unset`/`empty`. A real conversation screenshot is not
-committed because it would contain the configured bot token / chat contents.
+`snsagent telegram status` shows the adapter state and **no** secrets: token fields display as `unset`/`empty`. A real conversation screenshot is not committed because it would contain the configured bot token / chat contents.
 
-## Expected behavior
+## Authorization
 
-- When `SNS_TELEGRAM_ALLOWED_USERS` is set, only the listed user ids (and group chats
-  they author) are served; anyone else is rejected **before** the agent is consulted.
+- When `SNS_TELEGRAM_ALLOWED_USERS` is set, only the listed user ids (and group chats they author) are served; anyone else is rejected **before** the agent is consulted.
 - When it is unset, a warning is logged and the bot serves any sender.
+
+> **Warning**: the allowlist is opt-in. A deployment without it is an unauthenticated remote-execution surface. Keep `SNS_TELEGRAM_ALLOWED_USERS` set.
+
+Sessions run tools with `autoApprove: true`, so the allowlist narrows *who* can talk to the agent, not *what* actions are auto-approved. Review the boundary in [security-model.md](./security-model.md) before exposing a bot.
 
 ## Failure behavior
 
 - No token → the adapter does not start (or `snsagent telegram` errors).
-- Network/polling errors are retried by grammY; transient failures do not kill the
-  agent process.
+- Network/polling errors are retried by grammY; transient failures do not kill the agent process.
 
-## Limitations (authorization boundary)
-
-- The allowlist is **opt-in** (off by default). A deployment that forgets to set it is
-  an unauthenticated remote-execution surface.
-- Sessions are created with `autoApprove: true` — the allowlist narrows *who* can talk
-  to the agent, **not** *what* actions are auto-approved.
-- Group-chat handling is accepted but the per-message authorization is coarse; review
-  the boundary in [docs/security-model.md](./security-model.md) before exposing a bot.
-
-## Testing status
+## Testing
 
 ```bash
 bun test test/telegram-audit.test.ts   # handler + auth-gate coverage
 bun test test/telegram.test.ts
 ```
 
-The audit test covers the message → handler → session path and the
-`SNS_TELEGRAM_ALLOWED_USERS` authorization gate (rejection of unlisted users, warning
-when unset).
+The test suite covers the message → handler → session path and the `SNS_TELEGRAM_ALLOWED_USERS` authorization gate (rejection of unlisted users, warning when unset).

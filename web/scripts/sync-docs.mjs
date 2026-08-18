@@ -1,21 +1,25 @@
 #!/usr/bin/env node
 /**
- * Sync the repo's `docs/` markdown into the Astro content collection and
+ * Sync the repo's markdown docs into the Astro content collection and
  * `public/screenshots/` at build time.
  *
- * The repository's `docs/` folder is the single source of truth for product
- * documentation. Astro content collections require YAML frontmatter, so this
- * script:
- *   1. copies ../docs/*.md      -> src/content/docs/<slug>.md
- *   2. injects a `title` frontmatter derived from the first `# ` heading
- *   3. rewrites relative links so they resolve on the website
+ * Two sources, two languages:
+ *   1. ../docs/*.md      -> src/content/docs/en/<slug>.md   (English)
+ *   2. ../docs-id/*.md   -> src/content/docs/id/<slug>.md   (Bahasa Indonesia)
+ *
+ * The repository's `docs/` and `docs-id/` folders are the single source of
+ * truth for product documentation. Astro content collections require YAML
+ * frontmatter, so this script:
+ *   1. copies ../docs/*.md       -> src/content/docs/en/<slug>.md
+ *   2. copies ../docs-id/*.md    -> src/content/docs/id/<slug>.md
+ *   3. injects a `title` frontmatter derived from the first `# ` heading
+ *   4. rewrites relative links so they resolve on the website
  *      - ./memory.md            -> /docs/memory/
  *      - ./memory.md#section    -> /docs/memory/#section
  *      - ./screenshots/x.png    -> /screenshots/x.png
  *      - ../docs/screenshots/x  -> /screenshots/x
  *      - ../README.md           -> /
- *      - ../AUDIT-REPORT.md     -> GitHub blob link
- *   4. copies ../docs/screenshots/* -> public/screenshots/
+ *   5. copies ../docs/screenshots/* -> public/screenshots/
  *
  * Run via `bun run sync:docs` (wired into prebuild/predev).
  */
@@ -26,16 +30,16 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, "..");
 const repoRoot = path.resolve(webRoot, "..");
-const DOCS_SRC = path.join(repoRoot, "docs");
+
+const SOURCES = [
+  { src: path.join(repoRoot, "docs"), lang: "en" },
+  { src: path.join(repoRoot, "docs-id"), lang: "id" },
+];
 const DOCS_DST = path.join(webRoot, "src", "content", "docs");
-const SHOTS_SRC = path.join(DOCS_SRC, "screenshots");
+const SHOTS_SRC = path.join(repoRoot, "docs", "screenshots");
 const SHOTS_DST = path.join(webRoot, "public", "screenshots");
 
 const GITHUB_BLOB = "https://github.com/Reihantt6/sns-myagent/blob/main";
-
-function escRe(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 /** Rewrite one relative link target (the part inside markdown parens). */
 function rewriteLink(target) {
@@ -91,17 +95,22 @@ function withFrontmatter(raw, filename) {
 fs.rmSync(DOCS_DST, { recursive: true, force: true });
 fs.mkdirSync(DOCS_DST, { recursive: true });
 
-const files = fs.readdirSync(DOCS_SRC).filter((f) => f.endsWith(".md"));
 let synced = 0;
-for (const file of files) {
-  const raw = fs.readFileSync(path.join(DOCS_SRC, file), "utf8");
-  const rewritten = rewriteMarkdownLinks(raw);
-  const withFm = withFrontmatter(rewritten, file);
-  fs.writeFileSync(path.join(DOCS_DST, file), withFm, "utf8");
-  synced++;
+for (const { src, lang } of SOURCES) {
+  if (!fs.existsSync(src)) continue;
+  const langDst = path.join(DOCS_DST, lang);
+  fs.mkdirSync(langDst, { recursive: true });
+  const files = fs.readdirSync(src).filter((f) => f.endsWith(".md"));
+  for (const file of files) {
+    const raw = fs.readFileSync(path.join(src, file), "utf8");
+    const rewritten = rewriteMarkdownLinks(raw);
+    const withFm = withFrontmatter(rewritten, file);
+    fs.writeFileSync(path.join(langDst, file), withFm, "utf8");
+    synced++;
+  }
 }
 
-// Screenshots
+// Screenshots (shared between languages)
 let shots = 0;
 if (fs.existsSync(SHOTS_SRC)) {
   fs.mkdirSync(SHOTS_DST, { recursive: true });
@@ -112,4 +121,4 @@ if (fs.existsSync(SHOTS_SRC)) {
   }
 }
 
-console.log(`sync-docs: ${synced} docs -> src/content/docs/, ${shots} screenshots -> public/screenshots/`);
+console.log(`sync-docs: ${synced} docs -> src/content/docs/{en,id}/, ${shots} screenshots -> public/screenshots/`);
