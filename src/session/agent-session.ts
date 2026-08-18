@@ -4717,7 +4717,7 @@ export class AgentSession {
 	 * When the user has explicitly opted into `yolo` / auto-approve behavior (via
 	 * the SDK/CLI `autoApprove` flag or a configured `tools.approvalMode: yolo`),
 	 * skips the gate unless the per-tool policy explicitly requires a prompt or
-	 * deny. The schema default is also `yolo`, so an explicit configuration or
+	 * deny. The schema default is `always-ask`, so an explicit configuration or
 	 * explicit session flag is required: default-config ACP sessions keep the
 	 * client-side permission gate.
 	 */

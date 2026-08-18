@@ -2,9 +2,16 @@
 
 Audit date: 2026-08-17
 Repository: `Reihantt6/sns-myagent` (branch `main`)
-Baseline commit reference: `2654f2c` (UNIT 0) → final `e0ba014` (UNIT 7)
+Baseline commit reference: `2654f2c` (UNIT 0) → `e0ba014` (UNIT 7) → session 5 fixes
 Method: source-level trace of real runtime call paths (never README-as-proof), plus
 hermetic tests, a TBM harness benchmark, and real screenshots from the running build.
+
+**Session 5 (bug-hunt fix + final gate):** the two remaining CRITICAL/MEDIUM bug-hunt
+findings were fixed and regression-tested — (UNIT Y1) `tools.approvalMode` default
+`yolo` → `always-ask`, and (UNIT Y2) `resolveReadPath` now rejects relative `../`
+escape above the workspace. Full committed gate re-run: `bun test src` 316/2/0,
+`bun test test/` 110/0, `tsc --noEmit` clean, `biome lint` clean, `bun run build`
+success. See Security Gap Analysis, Changes Made, and Tests Executed below.
 
 Classification vocabulary: `VERIFIED`, `PARTIALLY_VERIFIED`, `IMPLEMENTED_UNTESTED`,
 `STUB`, `EXPERIMENTAL`, `PLANNED`, `BROKEN`, `DOC_ONLY`, `UPSTREAM_INHERITED`.
@@ -290,8 +297,8 @@ Severity scale: CRITICAL / HIGH / MEDIUM / LOW / INFO. Full evidence in
 | bash / eval / write / ssh / browser / cron surfaces (approval policy + sandbox inherited) | MEDIUM | INHERITED |
 | Dead code: `src/tbm/`, `mnemosyneBackend` | INFO | DOCUMENTED |
 | Secrets | LOW | INHERITED (never logged; never read during audit) |
-| `tools.approvalMode` schema default is `yolo` (auto-approve) — docs claim it is opt-in via CLI flags; a fresh config auto-approves *all* tool calls, including critical bash patterns (`rm -rf /`, `curl \| bash`) | MEDIUM | DOCUMENTED (doc mismatch; `always-ask` works when set) |
-| Read-tool path resolution does not sandbox to cwd — `../` traversal resolves outside the workspace (proven: `resolveReadPath("../outside/secret.txt", ws)` reads the file) | MEDIUM | DOCUMENTED (single-user local design; no multi-tenant boundary) |
+| `tools.approvalMode` schema default was `yolo` (auto-approve) — a fresh config auto-approved *all* tool calls, including critical bash patterns (`rm -rf /`, `curl \| bash`) | MEDIUM | **FIXED** (UNIT Y1) — default is now `always-ask`; yolo is explicit opt-in only |
+| Read-tool path resolution did not sandbox to cwd — `../` traversal resolved outside the workspace (proven: `resolveReadPath("../outside/secret.txt", ws)` read the file) | MEDIUM | **FIXED** (UNIT Y2) — `resolveReadPath` rejects relative paths escaping cwd; absolute/`~` paths still allowed |
 | Response cache semantic match false-positives on single-word queries — any single-word query matches any other (zero-bigram branch returns 1.0) | LOW | DOCUMENTED (TBM default OFF; store-only cache, never skips the model) |
 | Tombstone `tokensSaved` could be **negative** and `compressionRatio` > 1 for non-compressible (single-sentence) messages | LOW | **FIXED** — clamped `>= 0` / `<= 1` + regression test |
 | `Settings.get()/isConfigured()` with an undeclared path threw a raw `TypeError` (`for..of undefined` in `getByPath`) | LOW | **FIXED** — friendly `Unknown setting path` error + regression test |
@@ -359,6 +366,10 @@ Custom `postinstall` (must stay intact, verified clean):
 | `src/tbm/__tests__/tbm-agent-loop.test.ts` | real pi-agent-core loop regression-proof test (4 tests) |
 | `src/async/task-runner.ts`, `src/async/__tests__/task-runner.test.ts` | guard `#executeTask` finally block against closed store after `destroy()`; regression test |
 | `src/async/task-store.ts` | inclusive (`<=`) cleanup cutoff to stop ms-boundary flake |
+| `src/config/settings-schema.ts`, `src/extensibility/extensions/wrapper.ts`, `src/session/agent-session.ts` (comment) | **UNIT Y1** — `tools.approvalMode` default `yolo` → `always-ask` (safe default; yolo is explicit opt-in) |
+| `src/tools/path-utils.ts` | **UNIT Y2** — `resolveReadPath` rejects relative `../` paths escaping cwd (workspace guard); absolute/`~` paths allowed |
+| `test/security-b1.test.ts` | **UNIT Y1/Y2** — B1.1 asserts the new `always-ask` default + critical-payload prompt; B1.3 asserts `../` rejection, absolute-path escape hatch, and in-workspace resolution |
+| `docs/security-model.md`, `AUDIT-REPORT.md` | record the two CRITICAL/MEDIUM fixes as FIXED |
 
 Session 1 commits (one per unit): `2654f2c`, `7e36b36`, `ac33a42`, `f93606a`, `5b28dc8`,
 `20a43d0`, `8e717e6`, `e0ba014`. Session 2 commits: `a59bb93` (TBM integration + tests),
@@ -391,6 +402,12 @@ Files intentionally left untracked (per task HARD RULES): `agent/`, `.agents/`, 
 | **Phase 4B** `bun test test/security-b4.test.ts` | 10 pass / 0 fail — corrupt config/session files, wrong types, extreme unicode |
 | **Phase 4B** `bunx tsc --noEmit` | exit 0 |
 | **Phase 4B** full `bun test` (with 4B changes) | 850 pass / 56 fail / 3 errors — **failure count unchanged from baseline** (stash comparison: 848/58 without changes); all 56 are pre-existing env-dependent failures (hyperframes/HeyGen/svgl/favicon/ffprobe network & media tests), none caused by 4B |
+| **UNIT Y1/Y2** `bun test test/security-b1.test.ts` | 20 pass / 0 fail — new `always-ask` default, critical-payload prompt, `../` traversal rejection (regression-proof) |
+| **UNIT Y1/Y2** `bun test test/` | 110 pass / 0 fail (8 files) — committed integration + B1–B4 suites |
+| **UNIT Y1/Y2** `bun test src` | 316 pass / 2 skip / 0 fail (30 files) — unchanged from baseline |
+| **UNIT Y1/Y2** `bunx tsc -p tsconfig.json --noEmit` | exit 0 |
+| **UNIT Y1/Y2** `bunx biome lint src test scripts` | exit 0 |
+| **UNIT Y1/Y2** `bun run build` | exit 0 — `bin/snsagent-linux-x64` produced |
 
 ---
 
@@ -401,20 +418,24 @@ committed test (`test/security-b*.test.ts`); no claim without evidence.
 
 ### B1 — Injection & command execution
 
-- **Default approval mode is `yolo`.** `Settings.isolated({}).get("tools.approvalMode")` returns
-  `"yolo"` (schema default). In yolo mode `resolveApproval` returns `allow` for **everything**,
-  including a critical-pattern `rm -rf /` (override is ignored). `docs/security-model.md`
-  claims yolo is opt-in via CLI flags — that is not true for a fresh config. **Severity MEDIUM,
-  DOCUMENTED.** Mitigation: set `tools.approvalMode: always-ask` (verified: prompts on critical
-  payloads), or deny specific tools via `tools.approval.<tool>: deny`.
+- **~~Default approval mode is `yolo`~~ FIXED (UNIT Y1).** The schema default was `yolo`
+  (auto-approve every tier), so a fresh config auto-approved even critical-pattern `rm -rf /`.
+  The default is now `always-ask` (read-only auto-approve; write/exec prompt) in
+  `src/config/settings-schema.ts` and the extension wrapper fallback. `yolo` remains explicit
+  opt-in (`--yolo` / `--approval-mode yolo` / `tools.approvalMode: yolo`) and subagents still
+  run headless in yolo mode behind the parent-task boundary. Regression test: `test/security-b1.test.ts`
+  B1.1 (fresh config now prompts on critical payloads; explicit yolo still allows).
 - **Critical bash patterns are detected** when a non-yolo mode is active: `rm -rf /`, `rm -fr /`,
   `sudo rm /etc/passwd`, fork bomb, `curl | bash`, `wget | sh`, `eval "$(curl …)"`,
   `bash <(curl …)`, `dd … of=/dev/sda`, `shutdown now` all match `CRITICAL_BASH_PATTERNS`
   (12/12 cases verified); benign `echo`/`git status` do not. **Verified good.**
-- **Path traversal is not guarded** by the read-tool resolver: `resolveReadPath("../outside/secret.txt", ws)`
-  resolves outside the workspace and the file is readable. **Severity MEDIUM, DOCUMENTED** —
-  this is a single-user local agent by design (no multi-tenant boundary); the agent is trusted
-  with the user's shell, so path sandboxing would be defense-in-depth, not a boundary.
+- **~~Path traversal is not guarded~~ FIXED (UNIT Y2).** `resolveReadPath("../outside/secret.txt", ws)`
+  previously resolved outside the workspace and the file was readable. `resolveReadPath` now
+  rejects a RELATIVE path that escapes `cwd` with a `ToolError`; absolute and `~`-expanded paths
+  remain readable as explicit user intent (legitimate reads of configs/images outside the
+  workspace keep working). `resolveToCwd` (used by bash/debug, where escaping is legitimate) is
+  intentionally unchanged. Regression tests: `test/security-b1.test.ts` B1.3 (rejection,
+  absolute escape hatch, in-workspace resolution).
 
 ### B2 — Auth & access
 
@@ -486,12 +507,15 @@ committed test (`test/security-b*.test.ts`); no claim without evidence.
    (e.g. `TaskStore`/`TaskRunner`) are shared across test files. Two shared-DB flake bugs
    exposed by this were fixed (session 3, commits `5463807`, `8b1b08e`); other singletons
    remain a latent cross-file coupling risk if a test closes shared state.
-11. **`tools.approvalMode` defaults to `yolo`** (Phase 4B) — a fresh config auto-approves all
-   tool calls including critical bash patterns. Docs claim opt-in; schema says otherwise. Set
-   `tools.approvalMode: always-ask` or per-tool `deny` policies to harden.
-12. **Read tool is not cwd-sandboxed** (Phase 4B) — `../` traversal reads outside the
-   workspace. Acceptable for a single-user local agent; revisit if any shared/remote surface
-   is added.
+11. **~~`tools.approvalMode` defaults to `yolo`~~ FIXED (UNIT Y1)** — the schema default is
+    now `always-ask`, so a fresh config prompts for write/exec tools instead of auto-approving
+    everything (including critical bash patterns). `yolo` remains explicit opt-in
+    (`--yolo` / `tools.approvalMode: yolo`) and subagents still run headless in yolo mode
+    behind the parent-task approval boundary.
+12. **~~Read tool is not cwd-sandboxed~~ FIXED (UNIT Y2)** — `resolveReadPath` now rejects
+    relative `../` paths that escape the workspace; absolute and `~`-expanded paths remain
+    readable as explicit user intent (legitimate reads of configs/images outside the
+    workspace keep working).
 13. **Response cache false-positives on single-word queries** (Phase 4B) — semantic matcher
    treats any two single-word queries as identical. LOW (TBM default OFF, store-only).
 
