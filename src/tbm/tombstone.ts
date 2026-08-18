@@ -130,14 +130,20 @@ export class ConversationTombstoner {
 			});
 		}
 
-		const tokensSaved = totalOriginalTokens - totalTombstoneTokens;
+		// A summary of a short/single-sentence message can be nearly as long as
+		// the original (the heuristic keeps the whole first sentence), so the
+		// raw difference can be negative after the formatting overhead. "Tokens
+		// saved" is a promise, not a debt — clamp to 0 so callers and the
+		// dashboard never report negative savings.
+		const tokensSaved = Math.max(0, totalOriginalTokens - totalTombstoneTokens);
 
 		this.#stats.messagesTombstoned += tombstoned;
 		this.#stats.originalTokens += totalOriginalTokens;
 		this.#stats.tombstoneTokens += totalTombstoneTokens;
 		this.#stats.tokensSaved += tokensSaved;
+		// Ratio clamped to at most 1: tombstoning must never report *expansion*.
 		this.#stats.compressionRatio = this.#stats.originalTokens > 0
-			? this.#stats.tombstoneTokens / this.#stats.originalTokens
+			? Math.min(1, this.#stats.tombstoneTokens / this.#stats.originalTokens)
 			: 0;
 
 		return {

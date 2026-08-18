@@ -299,8 +299,11 @@ describe("ConversationTombstoner", () => {
 
 		expect(tombstoner.lookupByTurn(0)).toBe(messages[0]?.content);
 		expect(tombstoner.stats.messagesTombstoned).toBe(5);
-		expect(tombstoner.stats.tokensSaved).toBe(tombstoner.stats.originalTokens - tombstoner.stats.tombstoneTokens);
+		expect(tombstoner.stats.tokensSaved).toBe(
+			Math.max(0, tombstoner.stats.originalTokens - tombstoner.stats.tombstoneTokens),
+		);
 		expect(tombstoner.stats.compressionRatio).toBeGreaterThan(0);
+		expect(tombstoner.stats.compressionRatio).toBeLessThanOrEqual(1);
 	});
 
 	it("should return short conversations unchanged and reset state", () => {

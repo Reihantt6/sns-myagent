@@ -303,8 +303,14 @@ export class Settings {
 		if (this.#resolvedCache.has(path)) {
 			return this.#resolvedCache.get(path) as SettingValue<P>;
 		}
-
-		const value = getByPath(this.#merged, SETTING_PATH_SEGMENTS[path]);
+		const segments = SETTING_PATH_SEGMENTS[path];
+		if (!segments) {
+			// Extensions/plugins/JS config can pass arbitrary strings at runtime;
+			// surface a friendly error instead of a raw `for..of undefined`
+			// TypeError deep in getByPath.
+			throw new Error(`Unknown setting path: ${String(path)}`);
+		}
+		const value = getByPath(this.#merged, segments);
 		const resolved =
 			value !== undefined ? (resolvePathScopedStringArray(path, value, this.#cwd) ?? value) : getDefault(path);
 		this.#resolvedCache.set(path, resolved);
@@ -316,7 +322,11 @@ export class Settings {
 	 * config, or runtime override) rather than falling back to the schema default.
 	 */
 	isConfigured(path: SettingPath): boolean {
-		return getByPath(this.#merged, SETTING_PATH_SEGMENTS[path]) !== undefined;
+		const segments = SETTING_PATH_SEGMENTS[path];
+		if (!segments) {
+			throw new Error(`Unknown setting path: ${String(path)}`);
+		}
+		return getByPath(this.#merged, segments) !== undefined;
 	}
 
 	/**
