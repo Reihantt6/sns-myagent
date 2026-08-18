@@ -4,13 +4,11 @@ import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import { WordReveal } from "../components/react/WordReveal";
 import { HeroTerminal } from "../components/react/HeroTerminal";
-import { CopyButton } from "../components/react/CopyButton";
+import { PlatformSelector } from "../components/react/PlatformSelector";
 import { BentoGrid, type BentoCell } from "../components/react/BentoGrid";
 import { Reveal } from "../components/react/Reveal";
 import { ArrowRightIcon, BookOpenIcon } from "@phosphor-icons/react";
 import type { BentoIconName } from "../components/react/BentoGrid";
-
-const installCmd = "npm install -g @sns-myagent/cli";
 
 const marqueeItems = [
   "30 built-in tools",
@@ -138,9 +136,8 @@ const docsQuick = [
             Read the docs
           </a>
         </div>
-        <div class="mt-8 flex max-w-[520px] items-center gap-3 rounded-[10px] border border-[var(--color-line)] bg-[var(--color-surface)] p-2 pl-4">
-          <code class="flex-1 truncate font-mono text-[13.5px] text-[var(--color-fg-2)]">{installCmd}</code>
-          <CopyButton text={installCmd} label="Copy" client:load />
+        <div class="mt-8 max-w-[560px]">
+          <PlatformSelector client:load />
         </div>
       </div>
 
