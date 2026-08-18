@@ -3,6 +3,7 @@ node_modules/
 
 # Build
 dist/
+dist.backup/
 build/
 *.tsbuildinfo
 
@@ -122,4 +123,8 @@ __pycache__/
 # Per-user runtime state (out-of-tree but sometimes in repo for dev)
 run/
 tmp/
+
+# Web project moved to separate repo (Reihantt6/sns-myagent-web)
+web/
+sns-myagent-web/
 
