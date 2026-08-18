@@ -2,24 +2,17 @@
 
 ## Purpose
 
-Shrink a long conversation before it overflows the model's context window,
-keeping a working summary instead of losing the thread.
+Shrink a long conversation before it overflows the model's context window, keeping a working summary instead of losing the thread.
 
 ## How it works
 
-- `src/session/` (agent-session + compact-modes) runs compaction at
-  `compaction.thresholdPercent` / `thresholdTokens` of the window, or
-  manually via `/compact`.
+- `src/session/` (agent-session + compact-modes) runs compaction at `compaction.thresholdPercent` / `thresholdTokens` of the window, or manually via `/compact`.
 - Three modes (`src/session/compact-modes.ts`):
-  - `soft` — summarize locally with the active model (skip remote endpoints).
-  - `remote` — summarize via the remote endpoint / provider-native compaction.
-  - `snapcompact` — archive history onto dense bitmap images the model reads
-    back (no LLM call; rejects focus text).
-- `/compact [mode] [focus...]` — a leading known mode is treated as the mode
-  selector, otherwise the whole argument string is focus instructions
-  (backward compatible).
-- `compaction.strategy` selects the summary strategy (e.g. `context-full`)
-  unless a mode overrides it.
+  - `soft` - summarize locally with the active model (skip remote endpoints).
+  - `remote` - summarize via the remote endpoint / provider-native compaction.
+  - `snapcompact` - archive history onto dense bitmap images the model reads back (no LLM call; rejects focus text).
+- `/compact [mode] [focus...]` - a leading known mode is treated as the mode selector, otherwise the whole argument string is focus instructions (backward compatible).
+- `compaction.strategy` selects the summary strategy (e.g. `context-full`) unless a mode overrides it.
 
 ## Configuration
 
@@ -49,23 +42,15 @@ compaction:
 
 ![Compaction panel](screenshots/compact.png)
 
-`/compact` on an empty session — the honest empty-state message ("Nothing to
-compact"). Captured from the current build in a sandboxed, anonymized workspace.
+`/compact` on an empty session shows the empty-state message ("Nothing to compact").
 
 ## Failure behavior
 
-- A mode that demands a remote path (`requiresRemote`) with no remote endpoint
-  set warns and falls back to a local summary.
+- A mode that demands a remote path (`requiresRemote`) with no remote endpoint set warns and falls back to a local summary.
 - `snapcompact` with focus text is an error (rejects focus).
 
 ## Limitations
 
 - Summaries lose detail by design; `keepRecentTokens` protects the tail.
-- Time/token measurement not end-to-end audited with a real long session.
+- Time/token measurement is not measured end-to-end with a real long session.
 
-## Testing status
-
-**PARTIAL** — compaction strategies implemented in `src/session/` and mode
-parsing covered by parse tests (`compact-modes` parse logic); no committed
-full-session long-context compaction test. Evidence: `src/session/compact-modes.ts`
-+ `compaction.*` schema keys.

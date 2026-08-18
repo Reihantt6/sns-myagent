@@ -2,244 +2,306 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
-import { FEATURES } from "../data/features";
+import { WordReveal } from "../components/react/WordReveal";
+import { HeroTerminal } from "../components/react/HeroTerminal";
+import { CopyButton } from "../components/react/CopyButton";
+import { BentoGrid, type BentoCell } from "../components/react/BentoGrid";
+import { Reveal } from "../components/react/Reveal";
+import { ArrowRightIcon, BookOpenIcon } from "@phosphor-icons/react";
+import type { BentoIconName } from "../components/react/BentoGrid";
+
+const installCmd = "npm install -g @sns-myagent/cli";
+
+const marqueeItems = [
+  "30 built-in tools",
+  "62 slash commands",
+  "BYOK multi-provider",
+  "Local memory backend",
+  "MCP integration",
+  "Telegram bridge",
+  "Subagents and async tasks",
+  "Cron scheduler",
+  "TBM token manager",
+  "~120 MB binary",
+  "MIT licensed",
+  "Safe defaults",
+];
+
+const bentoCells: BentoCell[] = [
+  {
+    title: "Configure it by talking to it",
+    desc: "Setup wizard plus conversation-driven configuration. Ask to add an MCP filesystem, switch providers, or change models mid-chat.",
+    icon: "tree" as BentoIconName,
+    status: "VERIFIED",
+    href: "/docs/installation/",
+    shot: "setup-wizard.png",
+    shotAlt: "First-run setup wizard",
+    featured: true,
+  },
+  {
+    title: "30 built-in tools",
+    desc: "Read, write, edit, bash, web search, browser, SSH, eval runtimes, memory, MCP, todo. All real implementations.",
+    icon: "wrench" as BentoIconName,
+    status: "VERIFIED",
+    href: "/docs/architecture/",
+    shot: "tools.png",
+    shotAlt: "Built-in tools list",
+  },
+  {
+    title: "Memory that survives restarts",
+    desc: "mnemopi local backend: retain, persist, semantically recall, and inject into model context. Per-project scoped.",
+    icon: "brain" as BentoIconName,
+    status: "VERIFIED",
+    href: "/docs/memory/",
+    shot: "memory-stats.png",
+    shotAlt: "Memory stats",
+  },
+  {
+    title: "62 slash commands",
+    desc: "From /settings and /model to /memory, /goal, /cron, /task, /mcp, /tbm and /browser.",
+    icon: "terminal" as BentoIconName,
+    status: "VERIFIED",
+    href: "/docs/terminal-ui/",
+  },
+  {
+    title: "MCP integration",
+    desc: "Connect Model Context Protocol servers and use their tools and resources inside the agent.",
+    icon: "plugs" as BentoIconName,
+    status: "PARTIAL",
+    href: "/docs/mcp/",
+  },
+  {
+    title: "Subagents and multi-agent",
+    desc: "Delegate async tasks, consensus, critic and best-of-N agent patterns with budgeted execution.",
+    icon: "git" as BentoIconName,
+    status: "PARTIAL",
+    href: "/docs/subagents/",
+  },
+  {
+    title: "Safe by default",
+    desc: "Approval mode defaults to always-ask, memory and TBM default to off. Your key, your machine, no forced subscription.",
+    icon: "shield" as BentoIconName,
+    status: "VERIFIED",
+    href: "/docs/security-model/",
+    featured: true,
+  },
+];
+
+const galleryShots = [
+  { file: "main-tui.png", caption: "Main TUI", cmd: "snsagent" },
+  { file: "setup-wizard.png", caption: "Setup wizard, BYOK provider", cmd: "snsagent" },
+  { file: "mcp.png", caption: "MCP surface", cmd: "/mcp" },
+  { file: "telegram.png", caption: "Telegram bridge", cmd: "telegram status" },
+  { file: "tbm-dashboard.png", caption: "TBM dashboard", cmd: "/tbm" },
+  { file: "goal.png", caption: "Active objective", cmd: "/goal" },
+];
 
 const docsQuick = [
   { href: "/docs/installation/", label: "Installation", desc: "npm, one-liner, source, Termux" },
   { href: "/docs/configuration/", label: "Configuration", desc: "config files, providers, models" },
   { href: "/docs/memory/", label: "Memory", desc: "backends, auto-recall, scoping" },
-  { href: "/docs/telegram/", label: "Telegram", desc: "bot + authorization boundary" },
+  { href: "/docs/telegram/", label: "Telegram", desc: "bot and authorization boundary" },
   { href: "/docs/tbm/", label: "TBM", desc: "token budget manager" },
   { href: "/docs/mcp/", label: "MCP", desc: "Model Context Protocol" },
   { href: "/docs/faq/", label: "FAQ", desc: "frequently asked questions" },
-  { href: "/docs/security-model/", label: "Security model", desc: "attack surface + approvals" },
+  { href: "/docs/security-model/", label: "Security model", desc: "attack surface and approvals" },
   { href: "/docs/troubleshooting/", label: "Troubleshooting", desc: "common issues and fixes" },
 ];
-
-const statusTone: Record<string, string> = {
-  VERIFIED: "green",
-  PARTIAL: "amber",
-  UNTESTED: "dim",
-};
 ---
+
 <Base title="SNS-MyAgent">
   <Nav active="home" />
-  <link rel="stylesheet" href="/styles/landing.css" />
 
-  <main>
-    <!-- ================= HERO ================= -->
-    <section class="hero">
-      <div class="container hero-grid">
-        <div>
-          <span class="hero-badge"><span class="dot"></span> v0.3.9 · MIT · BYOK</span>
-          <h1>
-            A coding agent <br />
-            you <span class="green">configure by talking to it</span>
-          </h1>
-          <p class="hero-tag">
-            <span class="mono green">snsagent</span> is a personal, single-user AI coding agent for
-            the terminal. Bring your own key (BYOK), chat, and it sets up MCP servers, memory
-            backends, and model switching through conversation. No forced subscription.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="/docs/installation/">
-              Install snsagent <span aria-hidden="true">→</span>
-            </a>
-            <a class="btn btn-ghost" href="/docs/architecture/">Read the docs</a>
-          </div>
-          <div class="hero-install">
-            <span class="ps1">$</span>
-            <code>npm install -g @sns-myagent/cli</code>
-            <button
-              id="copy-install"
-              type="button"
-              aria-label="Copy install command"
-              title="Copy"
-            >⧉</button>
-            <span id="copy-feedback" class="copied" aria-live="polite"></span>
-          </div>
-          <ul class="hero-points">
-            <li>30 built-in tools</li>
-            <li>62 slash commands</li>
-            <li>Multi-provider LLM</li>
-            <li>Memory · MCP · Telegram</li>
-            <li>Subagents · cron · TBM</li>
-          </ul>
+  <main class="bg-glow">
+    <!-- ============ HERO ============ -->
+    <section class="container-site grid grid-cols-1 items-center gap-14 pb-20 pt-20 md:grid-cols-[1.05fr_1fr] md:pb-28 md:pt-24 lg:gap-16">
+      <div class="min-w-0">
+        <p class="eyebrow mb-5">AI coding agent for the terminal</p>
+        <h1 class="text-[40px] font-extrabold leading-[1.08] tracking-tight text-[var(--color-fg)] md:text-[54px]">
+          <WordReveal
+            text="A coding agent you configure by talking to it."
+            accentWord="talking"
+            client:load
+          />
+        </h1>
+        <p class="mt-6 max-w-[46ch] text-[17px] leading-relaxed text-[var(--color-fg-2)]">
+          snsagent is a single-user AI coding agent for your terminal. Bring your own key, and
+          it sets up MCP servers, memory backends, and model switching through conversation.
+        </p>
+        <div class="mt-9 flex flex-wrap items-center gap-4">
+          <a href="/docs/installation/" class="btn btn-primary">
+            Install snsagent
+            <ArrowRightIcon size={18} weight="bold" />
+          </a>
+          <a href="/docs/architecture/" class="btn btn-ghost">
+            <BookOpenIcon size={18} />
+            Read the docs
+          </a>
         </div>
+        <div class="mt-8 flex max-w-[520px] items-center gap-3 rounded-[10px] border border-[var(--color-line)] bg-[var(--color-surface)] p-2 pl-4">
+          <code class="flex-1 truncate font-mono text-[13.5px] text-[var(--color-fg-2)]">{installCmd}</code>
+          <CopyButton text={installCmd} label="Copy" client:load />
+        </div>
+      </div>
 
-        <div class="term term-hero" aria-hidden="true">
-          <div class="term-bar">
-            <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-            <span class="term-title">snsagent — ~/projects/sns-myagent</span>
-          </div>
-          <div class="term-body">
-            <div class="line"><span class="n">1</span><span><span class="ps1">$</span> <span class="cmd">snsagent</span></span></div>
-            <div class="line"><span class="n">2</span><span class="dim2">… setup wizard: choose provider, paste key, pick model …</span></div>
-            <div class="line"><span class="n">3</span><span><span class="ps1">❯</span> <span class="cmd">what files are in the current directory?</span></span></div>
-            <div class="line"><span class="n">4</span><span class="out">src/ cli/ config/ tools/ modes/ session/ tbm/ docs/ …</span></div>
-            <div class="line"><span class="n">5</span><span><span class="ps1">❯</span> <span class="cmd">add MCP filesystem for /home/user/projects</span></span></div>
-            <div class="line"><span class="n">6</span><span class="out">✓ mcp filesystem configured — server now live.</span></div>
-            <div class="line"><span class="n">7</span><span><span class="ps1">❯</span> <span class="cmd">switch to anthropic with claude-sonnet</span></span></div>
-            <div class="line"><span class="n">8</span><span class="out">✓ model → <span class="hl">claude-sonnet-4-20250514</span> (anthropic)</span></div>
-            <div class="line"><span class="n">9</span><span><span class="ps1">❯</span> <span class="cmd">create a TypeScript module that parses CSV files</span></span></div>
-            <div class="line"><span class="n">10</span><span class="out">✓ wrote <span class="hl">src/utils/csv.ts</span> — 128 lines, 0 errors.</span></div>
-            <div class="line"><span class="n">11</span><span><span class="ps1">❯</span> <span class="cmd">/memory stats</span></span></div>
-            <div class="line"><span class="n">12</span><span class="out">memory backend: <span class="ok">mnemopi</span> · facts: <span class="ok">214</span> · auto-recall: on</span></div>
-            <div class="line"><span class="n">13</span><span><span class="ps1">❯</span> <span class="hl">▊</span></span></div>
-          </div>
-        </div>
+      <div class="relative min-w-0">
+        <HeroTerminal client:load />
       </div>
     </section>
 
-    <!-- ================= STRIP ================= -->
-    <div class="strip" aria-hidden="true">
-      <div class="strip-track">
-        <span><em>30</em> built-in tools</span>
-        <span><em>62</em> slash commands</span>
-        <span><em>BYOK</em> multi-provider</span>
-        <span><em>mnemopi</em> local memory</span>
-        <span><em>MCP</em> integration</span>
-        <span><em>Telegram</em> bot</span>
-        <span><em>subagents</em> + async tasks</span>
-        <span><em>cron</em> scheduler</span>
-        <span><em>TBM</em> token manager</span>
-        <span><em>~120 MB</em> binary</span>
-        <span><em>MIT</em> license</span>
-        <span><em>0 forced</em> cost</span>
-        <span><em>30</em> built-in tools</span>
-        <span><em>62</em> slash commands</span>
-        <span><em>BYOK</em> multi-provider</span>
-        <span><em>mnemopi</em> local memory</span>
-        <span><em>MCP</em> integration</span>
-        <span><em>Telegram</em> bot</span>
-        <span><em>subagents</em> + async tasks</span>
-        <span><em>cron</em> scheduler</span>
-        <span><em>TBM</em> token manager</span>
-        <span><em>~120 MB</em> binary</span>
-        <span><em>MIT</em> license</span>
-        <span><em>0 forced</em> cost</span>
+    <!-- ============ CAPABILITY MARQUEE (one per page) ============ -->
+    <div class="overflow-hidden border-y border-[var(--color-line)] bg-[var(--color-ink-2)] py-5" aria-hidden="true">
+      <div class="marquee-track flex w-max items-center gap-10">
+        {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item) => (
+          <span class="flex items-center gap-3 whitespace-nowrap text-[13.5px] font-medium text-[var(--color-fg-3)]">
+            <span class="text-[var(--color-accent)]">{"//"}</span>
+            {item}
+          </span>
+        ))}
       </div>
     </div>
 
-    <!-- ================= FEATURES ================= -->
-    <section class="section" id="features">
-      <div class="container">
-        <div class="section-head">
-          <p class="section-eyebrow">// features</p>
-          <h2 class="section-title">One terminal agent, the whole stack</h2>
-          <p class="section-sub">
-            Status labels mirror the project's audit: <span class="green">VERIFIED</span> means a
-            real integration path was demonstrated, <span class="amber">PARTIAL</span> means
-            implemented and partly tested.
+    <!-- ============ FEATURES (bento) ============ -->
+    <section id="features" class="container-site section-pad">
+      <Reveal client:load>
+        <div class="max-w-[640px]">
+          <h2 class="text-[30px] font-extrabold tracking-tight text-[var(--color-fg)] md:text-[38px]">
+            One terminal agent, the whole stack
+          </h2>
+          <p class="mt-4 text-[16px] leading-relaxed text-[var(--color-fg-2)]">
+            Status labels mirror the project audit: VERIFIED means a real integration path was
+            demonstrated, PARTIAL means implemented and partly tested.
           </p>
         </div>
-        <div class="fgrid">
-          {
-            FEATURES.map((f) => (
-              <a class="fcard" href={f.href ?? "/docs/architecture/"} style="display:block">
-                <div class:list={["fcard-icon", f.tone]}>{f.icon}</div>
-                <h3>
-                  {f.title} <span class:list={["mono", statusTone[f.status]]} style="font-size:11px;letter-spacing:.08em;margin-left:6px">[{f.status}]</span>
-                </h3>
-                <p>{f.desc}</p>
-              </a>
-            ))
-          }
-        </div>
+      </Reveal>
+      <div class="mt-12">
+        <BentoGrid cells={bentoCells} client:load />
       </div>
     </section>
 
-    <!-- ================= SCREENSHOTS ================= -->
-    <section class="section" id="screenshots" style="padding-top:0">
-      <div class="container">
-        <div class="section-head">
-          <p class="section-eyebrow">// screenshots</p>
-          <h2 class="section-title">See it running</h2>
-          <p class="section-sub">Captured from the current build — TUI, setup wizard, tools, memory, MCP, and the Telegram bridge.</p>
-        </div>
-        <div class="gallery">
-          <figure class="shot">
-            <img src="/screenshots/main-tui.png" alt="Main TUI showing the chat interface" loading="lazy" />
-            <figcaption><span>Main TUI</span><span class="mono">snsagent</span></figcaption>
-          </figure>
-          <figure class="shot">
-            <img src="/screenshots/setup-wizard.png" alt="First-run setup wizard" loading="lazy" />
-            <figcaption><span>Setup wizard</span><span class="mono">first run</span></figcaption>
-          </figure>
-          <figure class="shot">
-            <img src="/screenshots/tools.png" alt="Built-in tools list" loading="lazy" />
-            <figcaption><span>30 built-in tools</span><span class="mono">/tools</span></figcaption>
-          </figure>
-          <figure class="shot">
-            <img src="/screenshots/memory-stats.png" alt="Memory backend stats" loading="lazy" />
-            <figcaption><span>Memory stats</span><span class="mono">/memory stats</span></figcaption>
-          </figure>
-          <figure class="shot">
-            <img src="/screenshots/mcp.png" alt="MCP server configuration" loading="lazy" />
-            <figcaption><span>MCP servers</span><span class="mono">/mcp</span></figcaption>
-          </figure>
-          <figure class="shot">
-            <img src="/screenshots/telegram.png" alt="Telegram bridge chat" loading="lazy" />
-            <figcaption><span>Telegram bridge</span><span class="mono">bot</span></figcaption>
-          </figure>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= DOCS ================= -->
-    <section class="section" id="docs" style="padding-top:0">
-      <div class="container">
-        <div class="section-head">
-          <p class="section-eyebrow">// documentation</p>
-          <h2 class="section-title">Start reading</h2>
-          <p class="section-sub">24 guides covering installation, configuration, every subsystem, and the security model.</p>
-        </div>
-        <div class="docs-links">
-          {
-            docsQuick.map((d) => (
-              <a class="doc-link" href={d.href}>
-                <span class="arrow">→</span>
-                <span>{d.label}<span class="desc"> — {d.desc}</span></span>
-              </a>
-            ))
-          }
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= CTA ================= -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="cta-box">
-          <h2>Your key. Your agent. Your machine.</h2>
-          <p>
-            One ~120 MB binary, zero forced subscription, safe defaults. Install it, talk to it,
-            and let it configure itself.
-          </p>
-          <div class="hero-actions" style="justify-content:center;margin-bottom:0">
-            <a class="btn btn-primary" href="/docs/installation/">Install snsagent →</a>
-            <a class="btn btn-ghost" href="https://github.com/Reihantt6/sns-myagent">GitHub</a>
+    <!-- ============ SCREENSHOTS ============ -->
+    <section id="screenshots" class="section-pad bg-[var(--color-ink-2)]">
+      <div class="container-site">
+        <Reveal client:load>
+          <div class="max-w-[640px]">
+            <h2 class="text-[30px] font-extrabold tracking-tight text-[var(--color-fg)] md:text-[38px]">
+              See it running
+            </h2>
+            <p class="mt-4 text-[16px] leading-relaxed text-[var(--color-fg-2)]">
+              Captured from the current build. The TUI, setup wizard, MCP surface, Telegram
+              bridge, TBM dashboard, and goal mode.
+            </p>
           </div>
+        </Reveal>
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {galleryShots.map((shot, i) => (
+            <Reveal delay={(i % 3) * 0.08} client:load>
+              <figure class="group overflow-hidden rounded-[16px] border border-[var(--color-line)] bg-[var(--color-surface)] transition-colors duration-200 hover:border-[var(--color-accent-border)]">
+                <div class="overflow-hidden">
+                  <img
+                    src={`/screenshots/${shot.file}`}
+                    alt={shot.caption}
+                    loading="lazy"
+                    class="w-full transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                  />
+                </div>
+                <figcaption class="flex items-center justify-between px-5 py-3.5">
+                  <span class="text-[13px] font-medium text-[var(--color-fg-2)]">{shot.caption}</span>
+                  <span class="font-mono text-[12px] text-[var(--color-fg-3)]">{shot.cmd}</span>
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
         </div>
+      </div>
+    </section>
+
+    <!-- ============ DOCS ============ -->
+    <section id="docs" class="container-site section-pad">
+      <div class="grid gap-12 lg:grid-cols-[1fr_1.6fr] lg:gap-16">
+        <Reveal client:load>
+          <div class="lg:sticky lg:top-24">
+            <h2 class="text-[30px] font-extrabold tracking-tight text-[var(--color-fg)] md:text-[38px]">
+              Start reading
+            </h2>
+            <p class="mt-4 max-w-[42ch] text-[16px] leading-relaxed text-[var(--color-fg-2)]">
+              24 guides covering installation, configuration, every subsystem, and the security
+              model. The docs in this repo are the single source of truth.
+            </p>
+            <a href="/docs/" class="btn btn-ghost mt-8">
+              Browse all docs
+              <ArrowRightIcon size={18} />
+            </a>
+          </div>
+        </Reveal>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {docsQuick.map((doc, i) => (
+            <Reveal delay={(i % 2) * 0.06} y={16} client:load>
+              <a
+                href={doc.href}
+                class="group flex min-h-[76px] items-center justify-between gap-4 rounded-[10px] border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4 transition-colors duration-200 hover:border-[var(--color-accent-border)]"
+              >
+                <span>
+                  <span class="block text-[14.5px] font-semibold text-[var(--color-fg)] transition-colors group-hover:text-[var(--color-accent)]">
+                    {doc.label}
+                  </span>
+                  <span class="mt-0.5 block text-[13px] text-[var(--color-fg-3)]">{doc.desc}</span>
+                </span>
+                <ArrowRightIcon
+                  size={16}
+                  className="shrink-0 text-[var(--color-fg-3)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)]"
+                />
+              </a>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="section-pad bg-[var(--color-ink-2)]">
+      <div class="container-site">
+        <Reveal client:load>
+          <div class="relative overflow-hidden rounded-[24px] border border-[var(--color-line)] bg-[var(--color-surface)] px-8 py-16 text-center md:px-16 md:py-24">
+            <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent-border)] to-transparent" />
+            <h2 class="mx-auto max-w-[24ch] text-[30px] font-extrabold leading-tight tracking-tight text-[var(--color-fg)] md:text-[42px]">
+              Your key. Your agent. Your machine.
+            </h2>
+            <p class="mx-auto mt-5 max-w-[52ch] text-[16px] leading-relaxed text-[var(--color-fg-2)]">
+              One ~120 MB binary, zero forced subscription, safe defaults. Install it, talk to
+              it, and let it configure itself.
+            </p>
+            <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <a href="/docs/installation/" class="btn btn-primary">
+                Install snsagent
+                <ArrowRightIcon size={18} weight="bold" />
+              </a>
+              <a href="https://github.com/Reihantt6/sns-myagent" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+                View on GitHub
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   </main>
 
   <Footer />
-
-  <script>
-    const btn = document.querySelector<HTMLButtonElement>("#copy-install");
-    const feedback = document.querySelector<HTMLSpanElement>("#copy-feedback");
-    btn?.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText("npm install -g @sns-myagent/cli");
-        if (feedback) {
-          feedback.textContent = "copied ✓";
-          setTimeout(() => (feedback.textContent = ""), 1800);
-        }
-      } catch {
-        if (feedback) feedback.textContent = "copy failed";
-      }
-    });
-  </script>
 </Base>
+
+<style>
+  .marquee-track {
+    animation: marquee 36s linear infinite;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-33.333%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+</style>

@@ -1,56 +1,39 @@
-# Syarat dan Ketentuan
+# Terms and Conditions
 
-Terakhir diperbarui: 18 Agustus 2025
+Last updated: August 18, 2025
 
-Dengan menginstal dan menggunakan SNS-MyAgent ("snsagent", "Aplikasi"), Anda menyetujui
-ketentuan berikut. Jika Anda tidak menyetujui, jangan gunakan Aplikasi ini.
+By installing and using SNS-MyAgent ("snsagent", the "Application"), you agree to the following terms. If you do not agree, do not use this Application.
 
-## 1. Lisensi
+## 1. License
 
-SNS-MyAgent dirilis di bawah lisensi MIT. Kode sumber tersedia di
-[GitHub](https://github.com/Reihantt6/sns-myagent). Anda bebas menggunakan, memodifikasi,
-dan mendistribusikan ulang sesuai ketentuan lisensi MIT.
+SNS-MyAgent is released under the MIT license. The source code is available on [GitHub](https://github.com/Reihantt6/sns-myagent). You are free to use, modify, and redistribute it under the terms of the MIT license.
 
-## 2. Sifat Aplikasi
+## 2. Nature of the Application
 
-SNS-MyAgent adalah agen CLI (Command Line Interface) yang berjalan di terminal Anda.
-Aplikasi menjalankan kode (bash, eval, SSH, browser, MCP tools) atas nama Anda berdasarkan
-perintah yang Anda berikan. Anda bertanggung jawab penuh atas semua perintah yang
-dijalankan dan hasil yang ditimbulkan.
+SNS-MyAgent is a CLI (Command Line Interface) agent that runs in your terminal. The Application executes code (bash, eval, SSH, browser, MCP tools) on your behalf based on the commands you provide. You are fully responsible for every command executed and its results.
 
 ## 3. Bring Your Own Key (BYOK)
 
-Aplikasi tidak menyediakan akses ke model AI. Anda wajib menyediakan kunci API (API key)
-milik sendiri dari penyedia layanan pilihan Anda (OpenAI, Anthropic, Ollama, atau kustom).
-Biaya penggunaan API sepenuhnya ditanggung oleh Anda. Aplikasi tidak bertanggung jawab
-atas biaya yang timbul dari penggunaan kunci API Anda.
+The Application does not provide access to AI models. You must supply your own API key from the provider of your choice (OpenAI, Anthropic, Ollama, or custom). API usage costs are entirely your responsibility. The Application is not liable for costs arising from use of your API key.
 
-## 4. Privasi dan Data
+## 4. Privacy and Data
 
-- Konfigurasi dan data sesi disimpan lokal di `~/.omp/agent/` di perangkat Anda
-- Aplikasi tidak mengirim data Anda ke server pihak ketiga selain penyedia LLM yang Anda
-  pilih sendiri
-- Token dan kunci API disimpan di perangkat lokal. Jangan bagikan file konfigurasi Anda
+- Configuration and session data are stored locally under `~/.omp/agent/` on your device
+- The Application does not send your data to third-party servers other than the LLM provider you select yourself
+- Tokens and API keys are stored on the local device. Do not share your configuration files
 
-## 5. Keamanan
+## 5. Security
 
-Aplikasi menjalankan kode atas nama Anda. Baca
-[dokumen model keamanan](./security-model.md) untuk memahami batasan otorisasi dan
-perilaku persetujuan tool. Aktifkan `autoApprove` hanya jika Anda memahami risikonya.
+The Application runs code on your behalf. Read the [security model](./security-model.md) to understand authorization boundaries and tool approval behavior. Enable `autoApprove` only if you understand the risk.
 
-## 6. Penafian
+## 6. Disclaimer
 
-Aplikasi disediakan "APA ADANYA" tanpa jaminan apa pun. Tidak ada jaminan bahwa Aplikasi
-akan berfungsi tanpa kesalahan atau memenuhi kebutuhan spesifik Anda. Pengembang
-SNS-MyAgent tidak bertanggung jawab atas kerugian yang timbul dari penggunaan Aplikasi.
+The Application is provided "AS IS" without warranty of any kind. There is no guarantee that the Application will function without errors or meet your specific needs. The SNS-MyAgent developers are not liable for losses arising from use of the Application.
 
-## 7. Kontribusi
+## 7. Contributions
 
-Kontribusi melalui pull request di GitHub diterima. Dengan berkontribusi, Anda
-menyetujui bahwa kontribusi Anda dirilis di bawah lisensi MIT yang sama.
+Contributions via pull request on GitHub are welcome. By contributing, you agree that your contribution is released under the same MIT license.
 
-## 8. Perubahan Ketentuan
+## 8. Changes to these Terms
 
-Ketentuan ini dapat berubah sewaktu-waktu. Perubahan akan dipublikasikan di halaman ini.
-Penggunaan Aplikasi setelah perubahan dianggap sebagai persetujuan terhadap ketentuan
-yang diperbarui.
+These terms may change at any time. Changes will be published on this page. Continued use of the Application after changes constitutes acceptance of the updated terms.

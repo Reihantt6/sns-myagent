@@ -1,6 +1,6 @@
 # Configuration Reference
 
-snsagent has three configuration surfaces in this repository:
+snsagent has three configuration surfaces:
 
 1. The interactive agent uses `~/.omp/agent/config.yml` and `~/.omp/agent/models.yml`.
 2. Existing installs may also have `~/.omp/agent/config.json` with compatibility provider and model values.
@@ -19,7 +19,7 @@ The agent directory is normally `~/.omp/agent`. It can be relocated by the upstr
 | `~/.omp/agent/models.yml` | Provider and model definitions |
 | `~/.omp/agent/agent.db` | SQLite state and migrated settings, managed by the application |
 
-Do not edit `agent.db` while the agent is running.
+> **Warning**: do not edit `agent.db` while the agent is running. Stop snsagent first, then edit or back up the file.
 
 ## Provider and model setup
 
@@ -55,7 +55,9 @@ Supported API types include:
 | `google-generative-ai` | Google Gemini |
 | `azure-openai-responses` | Azure OpenAI |
 
-The models loader expects a concrete local API key value when the provider requires one. Keep this file private, or use the credential mechanism supported by your provider setup. Do not commit API keys.
+The models loader expects a concrete local API key value when the provider requires one. Keep this file private, or use the credential mechanism supported by your provider setup.
+
+> **Pitfall**: never commit API keys to git. Prefer environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, ...) or a git-ignored local config file over pasting a real key into `models.yml` in a shared repo.
 
 ## Model roles
 
@@ -88,7 +90,7 @@ compaction:
 
 Supported memory backend IDs are `mnemopi`, `hindsight`, `mnemosyne`, `mem0`, `lcm`, `local`, and `off`. The mnemopi database normally lives below the agent directory, under `memories/mnemopi/` or a scoped bank path.
 
-Use `/settings` for interactive settings changes. Use the top-level `snsagent config ...` command when working with the legacy `.sns-myagent/config.json` router. These are separate configuration surfaces.
+> **Tip**: use `/settings` for interactive settings changes. Use the top-level `snsagent config ...` command only when working with the legacy `.sns-myagent/config.json` router. These are separate configuration surfaces, so a change in one does not apply to the other.
 
 ## Legacy project configuration
 

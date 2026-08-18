@@ -1,0 +1,397 @@
+---
+import "../styles/docs.css";
+import Nav from "./Nav.astro";
+import Footer from "./Footer.astro";
+import { DOCS_GROUPS } from "../data/docs-nav";
+
+interface Props {
+  currentSlug: string;
+  lang: "en" | "id";
+  prev: string | null;
+  next: string | null;
+  displayNames: Record<string, string>;
+}
+
+const { currentSlug, lang, prev, next, displayNames } = Astro.props;
+
+const isId = lang === "id";
+const enUrl = `/docs/${currentSlug}/`;
+const idUrl = `/docs/id/${currentSlug}/`;
+const groupLabel = (g: (typeof DOCS_GROUPS)[number]) => (isId ? g.labelId : g.label);
+
+const ui = {
+  en: {
+    docs: "Docs",
+    contents: "Contents",
+    onThisPage: "On this page",
+    previous: "Previous",
+    next: "Next",
+    language: "Language",
+    bahasa: "Bahasa Indonesia",
+    english: "English",
+  },
+  id: {
+    docs: "Dokumen",
+    contents: "Daftar Isi",
+    onThisPage: "Di Halaman Ini",
+    previous: "Sebelumnya",
+    next: "Berikutnya",
+    language: "Bahasa",
+    bahasa: "Bahasa Indonesia",
+    english: "English",
+  },
+}[lang];
+---
+
+<Nav active="docs" />
+
+<div class="docs-shell">
+  <div class="container-site docs-layout">
+    <!-- Mobile sidebar toggle -->
+    <button
+      id="docs-sidebar-toggle"
+      type="button"
+      class="docs-sidebar-toggle"
+      aria-expanded="false"
+      aria-controls="docs-sidebar"
+    >
+      <span class="docs-toggle-icon" aria-hidden="true"></span>
+      {ui.contents}
+    </button>
+
+    <aside id="docs-sidebar" class="docs-sidebar">
+      <!-- Language toggle -->
+      <div class="docs-lang-toggle" role="group" aria-label={ui.language}>
+        <a
+          href={enUrl}
+          class:list={["docs-lang-btn", { active: !isId }]}
+          aria-pressed={!isId}
+        >
+          EN
+        </a>
+        <a
+          href={idUrl}
+          class:list={["docs-lang-btn", { active: isId }]}
+          aria-pressed={isId}
+        >
+          ID
+        </a>
+      </div>
+
+      <nav aria-label={ui.docs}>
+        {
+          DOCS_GROUPS.map((group) => (
+            <div class="docs-group">
+              <h3>{groupLabel(group)}</h3>
+              <ul>
+                {group.slugs.map((slug) => (
+                  <li>
+                    <a
+                      href={isId ? `/docs/id/${slug}/` : `/docs/${slug}/`}
+                      class:list={[{ active: slug === currentSlug }]}
+                    >
+                      {displayNames[slug] ?? slug.replace(/-/g, " ")}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <main class="docs-main">
+      <nav class="docs-breadcrumb" aria-label="Breadcrumb">
+        <a href={isId ? "/docs/id/" : "/docs/"}>{ui.docs}</a>
+        <span aria-hidden="true">/</span>
+        <span class="docs-breadcrumb-current">{displayNames[currentSlug] ?? currentSlug.replace(/-/g, " ")}</span>
+      </nav>
+
+      <article class="docs-article">
+        <slot />
+      </article>
+
+      {(prev || next) && (
+        <nav class="docs-pager" aria-label="Page navigation">
+          {prev ? (
+            <a href={isId ? `/docs/id/${prev}/` : `/docs/${prev}/`} class="pager-link pager-prev">
+              <span class="pager-label">{ui.previous}</span>
+              <span class="pager-title">{displayNames[prev] ?? prev.replace(/-/g, " ")}</span>
+            </a>
+          ) : (
+            <span class="pager-link pager-prev is-empty" aria-hidden="true"></span>
+          )}
+          {next ? (
+            <a href={isId ? `/docs/id/${next}/` : `/docs/${next}/`} class="pager-link pager-next">
+              <span class="pager-label">{ui.next}</span>
+              <span class="pager-title">{displayNames[next] ?? next.replace(/-/g, " ")}</span>
+            </a>
+          ) : (
+            <span class="pager-link pager-next is-empty" aria-hidden="true"></span>
+          )}
+        </nav>
+      )}
+    </main>
+  </div>
+</div>
+
+<Footer />
+
+<script>
+  // Mobile sidebar collapsible
+  const toggle = document.querySelector<HTMLButtonElement>("#docs-sidebar-toggle");
+  const sidebar = document.querySelector<HTMLElement>("#docs-sidebar");
+  toggle?.addEventListener("click", () => {
+    const open = sidebar?.classList.toggle("open") ?? false;
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+  // Close sidebar when a link is chosen (mobile)
+  sidebar?.querySelectorAll("a").forEach((a) =>
+    a.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      toggle?.setAttribute("aria-expanded", "false");
+    }),
+  );
+</script>
+
+<style>
+  .docs-shell {
+    min-height: calc(100vh - 64px);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .docs-layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 48px;
+    padding-top: 40px;
+    padding-bottom: 88px;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .docs-sidebar {
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .docs-group {
+    margin-bottom: 26px;
+  }
+  .docs-group h3 {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-fg-3);
+    margin: 0 0 10px;
+    padding: 0 12px;
+  }
+  .docs-group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .docs-group a {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--color-fg-2);
+    border-left: 2px solid transparent;
+    transition: background 0.15s, color 0.15s;
+  }
+  .docs-group a:hover {
+    color: var(--color-fg);
+    background: var(--color-surface);
+  }
+  .docs-group a.active {
+    color: var(--color-accent);
+    background: var(--color-accent-muted);
+    border-left-color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* Language toggle */
+  .docs-lang-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    padding: 4px;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-surface);
+  }
+  .docs-lang-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-fg-2);
+    transition: background 0.15s, color 0.15s;
+  }
+  .docs-lang-btn:hover {
+    color: var(--color-fg);
+  }
+  .docs-lang-btn.active {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  /* ---------- Main ---------- */
+  .docs-main {
+    min-width: 0;
+    max-width: 860px;
+  }
+  .docs-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .docs-breadcrumb a {
+    color: var(--color-fg-3);
+    transition: color 0.15s;
+  }
+  .docs-breadcrumb a:hover {
+    color: var(--color-accent);
+  }
+  .docs-breadcrumb span[aria-hidden] {
+    color: var(--color-fg-3);
+  }
+  .docs-breadcrumb-current {
+    color: var(--color-fg-2);
+    font-weight: 600;
+  }
+
+  /* ---------- Pager ---------- */
+  .docs-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-line);
+  }
+  .pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    max-width: 46%;
+    padding: 14px 18px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pager-link:hover {
+    border-color: var(--color-accent-border);
+    background: var(--color-surface-2);
+  }
+  .pager-prev {
+    margin-right: auto;
+  }
+  .pager-next {
+    margin-left: auto;
+    text-align: right;
+  }
+  .pager-link.is-empty {
+    visibility: hidden;
+  }
+  .pager-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-3);
+  }
+  .pager-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-fg);
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------- Mobile ---------- */
+  .docs-sidebar-toggle {
+    display: none;
+  }
+  @media (max-width: 900px) {
+    .docs-layout {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding-top: 16px;
+      padding-bottom: 64px;
+    }
+    .docs-sidebar {
+      display: none;
+      position: static;
+      max-height: none;
+      border: 1px solid var(--color-line);
+      border-radius: 12px;
+      background: var(--color-surface);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .docs-sidebar.open {
+      display: block;
+    }
+    .docs-sidebar-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 0 16px;
+      border: 1px solid var(--color-line);
+      border-radius: 10px;
+      background: var(--color-surface);
+      color: var(--color-fg);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .docs-sidebar-toggle:hover {
+      border-color: var(--color-accent-border);
+    }
+    .docs-toggle-icon {
+      width: 16px;
+      height: 16px;
+      position: relative;
+    }
+    .docs-toggle-icon::before,
+    .docs-toggle-icon::after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      width: 12px;
+      height: 2px;
+      background: var(--color-accent);
+      border-radius: 1px;
+    }
+    .docs-toggle-icon::before {
+      top: 5px;
+    }
+    .docs-toggle-icon::after {
+      top: 9px;
+    }
+  }
+</style>

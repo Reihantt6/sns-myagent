@@ -2,25 +2,16 @@
 
 ## Purpose
 
-Extend the agent without touching core code: install plugins from
-marketplaces, add custom slash commands, custom tools, hooks, and drop markdown
-skills the agent can load on demand.
+Extend the agent without touching core code: install plugins from marketplaces, add custom slash commands, custom tools, hooks, and drop markdown skills the agent can load on demand.
 
 ## How it works
 
 - `src/extensibility/` is the umbrella:
-  - `plugins/` — plugin lifecycle: `manager.ts`, `loader.ts`, `installer.ts`,
-    `parser.ts`, `git-url.ts`, `doctor.ts`, `marketplace/` (sources +
-    marketplace-auto-update), and legacy pi compat.
-  - `custom-commands/`, `custom-tools/`, `extensions/`, `hooks/` — user
-    additions registered with the session.
-  - `skills.ts` — loads markdown skills from configured directories; skills
-    live under `~/.omp/agent/` (user) and `.omp/` (project) trees and are
-    scanned with `scanSkillsFromDir`.
-  - `slash-commands.ts`, `tool-proxy.ts` — wiring for the above into the
-    registry and tool loop.
-- `/plugins` `[list|enable|disable]` manages installed plugins;
-  `/marketplace` manages marketplace sources and installs.
+  - `plugins/` - plugin lifecycle: `manager.ts`, `loader.ts`, `installer.ts`, `parser.ts`, `git-url.ts`, `doctor.ts`, `marketplace/` (sources + marketplace-auto-update), and legacy pi compat.
+  - `custom-commands/`, `custom-tools/`, `extensions/`, `hooks/` - user additions registered with the session.
+  - `skills.ts` - loads markdown skills from configured directories; skills live under `~/.omp/agent/` (user) and `.omp/` (project) trees and are scanned with `scanSkillsFromDir`.
+  - `slash-commands.ts`, `tool-proxy.ts` - wiring for the above into the registry and tool loop.
+- `/plugins` `[list|enable|disable]` manages installed plugins; `/marketplace` manages marketplace sources and installs.
 
 ## Configuration
 
@@ -36,8 +27,7 @@ marketplace:
   autoUpdate: ...              # plugin marketplace auto-update
 ```
 
-Skill discovery mirrors the capability system used by MCP and agents:
-`scanSkillsFromDir` + `compareSkillOrder` in `src/discovery/helpers.ts`.
+Skill discovery mirrors the capability system used by MCP and agents: `scanSkillsFromDir` + `compareSkillOrder` in `src/discovery/helpers.ts`.
 
 ## Real example
 
@@ -49,20 +39,11 @@ Skill discovery mirrors the capability system used by MCP and agents:
 
 ## Failure behavior
 
-- A broken plugin package surfaces errors from `doctor.ts`/`loader.ts` instead
-  of corrupting the session.
-- Marketplace auto-update failures leave the currently installed version in
-  place.
+- A broken plugin package surfaces errors from `doctor.ts`/`loader.ts` instead of corrupting the session.
+- Marketplace auto-update failures leave the currently installed version in place.
 
 ## Limitations
 
-- Plugin/skill ecosystem is opinionated about directory layout; skills in the
-  wrong tree simply aren't discovered.
-- Marketplace features are implemented but have **no committed test**;
-  behavior is not deep-audited.
+- Plugin/skill ecosystem is opinionated about directory layout; skills in the wrong tree simply aren't discovered.
+- Marketplace features are implemented but have no committed test.
 
-## Testing status
-
-**UNTESTED** — implemented (`src/extensibility/`), no committed test file for
-plugins or skills loading. Evidence: `src/extensibility/*` + registry
-`/plugins`, `/marketplace` entries.

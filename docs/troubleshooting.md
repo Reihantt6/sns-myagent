@@ -15,17 +15,16 @@ snsagent 0.3.9
 
 ## Compiled binary shows a blank TUI / "JS-only mode"
 
-The compiled binary (`./bin/snsagent-linux-x64`, and the npm-installed binary)
-prints:
+The compiled binary (`./bin/snsagent-linux-x64`, and the npm-installed binary) prints:
 
 ```text
 [pi-natives] JS-only mode: native addon unavailable for linux-x64 (modern)
 [pi-natives] Native features (grep, pty, shell, clipboard, syntax highlighting, etc.) are disabled.
 ```
 
-and the interactive TUI does not render. This is the patched `pi-natives`
-fallback (see `patches/pi-natives-js-only-fallback.patch`): the compiled bundle
-does not embed the native `.node` addon, so native terminal features are off.
+and the interactive TUI does not render. The compiled bundle does not embed the native `.node` addon, so native terminal features are off.
+
+> **Note**: this is a known limitation of the compiled binary, not a crash. The npm-installed binary behaves the same way because the bundle does not embed the native addon.
 
 Workaround: run from source with Bun, which loads the native addon normally:
 
@@ -33,8 +32,6 @@ Workaround: run from source with Bun, which loads the native addon normally:
 bun install
 bun run src/cli/entry.ts
 ```
-
-This is a recorded limitation, not a crash.
 
 ## `command not found: snsagent`
 
@@ -51,7 +48,7 @@ Install it with:
 npm install -g @sns-myagent/cli
 ```
 
-If you used the shell installer, reload the shell so `~/.local/bin` is on PATH.
+> **Tip**: if you used the shell installer, reload the shell (or run `export PATH="$HOME/.local/bin:$PATH"`) so `~/.local/bin` is on PATH.
 
 ## Provider or model errors
 
@@ -87,7 +84,7 @@ export PATH="$HOME/.bun/bin:$PATH"
 
 ## Memory database is locked
 
-Stop snsagent before copying or repairing SQLite state. Do not delete journal files while another process is running. Check for active processes first:
+> **Warning**: stop snsagent before copying or repairing SQLite state, and do not delete journal files while another process is running. Check for active processes first:
 
 ```bash
 pgrep -af snsagent

@@ -2,35 +2,54 @@
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.astro";
 import Footer from "../../components/Footer.astro";
-import { DOCS_GROUPS } from "../../data/docs-nav.ts";
+import { DOCS_GROUPS } from "../../data/docs-nav";
 import { getCollection } from "astro:content";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 
 const docs = await getCollection("docs");
-const titles = new Map(docs.map((d) => [d.id.replace(/\.md$/, ""), d.data.title]));
+const enDocs = docs.filter((d) => d.id.startsWith("en/"));
+const titles = new Map(enDocs.map((d) => [d.id.replace(/^en\//, "").replace(/\.md$/, ""), d.data.title]));
+const displayName = (slug: string) => titles.get(slug) ?? slug.replace(/-/g, " ");
 ---
 
 <Base title="Documentation" description="SNS-MyAgent documentation and guides" canonical="/docs/">
   <Nav active="docs" />
-  <main class="container docs-index">
-    <header class="docs-index-header">
-      <p class="eyebrow">Documentation</p>
-      <h1>SNS-MyAgent docs</h1>
-      <p class="lede">
-        Setup guides, feature references, and operational docs for SNS-MyAgent —
-        a private, self-hosted AI agent that runs entirely on your own machine.
+  <main class="container-site pb-28 pt-16 md:pt-24">
+    <header class="max-w-[640px]">
+      <p class="eyebrow mb-4">Documentation</p>
+      <h1 class="text-[34px] font-extrabold tracking-tight text-[var(--color-fg)] md:text-[44px]">
+        Everything you need to run it
+      </h1>
+      <p class="mt-5 text-[16.5px] leading-relaxed text-[var(--color-fg-2)]">
+        Setup guides, feature references, and operational docs for SNS-MyAgent: a private,
+        self-hosted AI agent that runs entirely on your own machine.
       </p>
+      <a href="/docs/id/" class="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-[10px] text-[14px] font-semibold text-[var(--color-accent)]">
+        Baca dalam Bahasa Indonesia
+        <ArrowRightIcon size={16} />
+      </a>
     </header>
 
-    <div class="docs-index-grid">
+    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {DOCS_GROUPS.map((group) => (
-        <section class="docs-index-group">
-          <h2>{group.label}</h2>
-          <ul>
+        <section class="rounded-[16px] border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+          <h2 class="text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--color-fg-3)]">
+            {group.label}
+          </h2>
+          <ul class="mt-4 divide-y divide-[var(--color-line)]">
             {group.slugs.map((slug) => (
               <li>
-                <a href={`/docs/${slug}/`}>
-                  <span class="doc-title">{titles.get(slug) ?? slug.replace(/-/g, " ")}</span>
-                  <span class="doc-arrow">→</span>
+                <a
+                  href={`/docs/${slug}/`}
+                  class="group flex min-h-[44px] items-center justify-between gap-3 py-2.5"
+                >
+                  <span class="text-[14.5px] font-medium text-[var(--color-fg-2)] transition-colors group-hover:text-[var(--color-accent)]">
+                    {displayName(slug)}
+                  </span>
+                  <ArrowRightIcon
+                    size={15}
+                    className="shrink-0 text-[var(--color-fg-3)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)]"
+                  />
                 </a>
               </li>
             ))}
@@ -41,86 +60,3 @@ const titles = new Map(docs.map((d) => [d.id.replace(/\.md$/, ""), d.data.title]
   </main>
   <Footer />
 </Base>
-
-<style>
-  .docs-index {
-    padding: 64px 24px 96px;
-    max-width: 960px;
-  }
-  .docs-index-header {
-    margin-bottom: 56px;
-  }
-  .eyebrow {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--green);
-    margin: 0 0 12px;
-  }
-  .docs-index-header h1 {
-    font-size: 40px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin: 0 0 16px;
-  }
-  .lede {
-    font-size: 17px;
-    color: var(--text-2);
-    max-width: 560px;
-    line-height: 1.6;
-    margin: 0;
-  }
-  .docs-index-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-  }
-  .docs-index-group {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    background: rgba(255, 255, 255, 0.02);
-  }
-  .docs-index-group h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-3);
-    margin: 0 0 16px;
-  }
-  .docs-index-group ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .docs-index-group li {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  .docs-index-group li:last-child {
-    border-bottom: none;
-  }
-  .docs-index-group a {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 0;
-    text-decoration: none;
-    color: var(--text-1);
-    font-size: 15px;
-    font-weight: 500;
-    transition: color 0.15s;
-  }
-  .docs-index-group a:hover {
-    color: var(--green);
-  }
-  .doc-arrow {
-    color: var(--text-3);
-    font-size: 14px;
-    transition: transform 0.15s, color 0.15s;
-  }
-  .docs-index-group a:hover .doc-arrow {
-    color: var(--green);
-    transform: translateX(3px);
-  }
-</style>

@@ -1,4 +1,6 @@
 ---
+import "../styles/app.css";
+
 interface Props {
   title: string;
   description?: string;
@@ -6,11 +8,12 @@ interface Props {
 }
 const { title, description, canonical } = Astro.props;
 const siteTitle = "SNS-MyAgent";
-const pageTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
+const pageTitle = title === siteTitle ? siteTitle : `${title} · ${siteTitle}`;
 const defaultDescription =
-  "SNS-MyAgent — BYOK coding agent CLI. Configure it by talking to it. Multi-provider LLM, memory, MCP, subagents, Telegram.";
+  "SNS-MyAgent: BYOK coding agent CLI. Configure it by talking to it. Multi-provider LLM, memory, MCP, subagents, Telegram.";
 const canonicalUrl = canonical ? new URL(canonical, Astro.site).toString() : Astro.site!.toString();
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -25,26 +28,35 @@ const canonicalUrl = canonical ? new URL(canonical, Astro.site).toString() : Ast
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description ?? defaultDescription} />
     <meta property="og:url" content={canonicalUrl} />
-    <meta name="theme-color" content="#07090d" />
+    <meta name="theme-color" content="#fafafa" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/styles/global.css" />
+    <!-- Set theme before first paint to avoid FOUC -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("sns-theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "dark" ? "#09090b" : "#fafafa");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
   </head>
   <body>
     <slot />
-    <script>
-      // Mobile nav toggle
-      const toggle = document.querySelector<HTMLButtonElement>("#nav-toggle");
-      const menu = document.querySelector<HTMLElement>("#nav-menu");
-      toggle?.addEventListener("click", () => {
-        menu?.classList.toggle("open");
-        toggle.setAttribute("aria-expanded", String(menu?.classList.contains("open") ?? false));
-      });
-    </script>
   </body>
 </html>

@@ -1,0 +1,12 @@
+export {};
+import { discoverAuthStorage } from "../src/sdk.js";
+import { ModelRegistry } from "../src/config/model-registry.js";
+import { resolveModelOverride } from "../src/config/model-resolver.js";
+const authStorage = await discoverAuthStorage();
+const r = new ModelRegistry(authStorage);
+const res: any = resolveModelOverride(["nine-router/combo1"], r);
+const m = res?.model;
+console.log("resolved:", m ? { id: m.id, provider: m.provider, baseUrl: m.baseUrl } : "NULL");
+const avail = r.getAvailable().filter((x: any) => String(x.provider).includes("nine"));
+console.log("available nine:", avail.map((x: any) => x.id));
+process.exit(0);
