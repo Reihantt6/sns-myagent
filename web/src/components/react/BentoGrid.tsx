@@ -60,7 +60,7 @@ export function BentoGrid({ cells }: BentoGridProps) {
   const reduce = useReducedMotion();
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
       {cells.map((cell, i) => {
         const Icon = ICONS[cell.icon];
         return (
@@ -72,8 +72,8 @@ export function BentoGrid({ cells }: BentoGridProps) {
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.55, delay: (i % 4) * 0.08, ease: [0.16, 1, 0.3, 1] }}
             whileHover={reduce ? undefined : { scale: 1.02, y: -3 }}
-            className={`group relative flex flex-col overflow-hidden rounded-[16px] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 transition-colors duration-200 hover:border-[var(--color-accent-border)] md:col-span-6 ${
-              cell.featured ? "md:col-span-7" : ""
+            className={`group relative flex flex-col overflow-hidden rounded-[16px] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 transition-colors duration-200 hover:border-[var(--color-accent-border)] ${
+              cell.featured ? "md:col-span-2" : ""
             }`}
           >
             {/* Subtle corner glow on hover */}

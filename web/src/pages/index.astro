@@ -67,7 +67,6 @@ const bentoCells: BentoCell[] = [
     icon: "shield" as BentoIconName,
     status: "VERIFIED",
     href: "/docs/security-model/",
-    featured: true,
   },
 ];
 
@@ -98,21 +97,22 @@ const docsQuick = [
 
   <main class="bg-glow">
     <!-- ============ HERO ============ -->
-    <section class="container-site grid grid-cols-1 items-center gap-14 pb-20 pt-20 md:grid-cols-[1.05fr_1fr] md:pb-28 md:pt-24 lg:gap-16">
-      <div class="min-w-0">
-        <p class="eyebrow mb-5">AI coding agent for the terminal</p>
-        <h1 class="text-[40px] font-extrabold leading-[1.08] tracking-tight text-[var(--color-fg)] md:text-[54px]">
+    <section class="relative container-site grid grid-cols-1 items-center gap-14 pb-20 pt-20 md:grid-cols-[1.05fr_1fr] md:pb-28 md:pt-24 lg:gap-16">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="relative z-10 min-w-0">
+        <p class="eyebrow animate-fade-up mb-5">AI coding agent for the terminal</p>
+        <h1 class="text-[40px] font-extrabold leading-[1.12] tracking-tight text-[var(--color-fg)] md:text-[54px]">
           <WordReveal
             text="A coding agent you configure by talking to it."
             accentWord="talking"
             client:load
           />
         </h1>
-        <p class="mt-6 max-w-[46ch] text-[17px] leading-relaxed text-[var(--color-fg-2)]">
+        <p class="animate-fade-up mt-6 max-w-[46ch] text-[17px] leading-relaxed text-[var(--color-fg-2)]" style="animation-delay: 120ms">
           snsagent is a single-user AI coding agent for your terminal. Bring your own key, and
           it sets up MCP servers, memory backends, and model switching through conversation.
         </p>
-        <div class="mt-9 flex flex-wrap items-center gap-4">
+        <div class="animate-fade-up mt-9 flex flex-wrap items-center gap-4" style="animation-delay: 220ms">
           <a href="/docs/installation/" class="btn btn-primary">
             Install snsagent
             <ArrowRightIcon size={18} weight="bold" />
@@ -122,12 +122,12 @@ const docsQuick = [
             Read the docs
           </a>
         </div>
-        <div class="mt-8 max-w-[560px]">
+        <div class="animate-fade-up mt-8 max-w-[560px]" style="animation-delay: 320ms">
           <PlatformSelector client:load />
         </div>
       </div>
 
-      <div class="relative min-w-0">
+      <div class="relative z-10 min-w-0">
         <HeroTerminal client:load />
       </div>
     </section>
