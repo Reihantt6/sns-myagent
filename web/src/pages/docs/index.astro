@@ -1,0 +1,126 @@
+---
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import Footer from "../../components/Footer.astro";
+import { DOCS_GROUPS } from "../../data/docs-nav.ts";
+import { getCollection } from "astro:content";
+
+const docs = await getCollection("docs");
+const titles = new Map(docs.map((d) => [d.id.replace(/\.md$/, ""), d.data.title]));
+---
+
+<Base title="Documentation" description="SNS-MyAgent documentation and guides" canonical="/docs/">
+  <Nav active="docs" />
+  <main class="container docs-index">
+    <header class="docs-index-header">
+      <p class="eyebrow">Documentation</p>
+      <h1>SNS-MyAgent docs</h1>
+      <p class="lede">
+        Setup guides, feature references, and operational docs for SNS-MyAgent —
+        a private, self-hosted AI agent that runs entirely on your own machine.
+      </p>
+    </header>
+
+    <div class="docs-index-grid">
+      {DOCS_GROUPS.map((group) => (
+        <section class="docs-index-group">
+          <h2>{group.label}</h2>
+          <ul>
+            {group.slugs.map((slug) => (
+              <li>
+                <a href={`/docs/${slug}/`}>
+                  <span class="doc-title">{titles.get(slug) ?? slug.replace(/-/g, " ")}</span>
+                  <span class="doc-arrow">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .docs-index {
+    padding: 64px 24px 96px;
+    max-width: 960px;
+  }
+  .docs-index-header {
+    margin-bottom: 56px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--green);
+    margin: 0 0 12px;
+  }
+  .docs-index-header h1 {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--text-2);
+    max-width: 560px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .docs-index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .docs-index-group {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .docs-index-group h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    margin: 0 0 16px;
+  }
+  .docs-index-group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .docs-index-group li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .docs-index-group li:last-child {
+    border-bottom: none;
+  }
+  .docs-index-group a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    text-decoration: none;
+    color: var(--text-1);
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .docs-index-group a:hover {
+    color: var(--green);
+  }
+  .doc-arrow {
+    color: var(--text-3);
+    font-size: 14px;
+    transition: transform 0.15s, color 0.15s;
+  }
+  .docs-index-group a:hover .doc-arrow {
+    color: var(--green);
+    transform: translateX(3px);
+  }
+</style>
