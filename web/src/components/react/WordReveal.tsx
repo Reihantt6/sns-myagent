@@ -25,14 +25,13 @@ export function WordReveal({ text, className = "", accentWord, delay = 0 }: Word
             key={`${word}-${i}`}
             aria-hidden="true"
             className="inline-block will-change-transform"
-            initial={reduce ? false : { opacity: 0, y: "0.6em", rotate: 2 }}
-            animate={{ opacity: 1, y: 0, rotate: 0 }}
+            initial={reduce ? false : { opacity: 0, y: "0.5em" }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.5,
               delay: delay + i * 0.055,
               ease: [0.16, 1, 0.3, 1],
             }}
-            style={{ clipPath: "inset(0 0 12% 0)" }}
           >
             <span
               className={
