@@ -7,10 +7,11 @@ Severity: CRITICAL / HIGH / MEDIUM / LOW / INFO. Findings are evidence-based
 ## Executive posture
 
 - The agent executes tools (bash, edit/write, browser, ssh, MCP, etc.) behind an
-  approval policy. Auto-approve ("yolo") is opt-in via CLI flags. **The Telegram
-  adapter was an exception**: it created agent sessions with `autoApprove: true`
-  and no user allowlist (see below), which is now mitigated with an opt-in
-  allowlist.
+  approval policy. The default mode is `always-ask` (read-only tools auto-approve;
+  write/exec tools prompt); auto-approve ("yolo") is opt-in via CLI flags
+  (`--approval-mode yolo` / `--yolo`) or config. **The Telegram adapter was an
+  exception**: it created agent sessions with `autoApprove: true` and no user
+  allowlist (see below), which is now mitigated with an opt-in allowlist.
 - Memory is scoped per-project (`mnemopi.scoping`) and the cross-project SQLite
   handle-sharing bug found during the audit has been fixed.
 - No secrets are committed to the repository (`.env*` and `.sns-myagent/` are
@@ -25,6 +26,7 @@ Severity: CRITICAL / HIGH / MEDIUM / LOW / INFO. Findings are evidence-based
 | bash | approval policy + `clampTimeout` | — | MEDIUM | INHERITED |
 | eval (py/js/jl/rb) | per-runtime env allowlist | — | MEDIUM | INHERITED |
 | write/edit | approval policy; path-escape guards in `src/tools/write.ts` | — | MEDIUM | INHERITED |
+| read | approval policy; `resolveReadPath` rejects relative `../` escape (UNIT Y2) | — | MEDIUM | FIXED (guard) |
 | ssh | approval + ssh-control dir | — | MEDIUM | INHERITED |
 | browser (puppeteer) | sandbox dir `~/.omp/puppeteer` | — | MEDIUM | INHERITED |
 | MCP | user-configured servers; instructions flagged as unverified | server-supply-chain trust is on the user | MEDIUM | DOCUMENTED |
@@ -57,6 +59,26 @@ when it is unset. **Operators are strongly advised to set it.**
 Even with the allowlist, an authorized Telegram user's messages run tools with
 `autoApprove: true` (no per-action confirmation). The allowlist narrows *who*,
 not *what*. Remaining risk recorded, not hidden.
+
+### MEDIUM (fixed) — default approval mode was `yolo` (auto-approve)
+
+The `tools.approvalMode` schema default was `yolo`, so a fresh config
+auto-approved every tool call (including critical bash patterns like `rm -rf /`)
+with no explicit opt-in — contradicting the doc claim that yolo is opt-in.
+Fixed (UNIT Y1): the schema default is now `always-ask` and the extension
+wrapper's settings fallback matches it. `yolo` remains available as an explicit
+opt-in (`--yolo` / `--approval-mode yolo` / `tools.approvalMode: yolo` in config)
+and subagents still run headless in yolo mode behind the parent-task approval
+boundary (`src/task/executor.ts`).
+
+### MEDIUM (fixed) — read-path traversal was not workspace-guarded
+
+`resolveReadPath` resolved `../` relative paths above `cwd`, so a prompt-injected
+read could reach files outside the workspace (proven: `resolveReadPath("../outside/secret.txt", ws)`
+read `secret.txt`). Fixed (UNIT Y2): `resolveReadPath` now rejects a RELATIVE
+path that escapes `cwd` with a `ToolError`; absolute and `~`-expanded paths
+remain readable as explicit user intent. `resolveToCwd` (used by bash/debug,
+where escaping is legitimate) is intentionally unchanged.
 
 ### HIGH (fixed) — memory cross-project scope leakage
 

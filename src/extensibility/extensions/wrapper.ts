@@ -115,7 +115,7 @@ export class ExtensionToolWrapper<TParameters extends TSchema = TSchema, TDetail
 		// User `tools.approval.<tool>` policies are still applied in all modes.
 		const cliAutoApprove = context?.autoApprove === true;
 		const settings: Settings | undefined = context?.settings;
-		const configuredMode = (settings?.get("tools.approvalMode") ?? "yolo") as ApprovalMode;
+		const configuredMode = (settings?.get("tools.approvalMode") ?? "always-ask") as ApprovalMode;
 		const approvalMode: ApprovalMode = cliAutoApprove ? "yolo" : configuredMode;
 		const userPolicies = (settings?.get("tools.approval") ?? {}) as Record<string, unknown>;
 		const approvalCheck = requiresApproval(this.tool, params, approvalMode, userPolicies);

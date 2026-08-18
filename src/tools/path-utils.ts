@@ -921,8 +921,28 @@ export async function partitionExistingPaths(
 	return { valid, missing };
 }
 
+/**
+ * Reject relative-path traversal that escapes `cwd` (defense-in-depth for the
+ * read path). Only a RELATIVE input that resolves above `cwd` (e.g.
+ * `../outside/secret.txt`) is blocked. Absolute paths and `~`-expanded paths
+ * are explicit user intent and remain readable, so legitimate reads of
+ * absolute files (configs, images, docs) keep working.
+ */
+function assertReadPathWithinWorkspace(filePath: string, resolved: string, cwd: string): void {
+	const expanded = expandPath(filePath);
+	if (path.isAbsolute(expanded)) return; // explicit absolute intent (incl. ~/… after expandTilde)
+	const resolvedCwd = path.resolve(cwd);
+	const rel = path.relative(resolvedCwd, resolved);
+	if (rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel))) return;
+	throw new ToolError(
+		`Path "${filePath}" escapes the workspace (${resolvedCwd}). ` +
+			`Use an absolute path to read a file outside the workspace.`,
+	);
+}
+
 export function resolveReadPath(filePath: string, cwd: string): string {
 	const resolved = resolveToCwd(filePath, cwd);
+	assertReadPathWithinWorkspace(filePath, resolved, cwd);
 	const shellEscapedVariant = tryShellEscapedPath(resolved);
 	const baseCandidates = shellEscapedVariant !== resolved ? [resolved, shellEscapedVariant] : [resolved];
 

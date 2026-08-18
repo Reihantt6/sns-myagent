@@ -3113,17 +3113,20 @@ export const SETTINGS_SCHEMA = {
 	// Default tool approval mode (interaction tab, but governs the tool wrapper).
 	//   "always-ask" — auto-approves read-tier tools only; prompts for write/exec.
 	//   "write"      — auto-approves read and write-tier tools; prompts for exec.
-	//   "yolo"       — auto-approves every tier.
+	//   "yolo"       — auto-approves every tier. Deliberately NOT the default:
+	//                  a fresh config must not auto-approve all tool calls.
+	//                  Opt in explicitly via `--approval-mode yolo` / `--yolo`
+	//                  or `tools.approvalMode: yolo` in config.
 	"tools.approvalMode": {
 		type: "enum",
 		values: ["always-ask", "write", "yolo"] as const,
-		default: "yolo",
+		default: "always-ask",
 		ui: {
 			tab: "interaction",
 			group: "Approvals",
 			label: "Tool Approval",
 			description:
-				"Default approval behavior for tool calls. 'Always ask' auto-approves read-only tools only. 'Write' auto-approves read and workspace-write tools. 'Yolo' auto-approves all tiers; user policy may still prompt or block.",
+				"Default approval behavior for tool calls. 'Always ask' auto-approves read-only tools only (the safe default). 'Write' auto-approves read and workspace-write tools. 'Yolo' auto-approves all tiers; user policy may still prompt or block.",
 			options: [
 				{
 					value: "always-ask",

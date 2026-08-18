@@ -44,17 +44,37 @@ function stubSession(cwd: string) {
 }
 
 describe("B1.1 default approval mode", () => {
-	test("fresh config: tools.approvalMode defaults to yolo via schema", () => {
+	test("fresh config: tools.approvalMode defaults to always-ask via schema (NOT yolo)", () => {
+		// Security fix (UNIT Y1): a fresh config must not auto-approve all tool
+		// calls. The schema default is now the safe "always-ask"; yolo is opt-in.
 		const settings = Settings.isolated({});
 		const mode = settings.get("tools.approvalMode");
-		assert.equal(mode, "yolo", `expected schema default yolo, got ${String(mode)}`);
+		assert.equal(mode, "always-ask", `expected schema default always-ask, got ${String(mode)}`);
 	});
 
-	test("yolo mode auto-allows even a critical bash payload", () => {
-		// The BashTool approval decision flags rm -rf / as critical (override prompt),
-		// but resolveApproval in yolo mode returns allow for everything except a
-		// user `tools.approval.<tool>: deny` policy.
+	test("fresh config in always-ask mode prompts for a critical bash payload", () => {
+		// End-to-end through Settings + resolveApproval: a fresh config must NOT
+		// auto-allow a critical payload like rm -rf /.
 		const settings = Settings.isolated({});
+		const mode = settings.get("tools.approvalMode") as ApprovalMode;
+		assert.equal(mode, "always-ask");
+		const tool = {
+			name: "bash",
+			approval: (args: unknown) => {
+				const command = (args as { command?: string }).command ?? "";
+				if (command && CRITICAL_BASH_PATTERNS.some(p => p.test(command))) {
+					return { tier: "exec" as const, override: true, reason: "Critical pattern detected" };
+				}
+				return "exec" as const;
+			},
+		};
+		const decision = resolveApproval(tool, { command: "rm -rf /" }, mode);
+		assert.equal(decision.policy, "prompt", `always-ask should prompt; got ${decision.policy}`);
+	});
+
+	test("explicit yolo mode still auto-allows even a critical bash payload", () => {
+		// yolo remains available as an explicit opt-in (CLI --yolo / config).
+		const settings = Settings.isolated({ "tools.approvalMode": "yolo" });
 		const mode = settings.get("tools.approvalMode") as ApprovalMode;
 		const tool = {
 			name: "bash",
@@ -68,21 +88,6 @@ describe("B1.1 default approval mode", () => {
 		};
 		const decision = resolveApproval(tool, { command: "rm -rf /" }, mode);
 		assert.equal(decision.policy, "allow", `yolo should allow; got ${decision.policy}`);
-	});
-
-	test("always-ask mode prompts for a critical bash payload", () => {
-		const tool = {
-			name: "bash",
-			approval: (args: unknown) => {
-				const command = (args as { command?: string }).command ?? "";
-				if (command && CRITICAL_BASH_PATTERNS.some(p => p.test(command))) {
-					return { tier: "exec" as const, override: true, reason: "Critical pattern detected" };
-				}
-				return "exec" as const;
-			},
-		};
-		const decision = resolveApproval(tool, { command: "rm -rf /" }, "always-ask");
-		assert.equal(decision.policy, "prompt", `always-ask should prompt; got ${decision.policy}`);
 	});
 });
 
@@ -118,20 +123,38 @@ describe("B1.3 path traversal", () => {
 	const ws = path.join(sandbox, "workspace");
 	fs.mkdirSync(ws, { recursive: true });
 
-	test("resolveReadPath resolves ../ out of the workspace (not rejected)", () => {
-		const resolved = resolveReadPath("../outside/secret.txt", ws);
-		// resolveReadPath is a pure resolver: it does not sandbox to cwd.
-		// ws = <sandbox>/workspace; ../outside/secret.txt = <sandbox>/outside/secret.txt.
-		assert.equal(resolved, secretFile, `expected traversal to resolve to ${secretFile}`);
+	test("resolveReadPath rejects ../ traversal that escapes the workspace (guard)", () => {
+		// Security fix (UNIT Y2): a relative path may not climb above cwd.
+		assert.throws(
+			() => resolveReadPath("../outside/secret.txt", ws),
+			/escapes the workspace/,
+			"expected relative traversal to be rejected",
+		);
 	});
 
-	test("a file outside the workspace is readable via traversal (no guard)", () => {
-		// The read tool's path resolution is resolveReadPath; there is no
-		// "must stay inside cwd" check in that resolver. Prove the file is
-		// reachable by resolving + stat-ing it.
-		const resolved = resolveReadPath("../outside/secret.txt", ws);
-		const content = fs.readFileSync(resolved, "utf8");
-		assert.equal(content, "TOP-SECRET-CONTENT");
+	test("the traversed file is no longer reachable via the read resolver", () => {
+		// The read tool resolves through resolveReadPath; the guard throws before
+		// any file is opened, so the outside file is unreachable via traversal.
+		let resolved: string | undefined;
+		try {
+			resolved = resolveReadPath("../outside/secret.txt", ws);
+		} catch {
+			resolved = undefined;
+		}
+		assert.equal(resolved, undefined, "traversal must not resolve");
+	});
+
+	test("absolute paths outside the workspace remain readable (explicit intent)", () => {
+		const resolved = resolveReadPath(secretFile, ws);
+		assert.equal(resolved, secretFile);
+		assert.equal(fs.readFileSync(resolved, "utf8"), "TOP-SECRET-CONTENT");
+	});
+
+	test("in-workspace relative paths still resolve normally", () => {
+		const inside = path.join(ws, "notes.txt");
+		fs.writeFileSync(inside, "hello");
+		const resolved = resolveReadPath("notes.txt", ws);
+		assert.equal(resolved, inside);
 	});
 
 	test("cleanup", () => {
