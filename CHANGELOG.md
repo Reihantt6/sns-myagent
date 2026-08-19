@@ -7,7 +7,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
-## [Unreleased]
+## [0.3.10] - 2026-08-19
+
 
 ### Fixed
 - Telegram MarkdownV2 formatting now preserves literal `*` and `~` markers while escaping underscores safely.
@@ -73,6 +74,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Internal phase tracker: see `PROGRESS.md` (gitignored, not on GitHub)
 
 ---
+
 
 ## [0.1.0] — 2026-06-23
 

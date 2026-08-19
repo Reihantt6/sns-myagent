@@ -128,3 +128,4 @@ tmp/
 web/
 sns-myagent-web/
 
+.npmrc
