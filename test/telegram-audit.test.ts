@@ -261,6 +261,24 @@ describe("Authorization gate", () => {
 		assert.equal(set!.has(7), true);
 	});
 
+	test("resolveTelegramAllowedUsers rejects overflowing (int64-imprecise) ids", () => {
+		// Values beyond Number.MAX_SAFE_INTEGER lose int64 precision and can
+		// never match a real Telegram id — they must be dropped, not kept.
+		const set = resolveTelegramAllowedUsers("42,9007199254740993,123");
+		assert.ok(set);
+		assert.equal(set!.size, 2); // 42 and 123; 9007199254740993 dropped
+		assert.equal(set!.has(42), true);
+		assert.equal(set!.has(123), true);
+	});
+
+	test("resolveTelegramAllowedUsers returns an EMPTY set for junk-only input (fail closed)", () => {
+		// Env var set but nothing parseable: result is an empty set, which the
+		// adapter treats as deny-all — never undefined (which would mean open).
+		const set = resolveTelegramAllowedUsers("abc, ,-5,0");
+		assert.ok(set, "must be a set, not undefined (undefined would open the bot)");
+		assert.equal(set!.size, 0);
+	});
+
 	test("gate rejects a non-listed user before the agent is consulted", async () => {
 		let forwarded = "";
 		const bot = new TelegramBot({

@@ -23,7 +23,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT">
-  <img src="https://img.shields.io/badge/version-0.3.9-yellow?style=flat-square" alt="Version 0.3.9">
+  <img src="https://img.shields.io/badge/version-0.3.10-yellow?style=flat-square" alt="Version 0.3.10">
   <img src="https://img.shields.io/badge/bun-%3E%3D1.3.14-efbbf4?style=flat-square&logo=bun&logoColor=black" alt="Bun >= 1.3.14">
 </p>
 
@@ -88,9 +88,7 @@ test). **PARTIAL** = implemented and partly tested, but not deep-audited end-to-
 | **Text-to-speech / STT** | PARTIAL | `src/tts/`, `src/stt/` |
 | **Todo system** | PARTIAL | `src/` todo helpers |
 
-Full findings: [`AUDIT-REPORT.md`](./AUDIT-REPORT.md),
-[`AUDIT-BASELINE.md`](./AUDIT-BASELINE.md),
-[docs/security-model.md](./docs/security-model.md).
+Security and attack-surface details: [docs/security-model.md](./docs/security-model.md).
 
 **Tools and commands.** 30 built-in tools, 62 slash commands:
 
@@ -140,6 +138,9 @@ Full findings: [`AUDIT-REPORT.md`](./AUDIT-REPORT.md),
 
 ## Quick Start
 
+> New here? Start with the [5-minute quickstart](./docs/quickstart.md) — install, first
+> chat, and where things live — then come back for the full feature tour.
+
 ### 1. Run
 
 ```bash
@@ -188,6 +189,16 @@ snsagent
 
 ## Installation
 
+Full guide: [`docs/installation.md`](./docs/installation.md). Quick reference:
+
+| Platform | Prebuilt binary | npm | From source |
+|---|---|---|---|
+| Linux x64 / arm64 (glibc) | ✅ | ✅ | ✅ |
+| Linux musl / Alpine | ✅ (when published) | ✅ | ✅ |
+| macOS arm64 / x64 | ✅ | ✅ | ✅ |
+| Windows x64 | ✅ | ✅ | ✅ |
+| Android / Termux | ❌ | ❌ (detected + skipped) | ✅ |
+
 ### npm (recommended for most users)
 
 ```bash
@@ -227,7 +238,7 @@ bun run build
 ### Verify
 
 ```bash
-snsagent --version   # -> snsagent 0.3.9
+snsagent --version   # -> snsagent 0.3.10
 snsagent --help
 ```
 
@@ -236,7 +247,8 @@ snsagent --help
 ## Termux (Android)
 
 Full guide: [`docs/termux.md`](./docs/termux.md). The npm/prebuilt binaries are glibc and will
-not run on Android — use the source build.
+not run on Android — both the installer and the npm postinstall detect Termux and skip the
+download automatically. Use the source build:
 
 ```bash
 # 1. Install Termux from F-Droid (NOT Play Store)
@@ -365,6 +377,8 @@ sns-myagent/
 
 | Guide | Covers |
 |-------|--------|
+| [Quickstart](./docs/quickstart.md) | 5-minute path from zero to running |
+| [Running](./docs/running.md) | Launch modes, providers, memory, TBM, slash commands |
 | [Architecture](./docs/architecture.md) | Agent-loop integration points (memory/TBM/advisor/tools) |
 | [Installation](./docs/installation.md) | Install options per platform |
 | [Configuration](./docs/configuration.md) | Config files, providers, models |

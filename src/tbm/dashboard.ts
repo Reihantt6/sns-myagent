@@ -34,10 +34,11 @@ function formatNumber(n: number): string {
 }
 
 /**
- * Format duration from milliseconds.
+ * Format duration from milliseconds. Negative or zero durations (clock
+ * skew, fresh session) render as `0s` rather than a negative label.
  */
 function formatDuration(ms: number): string {
-	const seconds = Math.floor(ms / 1000);
+	const seconds = Math.floor(Math.max(0, ms) / 1000);
 	if (seconds < 60) return `${seconds}s`;
 	const minutes = Math.floor(seconds / 60);
 	const secs = seconds % 60;
@@ -50,10 +51,12 @@ function formatDuration(ms: number): string {
 /**
  * Estimate cost from token counts.
  * Rough estimate: $3/1M input, $15/1M output (Claude Sonnet class).
+ * Negative counters (should never happen) are clamped to zero so the
+ * dashboard can never render a negative cost.
  */
 function estimateCost(inputTokens: number, outputTokens: number): string {
-	const inputCost = (inputTokens / 1_000_000) * 3;
-	const outputCost = (outputTokens / 1_000_000) * 15;
+	const inputCost = (Math.max(0, inputTokens) / 1_000_000) * 3;
+	const outputCost = (Math.max(0, outputTokens) / 1_000_000) * 15;
 	const total = inputCost + outputCost;
 	if (total < 0.01) return "<$0.01";
 	return `$${total.toFixed(3)}`;
@@ -78,19 +81,19 @@ export function buildDashboard(mgr: TbmManager, sessionStartTime: number): Dashb
 
 	return {
 		sessionDuration: formatDuration(Date.now() - sessionStartTime),
-		totalInputTokens: deltaStats.total_input_tokens,
+		totalInputTokens: Math.max(0, deltaStats.total_input_tokens),
 		totalOutputTokens: 0, // tracked by provider
-		cachedTokens: deltaStats.tokens_saved,
+		cachedTokens: Math.max(0, deltaStats.tokens_saved),
 		estimatedCost: estimateCost(deltaStats.total_input_tokens, 0),
-		cacheHitRate: `${(deltaStats.cache_hits / Math.max(1, deltaStats.turns) * 100).toFixed(0)}%`,
+		cacheHitRate: `${(Math.max(0, deltaStats.cache_hits) / Math.max(1, deltaStats.turns) * 100).toFixed(0)}%`,
 		pyramidLevel: pyramidStats.currentLevel,
 		pyramidLabel: pyramidStats.currentLevel.toString(),
 		commMode: mgr.commMode.effective,
 		compressionRatio: `${(compressStats.totalOutputs > 0 ? (compressStats.compressed / compressStats.totalOutputs * 100) : 0).toFixed(0)}%`,
-		tokensSaved: formatNumber(totalSaved),
-		tombstonesActive: tombstoneStats.messagesTombstoned,
-		responseCacheSize: cacheStats.cacheSize,
-		skillsLoaded: `${skillStats.loadedOnDemand}/${skillStats.totalAvailable}`,
+		tokensSaved: formatNumber(Math.max(0, totalSaved)),
+		tombstonesActive: Math.max(0, tombstoneStats.messagesTombstoned),
+		responseCacheSize: Math.max(0, cacheStats.cacheSize),
+		skillsLoaded: `${Math.max(0, skillStats.loadedOnDemand)}/${Math.max(0, skillStats.totalAvailable)}`,
 	};
 }
 

@@ -50,12 +50,17 @@ function hashQuery(query: string): string {
 /**
  * Simple Jaccard similarity for semantic matching.
  * Uses word-level n-grams (bigrams) for comparison.
+ *
+ * Queries with fewer than two words produce no bigrams, so any two
+ * single-word queries would compare as "identical" (both empty sets).
+ * That false-positives on unrelated one-word prompts (e.g. `deploy` vs
+ * `status`), so single-word queries never match semantically — they can
+ * only hit via the exact-match path.
  */
 function jaccardSimilarity(a: string, b: string): number {
 	const bigramsA = getBigrams(a);
 	const bigramsB = getBigrams(b);
 
-	if (bigramsA.size === 0 && bigramsB.size === 0) return 1;
 	if (bigramsA.size === 0 || bigramsB.size === 0) return 0;
 
 	let intersection = 0;

@@ -12,7 +12,7 @@
  */
 
 import { strict as assert } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, setDefaultTimeout, test } from "bun:test";
@@ -139,6 +139,11 @@ function makeTempDir(): string {
 	return dir;
 }
 
+/** List dir contents; treat a missing dir as empty (off backend never creates it). */
+function readdirSyncSafe(dir: string): string[] {
+	return existsSync(dir) ? readdirSync(dir) : [];
+}
+
 beforeEach(() => {
 	tempDirs = [];
 });
@@ -147,21 +152,35 @@ afterEach(() => {
 	for (const dir of tempDirs) {
 		rmSync(dir, { recursive: true, force: true });
 	}
-});
+});	describe("memory backend resolution", () => {
+		test("memory.backend=off resolves to the off backend with no persistence", async () => {
+			const settings = Settings.isolated({ "memory.backend": "off" });
+			const backend = await resolveMemoryBackend(settings);
+			assert.equal(backend.id, "off");
+			const status = await backend.status?.({ agentDir: "/tmp", cwd: "/tmp" });
+			assert.equal(status?.active, false);
+			assert.equal(status?.writable, false);
+			assert.equal(status?.searchable, false);
+			// off backend has no save path at all
+			assert.equal(backend.save, undefined);
+			assert.equal(backend.search, undefined);
+		});
 
-describe("memory backend resolution", () => {
-	test("memory.backend=off resolves to the off backend with no persistence", async () => {
-		const settings = Settings.isolated({ "memory.backend": "off" });
-		const backend = await resolveMemoryBackend(settings);
-		assert.equal(backend.id, "off");
-		const status = await backend.status?.({ agentDir: "/tmp", cwd: "/tmp" });
-		assert.equal(status?.active, false);
-		assert.equal(status?.writable, false);
-		assert.equal(status?.searchable, false);
-		// off backend has no save path at all
-		assert.equal(backend.save, undefined);
-		assert.equal(backend.search, undefined);
-	});
+		test("off backend performs NO disk writes through any lifecycle path", async () => {
+			const settings = Settings.isolated({ "memory.backend": "off" });
+			const backend = await resolveMemoryBackend(settings);
+			const agentDir = makeTempDir();
+
+			// Exercise every lifecycle operation the runtime can call.
+			await backend.start({} as never);
+			await backend.enqueue(agentDir, "/tmp/mem-test-cwd");
+			await backend.clear(agentDir, "/tmp/mem-test-cwd");
+			const instructions = await backend.buildDeveloperInstructions(agentDir, settings);
+
+			assert.equal(instructions, undefined, "off backend must inject nothing");
+			const entries = readdirSyncSafe(agentDir);
+			assert.equal(entries.length, 0, "off backend must not create any files or directories");
+		});
 
 	test("memory.backend=mnemopi resolves to the mnemopi backend", async () => {
 		const settings = Settings.isolated({ "memory.backend": "mnemopi" });

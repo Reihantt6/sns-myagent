@@ -117,3 +117,81 @@ describe("ByokSetupTab keyboard navigation", () => {
 		expect(apiKeyLine).toContain("█");
 	});
 });
+
+describe("ByokSetupTab submission validation", () => {
+	let uiTheme: Theme;
+	const originalFetch = globalThis.fetch;
+
+	beforeAll(async () => {
+		await Settings.init({ inMemory: true });
+		const loaded = await getThemeByName("dark");
+		if (!loaded) throw new Error("theme unavailable");
+		uiTheme = loaded;
+		setThemeInstance(uiTheme);
+	});
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch;
+	});
+
+	async function submitWith(baseUrl: string, apiKey: string): Promise<string> {
+		const { host, focusTargets } = makeHost();
+		const tab = new ByokSetupTab(host);
+		const input = () => focusTargets.at(-1) as Component;
+		// Base URL field is focused first. The constructor pre-fills a default
+		// value, so clear it with backspaces before typing our test value.
+		for (let i = 0; i < 40; i++) input().handleInput?.("\x7f");
+		input().handleInput?.(baseUrl);
+		input().handleInput?.("\t");
+		input().handleInput?.(apiKey);
+		input().handleInput?.("\r");
+		// The submit path awaits fetch → json → save; let all microtasks settle.
+		for (let i = 0; i < 10; i++) await flushAsyncWork();
+		return stripAnsi(tab.render(120)).join("\n");
+	}
+
+	it("rejects a scheme-less base URL without hitting the network", async () => {
+		let requests = 0;
+		globalThis.fetch = async () => {
+			requests++;
+			return new Response(JSON.stringify({ data: [] }), { status: 200 });
+		};
+		const output = await submitWith("api.example.com/v1", "sk-test");
+		expect(requests).toBe(0);
+		expect(output).toContain("must include a scheme");
+	});
+
+	it("rejects a non-http(s) scheme", async () => {
+		const output = await submitWith("ftp://api.example.com/v1", "sk-test");
+		expect(output).toContain("must use http:// or https://");
+	});
+
+	it("rejects a host-less URL", async () => {
+		const output = await submitWith("https://", "sk-test");
+		expect(output).toContain("must include a scheme");
+	});
+
+	it("rejects an empty API key for a remote provider", async () => {
+		const output = await submitWith("https://api.example.com/v1", "");
+		expect(output).toContain("API Key is required");
+	});
+
+	it("shows a friendly error when the /models endpoint returns non-JSON", async () => {
+		globalThis.fetch = async () => new Response("<html>gateway error</html>", { status: 200 });
+		const output = await submitWith("https://api.example.com/v1", "sk-test");
+		expect(output).toContain("non-JSON response");
+	});
+
+	it("tolerates null/object entries in the /models response", async () => {
+		globalThis.fetch = async () =>
+			new Response(JSON.stringify({ data: [null, { id: "gpt-4o" }, { foo: 1 }, { id: "" }] }), { status: 200 });
+		const output = await submitWith("https://api.example.com/v1", "sk-test");
+		expect(output).toContain("1 model detected");
+	});
+
+	it("surfaces a 401 from the /models endpoint", async () => {
+		globalThis.fetch = async () => new Response(null, { status: 401 });
+		const output = await submitWith("https://api.example.com/v1", "sk-wrong");
+		expect(output).toContain("API Key rejected");
+	});
+});

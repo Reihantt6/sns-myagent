@@ -19,12 +19,21 @@ The `@sns-myagent/cli` postinstall and `install.sh` both download a prebuilt `sn
 
 The installer (`curl ... | bash`) detects Termux and skips the prebuilt path, falling back to a from-source build. Use the source path below instead.
 
-### Installer behavior on Termux
+### Detection is automatic everywhere
 
-- **Detection**: `TERMUX_VERSION` env var, existence of `/data/data/com.termux`, or `uname -o` = `Android` sets `IS_TERMUX=true`.
-- **Route**: prebuilt download is skipped entirely with the message `Termux: prebuilt glibc binary is incompatible with Android - building from source.`
-- **Fallback build**: installs `git curl unzip` via `pkg` (best effort), installs Bun if missing, then `git clone --depth 1` + `bun install` + `bun run build` and copies `bin/snsagent` to `$INSTALL_DIR` (default `~/.local/bin`, override with `SNS_INSTALL_DIR=/some/path bash install.sh`).
-- **Result**: a fully working source-built binary is installed even when the GitHub API is unreachable.
+Both install paths detect Termux the same way (`TERMUX_VERSION` env var, `PREFIX` containing
+`com.termux`, existence of `/data/data/com.termux`, or `uname -o` = `Android`):
+
+- **`install.sh`**: sets `IS_TERMUX=true`, skips the prebuilt download with the message
+  `Termux: prebuilt glibc binary is incompatible with Android - building from source.`, then
+  installs `git curl unzip` via `pkg` (best effort), installs Bun if missing, and builds from
+  source into `$INSTALL_DIR` (default `~/.local/bin`, override with
+  `SNS_INSTALL_DIR=/some/path bash install.sh`).
+- **npm postinstall** (`scripts/fetch-binary.mjs`): prints
+  `Termux detected: the prebuilt binary is glibc-linked and incompatible with Android. Build
+  from source instead …` and exits successfully without downloading anything, so
+  `npm install -g @sns-myagent/cli` completes cleanly on Termux. The `snsagent` shim also
+  detects Termux and prints the same guidance if it is ever invoked without a binary.
 
 The manual clone path below is equivalent - the installer just automates it.
 

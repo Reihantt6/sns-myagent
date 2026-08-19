@@ -235,11 +235,16 @@ export class ByokSetupTab implements SetupTab {
 			return;
 		}
 
+		const urlError = this.#validateBaseUrl(baseUrl);
+		if (urlError) {
+			this.#statusLines = [theme.fg("error", `${theme.status.error} ${urlError}`)];
+			this.host.requestRender();
+			return;
+		}
+
 		// Determine auth mode — no API key + localhost = auth "none"
 		const isNoAuth = !apiKey;
-		if (!isNoAuth || baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
-			// proceed
-		} else if (!apiKey && !baseUrl.includes("localhost")) {
+		if (isNoAuth && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")) {
 			this.#statusLines = [theme.fg("error", `${theme.status.error} API Key is required (or use localhost for local providers)`)];
 			this.host.requestRender();
 			return;
@@ -283,6 +288,26 @@ export class ByokSetupTab implements SetupTab {
 		this.host.requestRender();
 	}
 
+	/**
+	 * Validate a BYOK base URL. Returns a friendly error string, or null when
+	 * the URL is usable (http/https scheme + non-empty hostname).
+	 */
+	#validateBaseUrl(baseUrl: string): string | null {
+		let parsed: URL;
+		try {
+			parsed = new URL(baseUrl);
+		} catch {
+			return "Base URL must include a scheme, e.g. https://api.example.com/v1";
+		}
+		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+			return "Base URL must use http:// or https://";
+		}
+		if (!parsed.hostname) {
+			return "Base URL has no host — check for typos";
+		}
+		return null;
+	}
+
 	async #detectModels(baseUrl: string, apiKey: string): Promise<string[]> {
 		const url = `${baseUrl}/models`;
 		const headers: Record<string, string> = {};
@@ -296,11 +321,21 @@ export class ByokSetupTab implements SetupTab {
 			throw new Error(`Provider returned HTTP ${response.status}`);
 		}
 
-		const data = await response.json() as { data?: { id: string }[] };
-		if (!data.data || !Array.isArray(data.data)) {
+		let data: unknown;
+		try {
+			data = await response.json();
+		} catch {
+			throw new Error("Provider returned a non-JSON response — the /models endpoint may not be supported");
+		}
+
+		const list = (data as { data?: unknown })?.data;
+		if (!Array.isArray(list)) {
 			return [];
 		}
-		return data.data.map((m) => m.id).filter(Boolean).sort();
+		return list
+			.map((entry) => (entry && typeof entry === "object" ? (entry as { id?: unknown }).id : undefined))
+			.filter((id): id is string => typeof id === "string" && id.length > 0)
+			.sort();
 	}
 
 	async #saveProvider(baseUrl: string, apiKey: string, apiType: ApiType, models: string[], isNoAuth = false): Promise<void> {

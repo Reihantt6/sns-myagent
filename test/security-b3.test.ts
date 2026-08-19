@@ -131,15 +131,17 @@ describe("B3.2 response cache", () => {
 		assert.equal(r.response, "NEW-CORRECT-RESPONSE", "latest write must win");
 	});
 
-	test("semantic match can false-positive on single-word queries", () => {
-		// Both queries are single words → zero bigrams → jaccardSimilarity
-		// returns 1.0 (both-empty branch), so ANY single-word query matches
-		// ANY other single-word query.
+	test("single-word queries do NOT match semantically (false-positive guard)", () => {
+		// Two single-word queries have zero bigrams each. The old both-empty
+		// Jaccard branch returned 1.0, so `get("status")` hit a `deploy` entry.
+		// Single-word queries now only hit via the exact-match path.
 		const cache = new ResponseCache();
 		cache.set("deploy", "RESPONSE-FOR-DEPLOY");
 		const r = cache.get("status");
-		assert.equal(r.hit, true, "unrelated single-word query hits semantically");
-		assert.equal(r.response, "RESPONSE-FOR-DEPLOY");
+		assert.equal(r.hit, false, "unrelated single-word query must NOT hit semantically");
+		const exact = cache.get("deploy");
+		assert.equal(exact.hit, true, "identical single-word query still hits via exact match");
+		assert.equal(exact.matchType, "exact");
 	});
 
 	test("TTL expiry invalidates entries", () => {

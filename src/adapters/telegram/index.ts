@@ -60,9 +60,15 @@ export function startTelegramAdapter(
 
 	// The adapter runs agent actions with auto-approve. If no allowlist is
 	// configured, every user who can reach the bot can drive those actions.
-	if (!opts.allowedUserIds || opts.allowedUserIds.size === 0) {
+	if (opts.allowedUserIds === undefined) {
 		logger.warn(
 			"telegram: no SNS_TELEGRAM_ALLOWED_USERS allowlist — the bot will execute agent actions for ANY user who can message it",
+		);
+	} else if (opts.allowedUserIds.size === 0) {
+		// Empty set = the env var was set but every entry was junk/invalid.
+		// Fail closed: the bot denies every user instead of opening up.
+		logger.warn(
+			"telegram: SNS_TELEGRAM_ALLOWED_USERS was set but contained no valid user ids — the bot will DENY all users (fail closed)",
 		);
 	}
 
@@ -88,6 +94,11 @@ export function startTelegramAdapter(
  * Parse `SNS_TELEGRAM_ALLOWED_USERS` (comma-separated numeric user ids) into a
  * `Set<number>`. Returns `undefined` when the var is unset/empty so callers can
  * distinguish "no restriction" from "explicit empty allowlist".
+ *
+ * Entries that are not safe integers (junk like `abc`, `0`, `-5`, or values
+ * beyond `Number.MAX_SAFE_INTEGER` that would lose int64 precision) are
+ * skipped. If every entry is invalid the result is an EMPTY set — callers
+ * treat that as fail-closed (deny all), never as open.
  */
 export function resolveTelegramAllowedUsers(
 	raw: string | undefined = process.env.SNS_TELEGRAM_ALLOWED_USERS,
@@ -97,7 +108,11 @@ export function resolveTelegramAllowedUsers(
 	const ids = new Set<number>();
 	for (const part of trimmed.split(",")) {
 		const value = Number(part.trim());
-		if (Number.isFinite(value) && value > 0) ids.add(value);
+		// Telegram user ids are signed 64-bit; anything outside the safe
+		// integer range cannot match a real id and would silently fail open
+		// if kept (a 1e+26 value never equals a real id, but keeping it also
+		// hides the config error). Reject it instead.
+		if (Number.isSafeInteger(value) && value > 0) ids.add(value);
 	}
 	return ids;
 }

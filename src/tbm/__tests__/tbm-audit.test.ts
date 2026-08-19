@@ -18,7 +18,7 @@ import { LazySkillLoader, type SkillEntry } from "../lazy-skills";
 import { ToolOutputCompressor } from "../tool-compress";
 import { ConversationTombstoner } from "../tombstone";
 import { ResponseCache } from "../response-cache";
-import { buildDashboard } from "../dashboard";
+import { buildDashboard, renderDashboard } from "../dashboard";
 import { TbmManager } from "../index";
 import { DEFAULT_TBM_CONFIG } from "../config";
 
@@ -147,6 +147,22 @@ describe("ResponseCache — invalidation and staleness", () => {
 		const hit = lenient.get("deploy the app to production please");
 		expect(hit.hit).toBe(true);
 		expect(hit.matchType).toBe("semantic");
+	});
+
+	it("single-word queries never match semantically (false-positive guard)", () => {
+		// Previously ANY two single-word queries compared as identical (both
+		// empty bigram sets → similarity 1.0), so `get("status")` returned a
+		// semantic hit for a `deploy` entry. Single-word prompts must only hit
+		// via the exact-match path.
+		const cache = new ResponseCache(3600, 100, 0.95);
+		cache.set("deploy", "deployment guide");
+		expect(cache.get("status")).toEqual({ hit: false });
+		expect(cache.get("deploy")).toMatchObject({ hit: true, matchType: "exact" });
+
+		// Same protection even with a lenient threshold.
+		const lenient = new ResponseCache(3600, 100, 0.1);
+		lenient.set("deploy", "deployment guide");
+		expect(lenient.get("status").hit).toBe(false);
 	});
 
 	it("re-setting the same query invalidates the old response", () => {
@@ -364,6 +380,58 @@ describe("Dashboard — real counters", () => {
 
 		// Mitigation: callers must pass `enabled:false` AND disable each
 		// subsystem, or route all calls through the master gate themselves.
+	});
+
+	it("renders a clean dashboard for a fresh (zero-activity) manager", () => {
+		const tbm = new TbmManager();
+		// Future sessionStart simulates clock skew; must not produce negative
+		// durations or NaN/Infinity anywhere in the rendered dashboard.
+		const data = buildDashboard(tbm, Date.now() + 60_000);
+
+		expect(data.sessionDuration).toBe("0s");
+		expect(data.totalInputTokens).toBe(0);
+		expect(data.cachedTokens).toBe(0);
+		expect(data.estimatedCost).toBe("<$0.01");
+		expect(data.cacheHitRate).toBe("0%");
+		expect(data.compressionRatio).toBe("0%");
+		expect(data.tokensSaved).toBe("0");
+		expect(data.tombstonesActive).toBe(0);
+		expect(data.responseCacheSize).toBe(0);
+		expect(data.skillsLoaded).toBe("0/0");
+
+		const rendered = renderDashboard(data);
+		expect(rendered).not.toContain("NaN");
+		expect(rendered).not.toContain("Infinity");
+		expect(rendered).not.toMatch(/-\d/);
+		expect(rendered).toContain("0%");
+	});
+
+	it("clamps negative subsystem counters in the dashboard", () => {
+		// buildDashboard only reads the subsystem stats getters, so a fake
+		// manager with negative counters exercises the same clamp path a
+		// corrupt/legacy session would hit.
+		const fake = {
+			contextDelta: {
+				stats: { turns: -3, cache_hits: -1, tokens_saved: -500, total_input_tokens: -1000 },
+			},
+			pyramid: { stats: { currentLevel: 0 } },
+			compressor: {
+				stats: { compressed: -2, totalOutputs: -4, tokensSaved: -50 },
+			},
+			responseCache: { stats: { tokensSaved: -5, cacheSize: -1 } },
+			tombstoner: { stats: { tokensSaved: -10, messagesTombstoned: -1 } },
+			lazySkills: { stats: { loadedOnDemand: -1, totalAvailable: -2, tokensSaved: -3 } },
+			commMode: { effective: "normal" },
+		} as unknown as TbmManager;
+
+		const data = buildDashboard(fake, Date.now());
+		expect(data.totalInputTokens).toBe(0);
+		expect(data.cachedTokens).toBe(0);
+		expect(data.tombstonesActive).toBe(0);
+		expect(data.tokensSaved).toBe("0");
+		expect(data.estimatedCost).toBe("<$0.01");
+		const rendered = renderDashboard(data);
+		expect(rendered).not.toMatch(/-\d/);
 	});
 
 	it("reports subsystem counters truthfully after real activity", () => {
