@@ -129,3 +129,8 @@ web/
 sns-myagent-web/
 
 .npmrc
+
+# Internal audit artifacts (not for public repo)
+AUDIT-*.md
+SNS-MYAGENT-DEEP-AUDIT-TASK.md
+docs/audit/
